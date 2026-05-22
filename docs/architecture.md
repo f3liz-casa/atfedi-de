@@ -101,13 +101,17 @@ atfedi-de/
 1. `blog/` に新規 Astro ＋ `@astrojs/markdoc`。記事は content collection
    （`.mdoc`）＋ Zod スキーマ（カタログのツールと同じパターン）。`shared/`
    の CSS を import。
-2. ルーティング — `/{lang}/{slug}`（多言語）、`/v/{slug}`（dev・英語のみ）。
+2. ルーティング — 言語別ホーム `/{lang}/`、記事 `/{lang}/{slug}`。記事は
+   ヘッダの言語スイッチャ（カタログと同じ作り）で行き来する。スイッチャは
+   その記事に実在する翻訳だけを出す。dev 記事も日常記事に合流させ、`/v/`
+   はプレビュー専用に空けた。
 3. コードハイライト（Shiki、Markdoc 統合の設定）。RSS（`@astrojs/rss`）は
    要るときに。
-4. **Worker v2** — `blog.atfedi.de` を blog のアセットに割り当て。
-   → verify: `blog.atfedi.de/ja/...`・`/v/...` が出る
+4. **Worker v2** — `blog.atfedi.de` を blog のアセットに割り当て。素の `/`
+   は Accept-Language を見て `/{lang}/` へ。
+   → verify: `blog.atfedi.de/ja/...` が出る、スイッチャが翻訳の有無に従う
 
-### フェーズ 3 — ライブプレビュー
+### フェーズ 3 — ライブプレビュー（✓ 完了）
 
 `blog.atfedi.de/v/preview/{ref}/-/{...path}`
 
@@ -122,9 +126,17 @@ atfedi-de/
    - `{ref} → SHA` は短いキャッシュ、中身は SHA で長いキャッシュ
    - `/v/preview/*` に `X-Robots-Tag: noindex`
    - 描画は「本番に十分近いプレビュー」。Astro ビルドと 1:1 ではない
-2. GitHub トークンを Worker のシークレットに（`wrangler secret`）。
+2. リポジトリは公開なので、GitHub への問い合わせは匿名でも通る。`env.
+   GITHUB_TOKEN` を `wrangler secret` で入れれば API レート上限が上がる
+   （任意 — 入れなければ匿名の毎時 60 回）。
 3. 約束 — **`pr-` で始まるブランチは作らない**。CONTRIBUTING に明記する。
    → verify: ブランチと PR、両方プレビューできる
+
+実装は `worker/preview.js`（ディスパッチャ `index.js` から `/v/preview/`
+で呼ぶ）。frontmatter は数行の素朴なパーサで読む。Markdoc の既定
+トークナイザは markdown-it を `html: false` で生成する → 生HTMLは
+テキストにエスケープされる。キャッシュは subrequest の `cf.cacheTtl` で
+二段に — ブランチ解決は 30 秒、SHA 固定の中身は 1 日。
 
 ## あなたの手が要るところ
 

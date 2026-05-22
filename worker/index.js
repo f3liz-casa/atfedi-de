@@ -9,6 +9,8 @@
 // The built catalog lives in the assets under /catalog/{locale}/... ; the
 // shared build assets (/_astro/, favicon) sit at /catalog/ with no locale.
 
+import { handlePreview } from './preview.js';
+
 const LOCALES = ['en', 'ja', 'ko'];
 const DEFAULT_LOCALE = 'en';
 
@@ -66,6 +68,16 @@ export default {
     // --- blog.atfedi.de: serve the blog (path-based locales) ---
     if (host === 'blog.atfedi.de') {
       let path = url.pathname;
+      // /v/ is the live preview, and nothing else
+      if (path.startsWith('/v/preview/')) {
+        return handlePreview(path.slice('/v/preview/'.length), env);
+      }
+      if (path.startsWith('/v/')) {
+        return new Response(
+          'preview only — use /v/preview/{ref}/-/{lang}/{slug}',
+          { status: 404, headers: { 'content-type': 'text/plain; charset=utf-8' } },
+        );
+      }
       // shared build assets pass straight through
       if (path.startsWith('/_astro/') || path === '/favicon.svg') {
         return env.ASSETS.fetch(new Request(new URL(`/blog${path}`, url), request));
