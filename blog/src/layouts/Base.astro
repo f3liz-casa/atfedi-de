@@ -12,13 +12,22 @@ import '@fontsource/biz-udpgothic/japanese-700.css';
 import '@fontsource/nanum-gothic/korean-400.css';
 import '@fontsource/nanum-gothic/korean-700.css';
 
+import { locales, localeNames } from '../locales';
+
 interface Props {
   lang: string;
   title: string;
   description?: string;
+  // Locales this page exists in. Post pages pass the post's translations;
+  // the per-language home pages leave it unset → all locales.
+  langs?: readonly string[];
 }
 
-const { lang, title, description } = Astro.props;
+const { lang, title, description, langs } = Astro.props;
+
+// The same path under another language — for the switcher.
+const rest = Astro.url.pathname.replace(/^\/(en|ja|ko)/, '') || '/';
+const switchLangs = langs ?? locales;
 ---
 
 <!doctype html>
@@ -32,7 +41,7 @@ const { lang, title, description } = Astro.props;
   </head>
   <body>
     <header class="site-header">
-      <a class="site-brand" href="/">
+      <a class="site-brand" href={`/${lang}/`}>
         <svg class="brand-mark" viewBox="0 0 32 32" aria-hidden="true">
           <rect width="32" height="32" rx="7" fill="var(--color-text)" />
           <g
@@ -51,6 +60,15 @@ const { lang, title, description } = Astro.props;
       </a>
       <nav class="site-nav" aria-label="Sections">
         <a href="https://atfedi.de">tools ↗</a>
+      </nav>
+      <nav class="lang-switch" aria-label="Language">
+        {
+          switchLangs.map((l) => (
+            <a href={`/${l}${rest}`} aria-current={l === lang ? 'true' : undefined}>
+              {localeNames[l]}
+            </a>
+          ))
+        }
       </nav>
     </header>
     <main>

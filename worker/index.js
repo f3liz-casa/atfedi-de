@@ -63,10 +63,18 @@ export default {
       return env.ASSETS.fetch(new Request(new URL(path, url), request));
     }
 
-    // --- blog.atfedi.de: serve the blog ---
+    // --- blog.atfedi.de: serve the blog (path-based locales) ---
     if (host === 'blog.atfedi.de') {
       let path = url.pathname;
-      // normalise page paths to the trailing-slash form
+      // shared build assets pass straight through
+      if (path.startsWith('/_astro/') || path === '/favicon.svg') {
+        return env.ASSETS.fetch(new Request(new URL(`/blog${path}`, url), request));
+      }
+      // pages live under a locale; anything else → detect language, redirect
+      if (!/^\/(en|ja|ko)(\/|$)/.test(path)) {
+        const locale = pickLocale(request.headers.get('accept-language'));
+        return Response.redirect(`https://blog.atfedi.de/${locale}/`, 302);
+      }
       if (!path.endsWith('/') && !/\.[^/]+$/.test(path)) path += '/';
       return env.ASSETS.fetch(new Request(new URL(`/blog${path}`, url), request));
     }

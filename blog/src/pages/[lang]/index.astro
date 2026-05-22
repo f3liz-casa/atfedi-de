@@ -1,0 +1,47 @@
+---
+import { getCollection } from 'astro:content';
+import { locales, type Locale } from '../../locales';
+import Base from '../../layouts/Base.astro';
+
+export function getStaticPaths() {
+  return locales.map((lang) => ({ params: { lang } }));
+}
+
+const lang = Astro.params.lang as Locale;
+
+const tagline: Record<string, string> = {
+  en: 'Notes on the fediverse — and on building atfedi.de.',
+  ja: 'フェディバースのこと、atfedi.de をつくることの記録。',
+  ko: '페디버스 이야기, 그리고 atfedi.de를 만드는 기록.',
+};
+
+const posts = (await getCollection('posts'))
+  .filter((post) => post.id.startsWith(`${lang}/`))
+  .sort((a, b) => b.data.date.valueOf() - a.data.date.valueOf());
+---
+
+<Base lang={lang} title="atfedi.de blog" description={tagline[lang]}>
+  <div class="wrap">
+    <section class="hero stack">
+      <h1>blog</h1>
+      <p class="tagline">{tagline[lang]}</p>
+    </section>
+
+    {
+      posts.length > 0 ? (
+        <ul class="post-list">
+          {posts.map((post) => (
+            <li>
+              <a href={`/${post.id}/`}>{post.data.title}</a>
+              <time datetime={post.data.date.toISOString()}>
+                {post.data.date.toISOString().slice(0, 10)}
+              </time>
+            </li>
+          ))}
+        </ul>
+      ) : (
+        <p class="note">— soon —</p>
+      )
+    }
+  </div>
+</Base>
