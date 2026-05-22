@@ -96,6 +96,23 @@
   margin-inline: auto;
 }
 
+/* The catalog footer's inner band. .site-footer itself spans full width
+   for the border-top, so this holds the content to page width and lays
+   the text · blog links against the GitHub link. */
+.footer-inner {
+  max-width: var(--page);
+  margin-inline: auto;
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: var(--space-6);
+}
+
+.footer-inner p {
+  margin: 0;
+  max-width: none;
+}
+
 /* ---- hero + sections ---- */
 .hero {
   padding-block: var(--space-12) var(--space-8);
