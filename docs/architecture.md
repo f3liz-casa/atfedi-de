@@ -96,7 +96,7 @@ atfedi-de/
    サブドメインは wrangler が `custom_domain` で DNS ごと自動作成。
    → verify: 本番で全サブドメインが正しい言語
 
-### フェーズ 2 — ブログ
+### フェーズ 2 — ブログ（✓ 完了）
 
 1. `blog/` に新規 Astro ＋ `@astrojs/markdoc`。記事は content collection
    （`.mdoc`）＋ Zod スキーマ（カタログのツールと同じパターン）。`shared/`
