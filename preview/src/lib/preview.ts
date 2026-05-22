@@ -1,13 +1,17 @@
-// Live preview — load a blog post straight from GitHub and render it.
+// Live preview — load the blog straight from GitHub at a given ref.
 //
-// Used by the SSR route src/pages/v/preview/[...path].astro. {ref} is a
-// branch name, or `pr-{number}` for a pull request (which may live in a
-// fork). `/-/` separates the ref from the content path, so a branch name
-// may contain slashes.
+// Used by the SSR route src/pages/v/preview/[...path].astro.
+//   /v/preview/{ref}/-/                 → the root, redirects to a locale
+//   /v/preview/{ref}/-/{lang}/          → that locale's home (post list)
+//   /v/preview/{ref}/-/{lang}/{slug}    → one post
 //
-// The post is rendered with Markdoc's core renderer. Its default tokenizer
-// keeps markdown-it's `html: false`, so raw HTML in a post is escaped to
-// text — a PR's contents are not trusted.
+// {ref} is a branch name, or `pr-{number}` for a pull request (which may
+// live in a fork). `/-/` separates the ref from the content path, so a
+// branch name may contain slashes.
+//
+// Posts render with Markdoc's core renderer. Its default tokenizer keeps
+// markdown-it's `html: false`, so raw HTML in a post is escaped to text —
+// a PR's contents are not trusted.
 
 import Markdoc from '@markdoc/markdoc';
 
@@ -15,35 +19,54 @@ import Markdoc from '@markdoc/markdoc';
 const REPO = { owner: 'f3liz-casa', repo: 'atfedi-de' };
 // Posts sit here; a content path is {lang}/{slug} under it, like the URL.
 const POSTS_BASE = 'blog/src/content/posts';
-
-export interface PreviewOk {
-  ok: true;
-  ref: string;
-  refLabel: string;
-  lang: string;
-  slug: string;
-  title: string;
-  date: string;
-  html: string;
-}
-
-export interface PreviewErr {
-  ok: false;
-  status: number;
-  message: string;
-  detail?: string;
-  ref?: string;
-  lang?: string;
-  slug?: string;
-}
-
-export type PreviewResult = PreviewOk | PreviewErr;
+const LOCALES = ['en', 'ja', 'ko'];
+const DEFAULT_LOCALE = 'en';
 
 interface Source {
   owner: string;
   repo: string;
   sha: string;
   label: string;
+}
+
+export interface PostMeta {
+  slug: string;
+  title: string;
+  date: string;
+}
+
+export type PreviewResult =
+  | { kind: 'redirect'; to: string }
+  | { kind: 'home'; ref: string; refLabel: string; lang: string; posts: PostMeta[] }
+  | {
+      kind: 'post';
+      ref: string;
+      refLabel: string;
+      lang: string;
+      slug: string;
+      title: string;
+      date: string;
+      html: string;
+    }
+  | {
+      kind: 'error';
+      status: number;
+      message: string;
+      detail?: string;
+      ref?: string;
+      lang?: string;
+      slug?: string;
+    };
+
+// Best supported locale from an Accept-Language header, else the default.
+function pickLocale(header: string | null): string {
+  if (header) {
+    for (const part of header.split(',')) {
+      const code = part.split(';')[0].trim().slice(0, 2).toLowerCase();
+      if (LOCALES.includes(code)) return code;
+    }
+  }
+  return DEFAULT_LOCALE;
 }
 
 // The .mdoc frontmatter is a few plain key: value lines — title,
@@ -57,16 +80,26 @@ function parseFrontmatter(text: string): Record<string, string> {
   return out;
 }
 
-// A ref → where its content actually lives. `pr-{n}` asks GitHub for the
-// PR's head; anything else is a branch name. The mapping isn't pinned, so
-// it is cached only briefly.
-async function resolveRef(ref: string, token?: string): Promise<Source | null> {
-  const headers: Record<string, string> = {
+// The frontmatter block from a raw .mdoc, without parsing the body.
+function frontmatterOf(raw: string): Record<string, string> {
+  const m = raw.match(/^---\r?\n([\s\S]*?)\r?\n---/);
+  return parseFrontmatter(m ? m[1] : '');
+}
+
+function ghHeaders(token?: string): Record<string, string> {
+  const h: Record<string, string> = {
     'User-Agent': 'atfedi-de-preview',
     Accept: 'application/vnd.github+json',
   };
-  if (token) headers.Authorization = `Bearer ${token}`;
+  if (token) h.Authorization = `Bearer ${token}`;
+  return h;
+}
+
+// A ref → where its content actually lives. `pr-{n}` asks GitHub for the
+// PR's head; anything else is a branch name. Not pinned → short cache.
+async function resolveRef(ref: string, token?: string): Promise<Source | null> {
   const cf = { cacheTtl: 30, cacheEverything: true };
+  const headers = ghHeaders(token);
 
   const pr = ref.match(/^pr-(\d+)$/);
   if (pr) {
@@ -85,7 +118,6 @@ async function resolveRef(ref: string, token?: string): Promise<Source | null> {
     };
   }
 
-  // a branch (or tag, or full SHA) — GitHub resolves it to a commit
   const r = await fetch(
     `https://api.github.com/repos/${REPO.owner}/${REPO.repo}/commits/${ref}`,
     { headers, cf } as RequestInit,
@@ -95,46 +127,78 @@ async function resolveRef(ref: string, token?: string): Promise<Source | null> {
   return { owner: REPO.owner, repo: REPO.repo, sha: data.sha, label: ref };
 }
 
-// The post file at a pinned SHA — immutable, so it caches for a long time.
-async function fetchPost(src: Source, contentPath: string): Promise<string | null> {
-  const file = `${POSTS_BASE}/${contentPath}.mdoc`;
+// A file at a pinned SHA — immutable, so it caches for a long time.
+async function fetchRaw(src: Source, repoPath: string): Promise<string | null> {
   const r = await fetch(
-    `https://raw.githubusercontent.com/${src.owner}/${src.repo}/${src.sha}/${file}`,
+    `https://raw.githubusercontent.com/${src.owner}/${src.repo}/${src.sha}/${repoPath}`,
     { cf: { cacheTtl: 86400, cacheEverything: true } } as RequestInit,
   );
   if (!r.ok) return null;
   return r.text();
 }
 
-// pathParam is the [...path] — `{ref}/-/{lang}/{slug}`.
+// The post slugs in posts/{lang}/ at a ref. [] if the folder is absent;
+// null on any other failure (so the home can tell "empty" from "broken").
+async function listSlugs(
+  src: Source,
+  lang: string,
+  token?: string,
+): Promise<string[] | null> {
+  const r = await fetch(
+    `https://api.github.com/repos/${src.owner}/${src.repo}/contents/${POSTS_BASE}/${lang}?ref=${src.sha}`,
+    {
+      headers: ghHeaders(token),
+      cf: { cacheTtl: 86400, cacheEverything: true },
+    } as RequestInit,
+  );
+  if (r.status === 404) return [];
+  if (!r.ok) return null;
+  const data: any = await r.json();
+  if (!Array.isArray(data)) return [];
+  return data
+    .filter((e) => e.type === 'file' && e.name.endsWith('.mdoc'))
+    .map((e) => e.name.slice(0, -'.mdoc'.length));
+}
+
+// pathParam is the [...path] — `{ref}/-/{lang}/{slug}` (slug optional).
 export async function loadPreview(
   pathParam: string,
-  token?: string,
+  token: string | undefined,
+  acceptLanguage: string | null,
 ): Promise<PreviewResult> {
+  // `/-/` separates ref from content path. At the bare root the URL is
+  // `{ref}/-/`, and the rest param arrives with its trailing slash gone
+  // as `{ref}/-` — so accept that too, with an empty content path.
+  let ref: string;
+  let rawRest: string;
   const sep = pathParam.indexOf('/-/');
-  if (sep === -1) {
+  if (sep !== -1) {
+    ref = pathParam.slice(0, sep);
+    rawRest = pathParam.slice(sep + 3);
+  } else if (pathParam.endsWith('/-')) {
+    ref = pathParam.slice(0, -2);
+    rawRest = '';
+  } else {
     return {
-      ok: false,
+      kind: 'error',
       status: 400,
       message: 'Expected /v/preview/{ref}/-/{lang}/{slug}.',
     };
   }
-  const ref = pathParam.slice(0, sep);
-  const contentPath = pathParam
-    .slice(sep + 3)
-    .replace(/^\/+|\/+$/g, '')
-    .replace(/\.mdoc$/, '');
+  const rest = rawRest.replace(/^\/+|\/+$/g, '').replace(/\.mdoc$/, '');
 
-  if (!ref || !contentPath.includes('/') || contentPath.includes('..')) {
-    return {
-      ok: false,
-      status: 400,
-      message: 'That ref or content path looks empty or unsafe.',
-      ref,
-    };
+  if (!ref || rest.includes('..')) {
+    return { kind: 'error', status: 400, message: 'That ref or path looks unsafe.', ref };
   }
-  const lang = contentPath.slice(0, contentPath.indexOf('/'));
-  const slug = contentPath.slice(lang.length + 1);
+
+  // the root → redirect to a locale home (like the real blog's bare /)
+  if (rest === '') {
+    return { kind: 'redirect', to: `/v/preview/${ref}/-/${pickLocale(acceptLanguage)}/` };
+  }
+
+  const slash = rest.indexOf('/');
+  const lang = slash === -1 ? rest : rest.slice(0, slash);
+  const slug = slash === -1 ? '' : rest.slice(slash + 1);
 
   let src: Source | null;
   try {
@@ -144,7 +208,7 @@ export async function loadPreview(
   }
   if (!src) {
     return {
-      ok: false,
+      kind: 'error',
       status: 404,
       message:
         'Could not resolve that ref — no such branch or PR (or GitHub is rate-limiting).',
@@ -155,13 +219,43 @@ export async function loadPreview(
     };
   }
 
-  const raw = await fetchPost(src, contentPath);
+  // a locale home — list the posts in posts/{lang}/
+  if (slug === '') {
+    if (!LOCALES.includes(lang)) {
+      return { kind: 'error', status: 404, message: `Unknown locale "${lang}".`, ref };
+    }
+    const slugs = await listSlugs(src, lang, token);
+    if (slugs === null) {
+      return {
+        kind: 'error',
+        status: 502,
+        message: 'Could not list posts for this ref.',
+        ref,
+        lang,
+      };
+    }
+    const posts = (
+      await Promise.all(
+        slugs.map(async (s): Promise<PostMeta | null> => {
+          const raw = await fetchRaw(src!, `${POSTS_BASE}/${lang}/${s}.mdoc`);
+          if (raw === null) return null;
+          const fm = frontmatterOf(raw);
+          return { slug: s, title: fm.title || s, date: fm.date || '' };
+        }),
+      )
+    ).filter((p): p is PostMeta => p !== null);
+    posts.sort((a, b) => b.date.localeCompare(a.date));
+    return { kind: 'home', ref, refLabel: src.label, lang, posts };
+  }
+
+  // a single post
+  const raw = await fetchRaw(src, `${POSTS_BASE}/${lang}/${slug}.mdoc`);
   if (raw === null) {
     return {
-      ok: false,
+      kind: 'error',
       status: 404,
       message: 'No post at that path on this ref.',
-      detail: `${POSTS_BASE}/${contentPath}.mdoc`,
+      detail: `${POSTS_BASE}/${lang}/${slug}.mdoc`,
       ref,
       lang,
       slug,
@@ -174,7 +268,7 @@ export async function loadPreview(
     // default config: no custom tags, default nodes, raw HTML escaped
     const html = Markdoc.renderers.html(Markdoc.transform(ast));
     return {
-      ok: true,
+      kind: 'post',
       ref,
       refLabel: src.label,
       lang,
@@ -185,7 +279,7 @@ export async function loadPreview(
     };
   } catch (e) {
     return {
-      ok: false,
+      kind: 'error',
       status: 502,
       message: `Markdoc could not render this post: ${(e as Error).message}`,
       ref,

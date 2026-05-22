@@ -4,42 +4,68 @@
 // This whole project is one on-demand route. The blog next door is plain
 // static; this renders per request, because its content comes from GitHub
 // at whatever ref you ask for. It wears the blog's own Base layout — the
-// only thing it adds is the top band — and its language switcher stays
-// rooted under /v/preview/{ref}/-/ so the preview is its own little world.
+// only thing it adds is the top band — and its links stay rooted under
+// /v/preview/{ref}/-/ so the preview is its own little world:
+//   .../-/            → redirects to a locale home
+//   .../-/{lang}/      → that locale's home (post list)
+//   .../-/{lang}/{slug} → one post
 export const prerender = false;
 
 import { env } from 'cloudflare:workers';
 import Base from '@blog/layouts/Base.astro';
 import { loadPreview } from '../../../lib/preview';
 
-const result = await loadPreview(Astro.params.path ?? '', env.GITHUB_TOKEN);
+const result = await loadPreview(
+  Astro.params.path ?? '',
+  env.GITHUB_TOKEN,
+  Astro.request.headers.get('accept-language'),
+);
+
+if (result.kind === 'redirect') {
+  return Astro.redirect(result.to, 302);
+}
 
 // Never index a preview.
 Astro.response.headers.set('X-Robots-Tag', 'noindex, nofollow');
-if (!result.ok) Astro.response.status = result.status;
+if (result.kind === 'error') Astro.response.status = result.status;
 
-const lang = result.lang ?? 'en';
-const banner = result.ok
-  ? `preview · ${result.refLabel} · not indexed`
-  : 'preview · could not render';
+// The locale-home taglines — mirrors the blog's [lang]/index.astro.
+const taglines: Record<string, string> = {
+  en: 'Notes on the fediverse — and on building atfedi.de.',
+  ja: 'フェディバースのこと、atfedi.de をつくることの記録。',
+  ko: '페디버스 이야기, 그리고 atfedi.de를 만드는 기록.',
+};
 
-// The switcher previews the same slug in another language on the same
-// ref; with no slug to go to, it falls back to the real blog.
-const langHref =
-  result.ref && result.slug
-    ? (l: string) => `/v/preview/${result.ref}/-/${l}/${result.slug}`
-    : (l: string) => `/${l}/`;
+const lang = result.kind === 'error' ? (result.lang ?? 'en') : result.lang;
+const banner =
+  result.kind === 'error'
+    ? 'preview · could not render'
+    : `preview · ${result.refLabel} · not indexed`;
+const title =
+  result.kind === 'post'
+    ? `${result.title} · preview`
+    : result.kind === 'home'
+      ? 'atfedi.de blog · preview'
+      : 'preview';
+
+// The language switcher stays inside this preview world.
+let langHref: (l: string) => string = (l) => `/${l}/`;
+if (result.kind === 'post') {
+  const { ref, slug } = result;
+  langHref = (l) => `/v/preview/${ref}/-/${l}/${slug}`;
+} else if (result.kind === 'home') {
+  const { ref } = result;
+  langHref = (l) => `/v/preview/${ref}/-/${l}/`;
+} else if (result.ref) {
+  const ref = result.ref;
+  langHref = (l) => `/v/preview/${ref}/-/${l}/`;
+}
 ---
 
-<Base
-  lang={lang}
-  title={result.ok ? `${result.title} · preview` : 'preview'}
-  banner={banner}
-  langHref={langHref}
->
+<Base lang={lang} title={title} banner={banner} langHref={langHref}>
   <div class="wrap">
     {
-      result.ok ? (
+      result.kind === 'post' && (
         <article class="post">
           <header class="post-head">
             <h1>{result.title}</h1>
@@ -47,7 +73,36 @@ const langHref =
           </header>
           <Fragment set:html={result.html} />
         </article>
-      ) : (
+      )
+    }
+
+    {
+      result.kind === 'home' && (
+        <Fragment>
+          <section class="hero stack">
+            <h1>blog</h1>
+            <p class="tagline">{taglines[result.lang]}</p>
+          </section>
+          {result.posts.length > 0 ? (
+            <ul class="post-list">
+              {result.posts.map((p) => (
+                <li>
+                  <a href={`/v/preview/${result.ref}/-/${result.lang}/${p.slug}`}>
+                    {p.title}
+                  </a>
+                  {p.date && <time datetime={p.date}>{p.date}</time>}
+                </li>
+              ))}
+            </ul>
+          ) : (
+            <p class="note">— soon —</p>
+          )}
+        </Fragment>
+      )
+    }
+
+    {
+      result.kind === 'error' && (
         <article class="post">
           <header class="post-head">
             <h1>preview</h1>
