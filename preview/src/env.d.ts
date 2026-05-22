@@ -6,3 +6,9 @@ interface Env {
   // the preview works without it.
   GITHUB_TOKEN?: string;
 }
+
+// The Workers runtime built-in. Resolved by the runtime / bundler; this
+// declaration just gives `astro check` the type of what we import.
+declare module 'cloudflare:workers' {
+  export const env: Env;
+}
