@@ -2,10 +2,11 @@
   "name": "atfedi-de",
   "version": "0.1.0",
   "private": true,
-  "workspaces": ["catalog", "blog", "shared", "worker"],
+  "workspaces": ["catalog", "blog", "preview", "shared", "worker"],
   "scripts": {
     "dev": "npm run dev --workspace catalog",
-    "build": "npm run build --workspace catalog && npm run build --workspace blog",
+    "build": "npm run build --workspace catalog && npm run build --workspace blog && npm run build --workspace preview && npm run postbuild",
+    "postbuild": "printf 'preview\\n' > dist/.assetsignore && cp -Rn dist/preview/client/_astro/* dist/blog/_astro/",
     "check": "npm run check --workspaces --if-present",
     "deploy": "npm run build && npm run deploy --workspace worker"
   }

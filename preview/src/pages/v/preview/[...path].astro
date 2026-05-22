@@ -1,0 +1,65 @@
+---
+// Live preview — blog.atfedi.de/v/preview/{ref}/-/{lang}/{slug}
+//
+// This whole project is one on-demand route. The blog next door is plain
+// static; this renders per request, because its content comes from GitHub
+// at whatever ref you ask for. It wears the blog's own Base layout — the
+// only thing it adds is the top band — and its language switcher stays
+// rooted under /v/preview/{ref}/-/ so the preview is its own little world.
+export const prerender = false;
+
+import { env } from 'cloudflare:workers';
+import Base from '@blog/layouts/Base.astro';
+import { loadPreview } from '../../../lib/preview';
+
+const result = await loadPreview(Astro.params.path ?? '', env.GITHUB_TOKEN);
+
+// Never index a preview.
+Astro.response.headers.set('X-Robots-Tag', 'noindex, nofollow');
+if (!result.ok) Astro.response.status = result.status;
+
+const lang = result.lang ?? 'en';
+const banner = result.ok
+  ? `preview · ${result.refLabel} · not indexed`
+  : 'preview · could not render';
+
+// The switcher previews the same slug in another language on the same
+// ref; with no slug to go to, it falls back to the real blog.
+const langHref =
+  result.ref && result.slug
+    ? (l: string) => `/v/preview/${result.ref}/-/${l}/${result.slug}`
+    : (l: string) => `/${l}/`;
+---
+
+<Base
+  lang={lang}
+  title={result.ok ? `${result.title} · preview` : 'preview'}
+  banner={banner}
+  langHref={langHref}
+>
+  <div class="wrap">
+    {
+      result.ok ? (
+        <article class="post">
+          <header class="post-head">
+            <h1>{result.title}</h1>
+            {result.date && <time datetime={result.date}>{result.date}</time>}
+          </header>
+          <Fragment set:html={result.html} />
+        </article>
+      ) : (
+        <article class="post">
+          <header class="post-head">
+            <h1>preview</h1>
+          </header>
+          <p>{result.message}</p>
+          {result.detail && (
+            <p>
+              <code>{result.detail}</code>
+            </p>
+          )}
+        </article>
+      )
+    }
+  </div>
+</Base>

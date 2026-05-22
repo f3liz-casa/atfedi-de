@@ -118,3 +118,14 @@
   border-left: 3px solid var(--color-border-strong);
   color: var(--color-text-muted);
 }
+
+/* live preview — the one band the published blog never wears */
+.preview-banner {
+  padding: var(--space-2) var(--space-4);
+  background: var(--color-text);
+  color: var(--color-bg);
+  font-size: var(--text-sm);
+  font-weight: 600;
+  letter-spacing: 0.03em;
+  text-align: center;
+}

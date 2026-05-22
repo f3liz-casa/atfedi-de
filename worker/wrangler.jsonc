@@ -4,6 +4,8 @@
   "name": "atfedi",
   "main": "index.js",
   "compatibility_date": "2026-05-01",
+  // the blog's Astro SSR worker is bundled in — it needs Node compat
+  "compatibility_flags": ["nodejs_compat"],
   "assets": {
     "directory": "../dist",
     "binding": "ASSETS",

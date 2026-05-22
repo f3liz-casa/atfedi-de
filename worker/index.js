@@ -8,8 +8,15 @@
 //
 // The built catalog lives in the assets under /catalog/{locale}/... ; the
 // shared build assets (/_astro/, favicon) sit at /catalog/ with no locale.
+//
+// The blog is all static assets, but /v/preview/* is rendered on demand —
+// that route is its own one-route SSR project (../preview). Its Astro
+// build emits a Worker (../dist/preview/server/entry.mjs) which is bundled
+// in here at deploy time and handed every /v/preview/* request. The
+// preview's client assets (CSS, fonts) are merged into the blog's /_astro/
+// at build time, so the served preview page finds them like any blog page.
 
-import { handlePreview } from './preview.js';
+import previewSSR from '../dist/preview/server/entry.mjs';
 
 const LOCALES = ['en', 'ja', 'ko'];
 const DEFAULT_LOCALE = 'en';
@@ -26,7 +33,7 @@ function pickLocale(header) {
 }
 
 export default {
-  async fetch(request, env) {
+  async fetch(request, env, ctx) {
     const url = new URL(request.url);
     const host = url.hostname;
     const sub = host.split('.')[0];
@@ -68,9 +75,10 @@ export default {
     // --- blog.atfedi.de: serve the blog (path-based locales) ---
     if (host === 'blog.atfedi.de') {
       let path = url.pathname;
-      // /v/ is the live preview, and nothing else
+      // /v/ is the live preview, and nothing else — the preview is an
+      // SSR route, so hand it to the preview project's Astro worker
       if (path.startsWith('/v/preview/')) {
-        return handlePreview(path.slice('/v/preview/'.length), env, url);
+        return previewSSR.fetch(request, env, ctx);
       }
       if (path.startsWith('/v/')) {
         return new Response(

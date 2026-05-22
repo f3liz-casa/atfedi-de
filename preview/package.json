@@ -1,0 +1,23 @@
+{
+  "name": "preview",
+  "version": "0.1.0",
+  "type": "module",
+  "private": true,
+  "scripts": {
+    "build": "astro build",
+    "check": "astro check"
+  },
+  "dependencies": {
+    "@astrojs/cloudflare": "^13.5.4",
+    "@atfedi/shared": "*",
+    "@fontsource-variable/source-sans-3": "^5.2.9",
+    "@fontsource/biz-udpgothic": "^5.2.9",
+    "@fontsource/nanum-gothic": "^5.2.7",
+    "@markdoc/markdoc": "^0.5.7",
+    "astro": "^6.3.6"
+  },
+  "devDependencies": {
+    "@astrojs/check": "^0.9.9",
+    "typescript": "^6.0.3"
+  }
+}

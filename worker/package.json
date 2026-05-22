@@ -7,8 +7,5 @@
   },
   "devDependencies": {
     "wrangler": "^4.93.1"
-  },
-  "dependencies": {
-    "@markdoc/markdoc": "^0.5.7"
   }
 }

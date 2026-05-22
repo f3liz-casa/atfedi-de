@@ -21,13 +21,20 @@ interface Props {
   // Locales this page exists in. Post pages pass the post's translations;
   // the per-language home pages leave it unset → all locales.
   langs?: readonly string[];
+  // Set by the live preview — shows the top band and marks the page
+  // noindex. Ordinary blog pages leave it unset.
+  banner?: string;
+  // Override the language switcher's targets. The preview points them
+  // under /v/preview/{ref}/-/ ; ordinary pages use the path-based default.
+  langHref?: (lang: string) => string;
 }
 
-const { lang, title, description, langs } = Astro.props;
+const { lang, title, description, langs, banner, langHref } = Astro.props;
 
 // The same path under another language — for the switcher.
 const rest = Astro.url.pathname.replace(/^\/(en|ja|ko)/, '') || '/';
 const switchLangs = langs ?? locales;
+const hrefFor = langHref ?? ((l: string) => `/${l}${rest}`);
 ---
 
 <!doctype html>
@@ -38,8 +45,10 @@ const switchLangs = langs ?? locales;
     <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
     <title>{title}</title>
     {description && <meta name="description" content={description} />}
+    {banner && <meta name="robots" content="noindex, nofollow" />}
   </head>
   <body>
+    {banner && <div class="preview-banner">{banner}</div>}
     <header class="site-header">
       <a class="site-brand" href={`/${lang}/`}>
         <svg class="brand-mark" viewBox="0 0 32 32" aria-hidden="true">
@@ -64,7 +73,7 @@ const switchLangs = langs ?? locales;
       <nav class="lang-switch" aria-label="Language">
         {
           switchLangs.map((l) => (
-            <a href={`/${l}${rest}`} aria-current={l === lang ? 'true' : undefined}>
+            <a href={hrefFor(l)} aria-current={l === lang ? 'true' : undefined}>
               {localeNames[l]}
             </a>
           ))
