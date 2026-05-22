@@ -31,10 +31,11 @@ const onBuild = path.includes('/build');
 // Same path under each other locale — for the language switcher.
 const rest = path.replace(/^\/(en|ja|ko)/, '');
 
-// Link-preview / SEO metadata. Description falls back to the site tagline,
-// so catalog pages get one too.
+// Link-preview / SEO metadata. Each locale lives on its own subdomain
+// ({locale}.atfedi.de); `rest` is the path with the build-time /{lang}
+// prefix stripped. Description falls back to the site tagline.
 const desc = description ?? t('site.tagline');
-const canonical = new URL(path, Astro.site).href;
+const canonical = `https://${lang}.atfedi.de${rest}`;
 const ogLocale = ({ en: 'en_US', ja: 'ja_JP', ko: 'ko_KR' }) as const;
 ---
 
@@ -45,6 +46,12 @@ const ogLocale = ({ en: 'en_US', ja: 'ja_JP', ko: 'ko_KR' }) as const;
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
     <link rel="canonical" href={canonical} />
+    {
+      locales.map((l) => (
+        <link rel="alternate" hreflang={l} href={`https://${l}.atfedi.de${rest}`} />
+      ))
+    }
+    <link rel="alternate" hreflang="x-default" href={`https://en.atfedi.de${rest}`} />
     <title>{title}</title>
     <meta name="description" content={desc} />
     <meta property="og:type" content="website" />
@@ -57,7 +64,7 @@ const ogLocale = ({ en: 'en_US', ja: 'ja_JP', ko: 'ko_KR' }) as const;
   </head>
   <body>
     <header class="site-header">
-      <a class="site-brand" href={`/${lang}/`}>
+      <a class="site-brand" href="/">
         <svg class="brand-mark" viewBox="0 0 32 32" aria-hidden="true">
           <rect width="32" height="32" rx="7" fill="var(--color-text)" />
           <g
@@ -75,17 +82,17 @@ const ogLocale = ({ en: 'en_US', ja: 'ja_JP', ko: 'ko_KR' }) as const;
         atfedi.de
       </a>
       <nav class="site-nav" aria-label="Sections">
-        <a href={`/${lang}/use`} data-lane="use" aria-current={onUse ? 'page' : undefined}>
+        <a href="/use/" data-lane="use" aria-current={onUse ? 'page' : undefined}>
           {t('nav.use')}
         </a>
-        <a href={`/${lang}/build`} data-lane="build" aria-current={onBuild ? 'page' : undefined}>
+        <a href="/build/" data-lane="build" aria-current={onBuild ? 'page' : undefined}>
           {t('nav.build')}
         </a>
       </nav>
       <nav class="lang-switch" aria-label="Language">
         {
           locales.map((l) => (
-            <a href={`/${l}${rest}`} aria-current={l === lang ? 'true' : undefined}>
+            <a href={`https://${l}.atfedi.de${rest}`} aria-current={l === lang ? 'true' : undefined}>
               {localeNames[l]}
             </a>
           ))

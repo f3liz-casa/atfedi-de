@@ -27,11 +27,11 @@ const t = useTranslations(lang);
     <section class="section stack">
       <h2 class="section-title">{t('doors.heading')}</h2>
       <div class="doors">
-        <a class="lane-door" data-lane="use" href={`/${lang}/use`}>
+        <a class="lane-door" data-lane="use" href="/use/">
           <h3>{t('lane.use.name')}</h3>
           <p><Phrase text={t('lane.use.desc')} lang={lang} /></p>
         </a>
-        <a class="lane-door" data-lane="build" href={`/${lang}/build`}>
+        <a class="lane-door" data-lane="build" href="/build/">
           <h3>{t('lane.build.name')}</h3>
           <p><Phrase text={t('lane.build.desc')} lang={lang} /></p>
         </a>

@@ -1,0 +1,18 @@
+{
+  // The dispatcher Worker — serves the catalog on locale subdomains and
+  // handles the apex. Assets are the combined monorepo build (../dist).
+  "name": "atfedi",
+  "main": "index.js",
+  "compatibility_date": "2026-05-01",
+  "assets": {
+    "directory": "../dist",
+    "binding": "ASSETS",
+    "run_worker_first": true
+  },
+  "routes": [
+    { "pattern": "atfedi.de", "custom_domain": true },
+    { "pattern": "en.atfedi.de", "custom_domain": true },
+    { "pattern": "ja.atfedi.de", "custom_domain": true },
+    { "pattern": "ko.atfedi.de", "custom_domain": true }
+  ]
+}

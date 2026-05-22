@@ -1,15 +1,15 @@
 import { defineConfig } from 'astro/config';
 import svelte from '@astrojs/svelte';
 
-// atfedi.de — a catalog of fediverse tools.
+// atfedi.de — the catalog. Fully static (every route uses getStaticPaths).
 //
-// Output is fully static (every route uses getStaticPaths), so it deploys to
-// Cloudflare Pages as plain assets — no adapter needed yet. When a server
-// island or SSR is added later, install @astrojs/cloudflare and set an adapter.
+// Built into ../dist/catalog so the monorepo Worker can serve every locale
+// subdomain ({locale}.atfedi.de) from one combined assets directory.
 //
-// i18n is hand-rolled in src/i18n/ over [lang] routes — small and explicit,
-// rather than relying on the built-in i18n config.
+// i18n is hand-rolled in src/i18n/ over [lang] routes; each [lang] subtree
+// is served at its own subdomain by the Worker.
 export default defineConfig({
   site: 'https://atfedi.de',
+  outDir: '../dist/catalog',
   integrations: [svelte()],
 });
