@@ -70,7 +70,7 @@ export default {
       let path = url.pathname;
       // /v/ is the live preview, and nothing else
       if (path.startsWith('/v/preview/')) {
-        return handlePreview(path.slice('/v/preview/'.length), env);
+        return handlePreview(path.slice('/v/preview/'.length), env, url);
       }
       if (path.startsWith('/v/')) {
         return new Response(
