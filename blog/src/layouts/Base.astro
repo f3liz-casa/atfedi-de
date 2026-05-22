@@ -1,0 +1,63 @@
+---
+import '@atfedi/shared/styles/tokens.css';
+import '@atfedi/shared/styles/base.css';
+import '@atfedi/shared/styles/components.css';
+import '../styles/blog.css';
+
+// Same fonts as the catalog — Latin first, the CJK subsets load by
+// unicode-range only when a page actually has kana·kanji / hangul.
+import '@fontsource-variable/source-sans-3';
+import '@fontsource/biz-udpgothic/japanese-400.css';
+import '@fontsource/biz-udpgothic/japanese-700.css';
+import '@fontsource/nanum-gothic/korean-400.css';
+import '@fontsource/nanum-gothic/korean-700.css';
+
+interface Props {
+  lang: string;
+  title: string;
+  description?: string;
+}
+
+const { lang, title, description } = Astro.props;
+---
+
+<!doctype html>
+<html lang={lang}>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+    <title>{title}</title>
+    {description && <meta name="description" content={description} />}
+  </head>
+  <body>
+    <header class="site-header">
+      <a class="site-brand" href="/">
+        <svg class="brand-mark" viewBox="0 0 32 32" aria-hidden="true">
+          <rect width="32" height="32" rx="7" fill="var(--color-text)" />
+          <g
+            transform="translate(4 4)"
+            fill="none"
+            stroke="var(--color-bg)"
+            stroke-width="2.5"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+          >
+            <circle cx="12" cy="12" r="4" />
+            <path d="M16 8v5a3 3 0 0 0 6 0v-1a10 10 0 1 0-3.92 7.94" />
+          </g>
+        </svg>
+        atfedi.de blog
+      </a>
+      <nav class="site-nav" aria-label="Sections">
+        <a href="https://atfedi.de">tools ↗</a>
+      </nav>
+    </header>
+    <main>
+      <slot />
+    </main>
+    <footer class="site-footer">
+      <p>atfedi.de — an open catalog of fediverse tools.</p>
+    </footer>
+  </body>
+</html>

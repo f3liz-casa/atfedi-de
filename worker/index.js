@@ -2,6 +2,7 @@
 //
 // Routes every request by hostname:
 //   {locale}.atfedi.de  → the catalog's {locale} subtree (static assets)
+//   blog.atfedi.de      → the blog (static assets)
 //   atfedi.de           → detect the browser language and redirect to a
 //                         subdomain; old /{lang}/* path URLs 301 to it
 //
@@ -60,6 +61,14 @@ export default {
         path = `/catalog/${sub}${path}`;
       }
       return env.ASSETS.fetch(new Request(new URL(path, url), request));
+    }
+
+    // --- blog.atfedi.de: serve the blog ---
+    if (host === 'blog.atfedi.de') {
+      let path = url.pathname;
+      // normalise page paths to the trailing-slash form
+      if (!path.endsWith('/') && !/\.[^/]+$/.test(path)) path += '/';
+      return env.ASSETS.fetch(new Request(new URL(`/blog${path}`, url), request));
     }
 
     return new Response('Not found', { status: 404 });

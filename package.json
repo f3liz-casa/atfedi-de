@@ -2,11 +2,11 @@
   "name": "atfedi-de",
   "version": "0.1.0",
   "private": true,
-  "workspaces": ["catalog", "shared", "worker"],
+  "workspaces": ["catalog", "blog", "shared", "worker"],
   "scripts": {
     "dev": "npm run dev --workspace catalog",
-    "build": "npm run build --workspace catalog",
-    "check": "npm run check --workspace catalog",
+    "build": "npm run build --workspace catalog && npm run build --workspace blog",
+    "check": "npm run check --workspaces --if-present",
     "deploy": "npm run build && npm run deploy --workspace worker"
   }
 }
