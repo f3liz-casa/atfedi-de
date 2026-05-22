@@ -1,0 +1,48 @@
+---
+import { locales, type Locale } from '../../i18n/ui';
+import { useTranslations } from '../../i18n/utils';
+import Base from '../../layouts/Base.astro';
+import Phrase from '../../components/Phrase.astro';
+
+export function getStaticPaths() {
+  return locales.map((lang) => ({ params: { lang } }));
+}
+
+const lang = Astro.params.lang as Locale;
+const t = useTranslations(lang);
+---
+
+<Base lang={lang} title="atfedi.de" description={t('site.tagline')}>
+  <div class="wrap">
+    <section class="hero stack">
+      <h1><Phrase text={t('home.headline')} lang={lang} /></h1>
+      <p class="tagline"><Phrase text={t('site.tagline')} lang={lang} /></p>
+    </section>
+
+    <section class="prose stack">
+      <h2 class="section-title">{t('intro.heading')}</h2>
+      <p><Phrase text={t('intro.body')} lang={lang} /></p>
+    </section>
+
+    <section class="section stack">
+      <h2 class="section-title">{t('doors.heading')}</h2>
+      <div class="doors">
+        <a class="lane-door" data-lane="use" href={`/${lang}/use`}>
+          <h3>{t('lane.use.name')}</h3>
+          <p><Phrase text={t('lane.use.desc')} lang={lang} /></p>
+        </a>
+        <a class="lane-door" data-lane="build" href={`/${lang}/build`}>
+          <h3>{t('lane.build.name')}</h3>
+          <p><Phrase text={t('lane.build.desc')} lang={lang} /></p>
+        </a>
+      </div>
+    </section>
+
+    <section class="section">
+      <p class="note">
+        <Phrase text={t('home.platforms')} lang={lang} />
+        <a href="https://joinfediverse.kr">joinfediverse.kr</a>
+      </p>
+    </section>
+  </div>
+</Base>

@@ -1,0 +1,13 @@
+name: Tusky
+lane: use
+category: client
+summary:
+  en: A long-standing, free and open-source Mastodon client for Android.
+  ja: 長く使われている、無料・オープンソースの Android 向け Mastodon クライアント。
+  ko: 오래도록 자리를 지켜 온, 안드로이드용 무료 오픈소스 마스토돈 클라이언트예요.
+links:
+  home: https://tusky.app
+  repo: https://github.com/tuskyapp/Tusky
+license: GPL-3.0
+tags:
+  - Android

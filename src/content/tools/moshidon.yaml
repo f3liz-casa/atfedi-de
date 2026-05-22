@@ -1,0 +1,12 @@
+name: Moshidon
+lane: use
+category: client
+summary:
+  en: An Android Mastodon client — a feature-rich fork of the official app.
+  ja: Android 向けの Mastodon クライアント。公式アプリを拡張したフォーク。
+  ko: 공식 앱을 확장한 안드로이드 마스토돈 클라이언트예요. 기능이 더 풍부해요.
+links:
+  home: https://github.com/LucasGGamerM/moshidon
+license: GPL-3.0
+tags:
+  - Android

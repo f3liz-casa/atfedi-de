@@ -1,0 +1,15 @@
+name: Misskey Hub Tools
+lane: use
+category: utility
+summary:
+  en: A collection of small browser utilities for Misskey users — practising MFM, previewing custom emoji and avatar decorations, and generating identicons and share buttons.
+  ja: Misskey ユーザー向けの小さなブラウザ道具の集まり — MFM の練習、カスタム絵文字やアバター装飾のプレビュー、Identicon やシェアボタンの生成。
+  ko: 미스키 사용자를 위한 작은 브라우저 도구를 모아 둔 곳이에요. MFM 연습, 커스텀 이모지·아바타 장식 미리 보기, 아이덴티콘·공유 버튼 생성 같은 걸 할 수 있어요.
+links:
+  home:
+    en: https://misskey-hub.net/en/tools/
+    ja: https://misskey-hub.net/ja/tools/
+    ko: https://misskey-hub.net/ko/tools/
+tags:
+  - web
+  - misskey

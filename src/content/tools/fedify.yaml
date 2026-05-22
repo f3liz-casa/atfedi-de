@@ -1,0 +1,13 @@
+name: Fedify
+lane: build
+category: framework
+summary:
+  en: A TypeScript framework for building ActivityPub servers — it handles the federation plumbing for you.
+  ja: ActivityPub サーバーを作るための TypeScript フレームワーク。連合まわりの面倒を引き受けてくれます。
+  ko: ActivityPub 서버를 만들 때 쓰는 TypeScript 프레임워크예요. 연합 처리의 번거로운 부분을 대신 맡아 줘요.
+links:
+  home: https://fedify.dev
+  repo: https://github.com/fedify-dev/fedify
+license: MIT
+tags:
+  - typescript

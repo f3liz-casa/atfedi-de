@@ -1,0 +1,12 @@
+name: Misskey Tools (MissHaiAlert)
+lane: use
+category: utility
+summary:
+  en: A companion app for Misskey users — daily activity alerts, a usage ranking, and a cat-ear icon cropper. The original host closed; it lives on as a community fork.
+  ja: Misskey ユーザー向けのコンパニオンアプリ — 一日の活動アラート、利用状況のランキング、ねこみみアイコン調整。オリジナルは閉鎖し、いまは有志のフォークが引き継いでいる。
+  ko: 하루 활동 알림, 사용량 랭킹, 고양이 귀 아이콘 자르기를 갖춘 미스키 컴패니언 앱이에요. 원조는 문을 닫았지만, 지금은 커뮤니티 포크가 이어 가요.
+links:
+  home: https://t.psec.dev
+  repo: https://wire.psec.dev/Unfloyded/misskey-tools
+tags:
+  - misskey

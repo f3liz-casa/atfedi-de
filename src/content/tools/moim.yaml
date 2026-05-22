@@ -1,0 +1,12 @@
+name: Moim
+lane: use
+category: service
+summary:
+  en: A federated service for organising events and checking in at venues — made in Korea.
+  ja: イベントの開催と、場所でのチェックインができる連合サービス。韓国発。
+  ko: 행사를 열고 장소에서 체크인할 수 있는 연합 서비스예요. 한국에서 시작했어요.
+links:
+  home: https://moim.live
+tags:
+  - events
+  - web

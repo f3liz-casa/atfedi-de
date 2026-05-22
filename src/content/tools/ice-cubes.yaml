@@ -1,0 +1,11 @@
+name: Ice Cubes
+lane: use
+category: client
+summary:
+  en: A polished, open-source Mastodon client for iPhone and iPad, with thoughtful posting features.
+  ja: iPhone・iPad 向けの、洗練されたオープンソースの Mastodon クライアント。投稿まわりの工夫が多い。
+  ko: 아이폰과 아이패드를 위한, 잘 다듬어진 오픈소스 마스토돈 클라이언트예요. 글쓰기 기능이 알차요.
+links:
+  home: https://github.com/Dimillian/IceCubesApp
+tags:
+  - iOS

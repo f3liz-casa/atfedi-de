@@ -1,0 +1,13 @@
+name: Ivory
+lane: use
+category: client
+summary:
+  en: A refined, paid Mastodon client for iPhone, iPad and Mac, by the makers of Tweetbot.
+  ja: iPhone・iPad・Mac 向けの、洗練された有料の Mastodon クライアント。Tweetbot の作者による。
+  ko: 아이폰·아이패드·맥을 위한 유료 마스토돈 클라이언트예요. 트윗봇을 만든 곳에서 내놓았어요.
+links:
+  home: https://tapbots.com/ivory
+license: Proprietary
+tags:
+  - iOS
+  - macOS

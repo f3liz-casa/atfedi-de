@@ -1,0 +1,13 @@
+name: Phanpy
+lane: use
+category: client
+summary:
+  en: A minimalist, good-looking web client for Mastodon-compatible servers — nothing to install.
+  ja: Mastodon 互換サーバー向けの、美しくミニマルなWebクライアント。インストール不要。
+  ko: 마스토돈 호환 서버에서 쓰는 깔끔하고 미니멀한 웹 클라이언트예요. 설치 없이 바로 쓸 수 있어요.
+links:
+  home: https://phanpy.social
+  repo: https://github.com/cheeaun/phanpy
+license: MIT
+tags:
+  - web

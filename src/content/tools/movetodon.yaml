@@ -1,0 +1,12 @@
+name: Movetodon
+lane: use
+category: discovery
+discontinued: true
+summary:
+  en: A tool to find your Twitter friends on Mastodon — popular during the migration, now defunct.
+  ja: Twitter の友達を Mastodon で探すツール。移行ブームの定番だったが、いまは終了。
+  ko: 트위터 친구를 마스토돈에서 찾아 주던 도구예요. 이주 붐 때 인기였지만 지금은 문을 닫았어요.
+links:
+  home: https://www.movetodon.org
+tags:
+  - web

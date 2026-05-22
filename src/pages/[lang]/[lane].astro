@@ -1,0 +1,47 @@
+---
+import { getCollection } from 'astro:content';
+import { locales, type Locale } from '../../i18n/ui';
+import { useTranslations } from '../../i18n/utils';
+import Base from '../../layouts/Base.astro';
+import ToolCard from '../../components/ToolCard.astro';
+import ToolFilter from '../../components/ToolFilter.svelte';
+import Phrase from '../../components/Phrase.astro';
+
+type Lane = 'use' | 'build';
+
+// One template, six static pages: 3 locales x 2 lanes. Only `use` and `build`
+// are generated, so any other path under /[lang]/ is a 404.
+// Note: getStaticPaths() runs in an isolated scope — it can use imports but
+// not other frontmatter variables, so `lanes` is declared inside it.
+export async function getStaticPaths() {
+  const lanes: Lane[] = ['use', 'build'];
+  return locales.flatMap((lang) => lanes.map((lane) => ({ params: { lang, lane } })));
+}
+
+const lang = Astro.params.lang as Locale;
+const lane = Astro.params.lane as Lane;
+const t = useTranslations(lang);
+
+const tools = (await getCollection('tools')).filter((tool) => tool.data.lane === lane);
+
+// Categories actually present in this lane, in first-seen order.
+const categoryKeys = [...new Set(tools.map((tool) => tool.data.category))];
+const categories = categoryKeys.map((key) => ({ key, label: t(`cat.${key}`) }));
+---
+
+<Base lang={lang} title={`${t(`catalog.${lane}.heading`)} — atfedi.de`}>
+  <div class="wrap" style={`--color-lane: var(--color-${lane})`}>
+    <section class="hero stack">
+      <span class="lane-mark" data-lane={lane}>{t(`lane.${lane}.name`)}</span>
+      <h1 style="font-size: var(--text-xl)">
+        <Phrase text={t(`catalog.${lane}.heading`)} lang={lang} />
+      </h1>
+    </section>
+
+    <ToolFilter client:load categories={categories} allLabel={t('filter.all')} />
+
+    <ul class="tool-grid">
+      {tools.map((tool) => <ToolCard tool={tool} lang={lang} />)}
+    </ul>
+  </div>
+</Base>

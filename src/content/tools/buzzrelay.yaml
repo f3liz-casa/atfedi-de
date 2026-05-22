@@ -1,0 +1,13 @@
+name: Buzzrelay
+lane: build
+category: relay
+summary:
+  en: A follow- and tag-based relay that lets servers discover posts from beyond their own neighbourhood.
+  ja: フォローとタグのリレー。サーバーが自分の周りを越えて投稿を見つけられるようにします。
+  ko: 팔로우와 태그를 기반으로 한 릴레이예요. 서버가 자기 이웃 너머의 게시물까지 발견하도록 도와줘요.
+links:
+  home: https://relay.fedi.buzz
+  repo: https://codeberg.org/ralph/buzzrelay
+license: MIT
+tags:
+  - discovery

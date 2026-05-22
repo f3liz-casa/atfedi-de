@@ -1,0 +1,13 @@
+name: Bridgy Fed
+lane: use
+category: bridge
+summary:
+  en: A bridge connecting the fediverse with Bluesky and the open web, so you can follow people across networks.
+  ja: フェディバースを Bluesky やオープンウェブとつなぐ橋。ネットワークをまたいでフォローできます。
+  ko: 페디버스를 블루스카이·오픈 웹과 이어 줘요. 네트워크를 넘나들며 서로 팔로우할 수 있어요.
+links:
+  home: https://fed.brid.gy
+  repo: https://github.com/snarfed/bridgy-fed
+license: CC0-1.0
+tags:
+  - bluesky

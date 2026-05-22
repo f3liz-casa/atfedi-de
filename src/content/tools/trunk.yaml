@@ -1,0 +1,11 @@
+name: Trunk
+lane: use
+category: discovery
+summary:
+  en: Opt-in, topic-based lists of fediverse accounts you can follow all at once.
+  ja: トピック別の、参加自由なアカウントのリスト。まとめてフォローできる。
+  ko: 주제별로 묶인 계정 목록이에요. 마음에 드는 주제를 골라 한 번에 팔로우할 수 있어요.
+links:
+  home: https://communitywiki.org/trunk
+tags:
+  - web

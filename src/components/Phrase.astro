@@ -1,0 +1,18 @@
+---
+// Renders a piece of translatable text with locale-aware line breaking.
+//
+// For Japanese, the text is segmented by BudouX at build time and the phrase
+// boundaries become <wbr>. For other languages it is rendered as plain text
+// (Korean breaks at its own word spaces via `word-break: keep-all`).
+import type { Locale } from '../i18n/ui';
+import { budouxJa } from '../i18n/budoux';
+
+interface Props {
+  text: string;
+  lang: Locale;
+}
+
+const { text, lang } = Astro.props;
+---
+
+{lang === 'ja' ? <Fragment set:html={budouxJa(text)} /> : text}

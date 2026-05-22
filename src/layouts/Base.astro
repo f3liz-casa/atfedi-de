@@ -1,0 +1,105 @@
+---
+import { locales, localeNames, type Locale } from '../i18n/ui';
+import { useTranslations } from '../i18n/utils';
+import '../styles/tokens.css';
+import '../styles/base.css';
+import '../styles/components.css';
+
+// Fonts. Latin glyphs always render in Source Sans 3 (first in the font
+// stack). The CJK stylesheets use unicode-range, so the browser only
+// downloads BIZ UDPGothic / Nanum Gothic font files when a page actually
+// contains kana·kanji / hangul — an English page fetches neither.
+import '@fontsource-variable/source-sans-3';
+import '@fontsource/biz-udpgothic/japanese-400.css';
+import '@fontsource/biz-udpgothic/japanese-700.css';
+import '@fontsource/nanum-gothic/korean-400.css';
+import '@fontsource/nanum-gothic/korean-700.css';
+
+interface Props {
+  lang: Locale;
+  title: string;
+  description?: string;
+}
+
+const { lang, title, description } = Astro.props;
+const t = useTranslations(lang);
+
+const path = Astro.url.pathname;
+const onUse = path.includes('/use');
+const onBuild = path.includes('/build');
+
+// Same path under each other locale — for the language switcher.
+const rest = path.replace(/^\/(en|ja|ko)/, '');
+
+// Link-preview / SEO metadata. Description falls back to the site tagline,
+// so catalog pages get one too.
+const desc = description ?? t('site.tagline');
+const canonical = new URL(path, Astro.site).href;
+const ogLocale = ({ en: 'en_US', ja: 'ja_JP', ko: 'ko_KR' }) as const;
+---
+
+<!doctype html>
+<html lang={lang}>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+    <link rel="canonical" href={canonical} />
+    <title>{title}</title>
+    <meta name="description" content={desc} />
+    <meta property="og:type" content="website" />
+    <meta property="og:site_name" content="atfedi.de" />
+    <meta property="og:title" content={title} />
+    <meta property="og:description" content={desc} />
+    <meta property="og:url" content={canonical} />
+    <meta property="og:locale" content={ogLocale[lang]} />
+    <meta name="twitter:card" content="summary" />
+  </head>
+  <body>
+    <header class="site-header">
+      <a class="site-brand" href={`/${lang}/`}>
+        <svg class="brand-mark" viewBox="0 0 32 32" aria-hidden="true">
+          <rect width="32" height="32" rx="7" fill="var(--color-text)" />
+          <g
+            transform="translate(4 4)"
+            fill="none"
+            stroke="var(--color-bg)"
+            stroke-width="2.5"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+          >
+            <circle cx="12" cy="12" r="4" />
+            <path d="M16 8v5a3 3 0 0 0 6 0v-1a10 10 0 1 0-3.92 7.94" />
+          </g>
+        </svg>
+        atfedi.de
+      </a>
+      <nav class="site-nav" aria-label="Sections">
+        <a href={`/${lang}/use`} data-lane="use" aria-current={onUse ? 'page' : undefined}>
+          {t('nav.use')}
+        </a>
+        <a href={`/${lang}/build`} data-lane="build" aria-current={onBuild ? 'page' : undefined}>
+          {t('nav.build')}
+        </a>
+      </nav>
+      <nav class="lang-switch" aria-label="Language">
+        {
+          locales.map((l) => (
+            <a href={`/${l}${rest}`} aria-current={l === lang ? 'true' : undefined}>
+              {localeNames[l]}
+            </a>
+          ))
+        }
+      </nav>
+    </header>
+    <main>
+      <slot />
+    </main>
+    <footer class="site-footer">
+      <p>
+        atfedi.de — an open catalog of fediverse tools.
+        {t('sister.text')} <a href="https://joinfediverse.kr">joinfediverse.kr</a>
+      </p>
+    </footer>
+  </body>
+</html>

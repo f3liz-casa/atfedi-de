@@ -1,0 +1,12 @@
+name: StreetPass
+lane: use
+category: discovery
+summary:
+  en: A browser extension that quietly collects the Mastodon profiles of people whose sites you visit.
+  ja: ブラウザ拡張。見て回ったサイトの持ち主の Mastodon アカウントを、そっと集めてくれる。
+  ko: 웹을 둘러보다 마주친 사이트, 그 주인의 마스토돈 계정을 조용히 모아 주는 브라우저 확장 프로그램이에요.
+links:
+  home: https://streetpass.social
+  repo: https://github.com/tvler/streetpass
+tags:
+  - extension

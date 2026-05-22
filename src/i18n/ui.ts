@@ -1,0 +1,112 @@
+// UI strings for the three locales. Tool *data* is translated separately,
+// inside each tool's YAML file (see src/content/tools/).
+
+export const locales = ['en', 'ja', 'ko'] as const;
+export type Locale = (typeof locales)[number];
+
+export const defaultLocale: Locale = 'en';
+
+export const localeNames: Record<Locale, string> = {
+  en: 'English',
+  ja: '日本語',
+  ko: '한국어',
+};
+
+export const ui: Record<Locale, Record<string, string>> = {
+  en: {
+    'site.tagline':
+      'A field guide to the fediverse — tools for the people who use it, and the people who build it.',
+    'intro.heading': 'What is the fediverse?',
+    'intro.body':
+      'The fediverse is a network of independent social platforms that all speak one protocol, ActivityPub. Accounts on different servers — and different software — can follow and talk to each other. No single company owns it.',
+    'doors.heading': 'Two ways in',
+    'home.headline': 'Find your way around the fediverse’s tools.',
+    'home.platforms': 'New here, and still choosing a place to join? →',
+    'nav.use': 'Use',
+    'nav.build': 'Build',
+    'lane.use.name': 'For people who use it',
+    'lane.use.desc': 'Apps to post from, bridges to other networks, and more.',
+    'lane.build.name': 'For people who build it',
+    'lane.build.desc': 'Libraries, relays, and toolkits for making fediverse software.',
+    'catalog.use.heading': 'Tools for using the fediverse',
+    'catalog.build.heading': 'Tools for building on the fediverse',
+    'filter.all': 'All',
+    'tool.home': 'Website',
+    'tool.repo': 'Source',
+    'tool.docs': 'Docs',
+    'tool.discontinued': 'Discontinued',
+    'sister.text': 'Sister site:',
+    'cat.client': 'Apps & clients',
+    'cat.bridge': 'Bridges',
+    'cat.discovery': 'Finding people',
+    'cat.service': 'Services',
+    'cat.utility': 'Utilities',
+    'cat.framework': 'Frameworks',
+    'cat.relay': 'Relays',
+    'cat.toolkit': 'Toolkits',
+  },
+  ja: {
+    'site.tagline':
+      'フェディバースの道しるべ — 使う人のための道具と、つくる人のための道具。',
+    'intro.heading': 'フェディバースって？',
+    'intro.body':
+      'フェディバースは、ActivityPub という共通のことばを話す、独立したSNSのあつまりです。サーバーがちがっても、ソフトがちがっても、たがいにフォローしあい、話せます。どこか一社のものではありません。',
+    'doors.heading': 'ふたつの入口',
+    'home.headline': 'フェディバースの道具を、見てまわる。',
+    'home.platforms': 'はじめてで、参加する場所をまだ選んでいないなら →',
+    'nav.use': '使う',
+    'nav.build': 'つくる',
+    'lane.use.name': '使う人へ',
+    'lane.use.desc': '投稿するアプリ、ほかのネットワークへの橋、その他の道具。',
+    'lane.build.name': 'つくる人へ',
+    'lane.build.desc': 'フェディバースのソフトをつくるための、ライブラリ・リレー・ツール。',
+    'catalog.use.heading': 'フェディバースを使うための道具',
+    'catalog.build.heading': 'フェディバースをつくるための道具',
+    'filter.all': 'すべて',
+    'tool.home': 'ウェブサイト',
+    'tool.repo': 'ソース',
+    'tool.docs': 'ドキュメント',
+    'tool.discontinued': '終了',
+    'sister.text': '姉妹サイト：',
+    'cat.client': 'アプリ・クライアント',
+    'cat.bridge': 'ブリッジ',
+    'cat.discovery': '人を見つける',
+    'cat.service': 'サービス',
+    'cat.utility': '小道具',
+    'cat.framework': 'フレームワーク',
+    'cat.relay': 'リレー',
+    'cat.toolkit': 'ツールキット',
+  },
+  ko: {
+    'site.tagline':
+      '페디버스 길잡이 — 쓰는 사람을 위한 도구, 만드는 사람을 위한 도구.',
+    'intro.heading': '페디버스란?',
+    'intro.body':
+      '페디버스는 ActivityPub라는 공통 프로토콜을 함께 쓰는, 독립된 소셜 플랫폼이 모인 네트워크예요. 서버가 달라도 소프트웨어가 달라도 서로 팔로우하고 이야기할 수 있어요. 어느 한 회사도 페디버스를 소유하지 않아요.',
+    'doors.heading': '두 개의 입구',
+    'home.headline': '페디버스 도우미 둘러보기',
+    'home.platforms': '페디버스가 처음이라, 아직 가입할 곳을 고르는 중이라면 →',
+    'nav.use': '쓰기',
+    'nav.build': '만들기',
+    'lane.use.name': '쓰는 사람에게',
+    'lane.use.desc': '글을 올리는 앱, 다른 네트워크로 잇는 다리, 그 밖의 도구.',
+    'lane.build.name': '만드는 사람에게',
+    'lane.build.desc': '페디버스 소프트웨어를 만드는 라이브러리·릴레이·도구.',
+    'catalog.use.heading': '페디버스를 쓰는 도구',
+    'catalog.build.heading': '페디버스를 만드는 도구',
+    'filter.all': '전체',
+    'tool.home': '웹사이트',
+    'tool.repo': '소스',
+    'tool.docs': '문서',
+    'tool.discontinued': '종료',
+    'sister.text': '자매 사이트:',
+    'cat.client': '앱·클라이언트',
+    'cat.bridge': '브리지',
+    'cat.discovery': '사람 찾기',
+    'cat.service': '서비스',
+    'cat.utility': '유틸리티',
+    'cat.framework': '프레임워크',
+    'cat.relay': '릴레이',
+    'cat.toolkit': '툴킷',
+  },
+};

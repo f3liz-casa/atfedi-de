@@ -1,0 +1,13 @@
+name: Elk
+lane: use
+category: client
+summary:
+  en: A nimble web client for Mastodon-compatible servers, with a familiar, Twitter-like feel.
+  ja: Mastodon 互換サーバー向けの軽快な Web クライアント。昔の Twitter に近い、なじみやすい操作感。
+  ko: 마스토돈 호환 서버에서 쓰는 가벼운 웹 클라이언트예요. 예전 트위터와 닮아서 익숙해요.
+links:
+  home: https://elk.zone
+  repo: https://github.com/elk-zone/elk
+license: MIT
+tags:
+  - web

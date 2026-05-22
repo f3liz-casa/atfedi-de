@@ -1,0 +1,25 @@
+{
+  "name": "atfedi-de",
+  "version": "0.1.0",
+  "type": "module",
+  "private": true,
+  "scripts": {
+    "dev": "astro dev",
+    "build": "astro build",
+    "preview": "astro preview",
+    "check": "astro check"
+  },
+  "dependencies": {
+    "@astrojs/svelte": "^8.1.1",
+    "@fontsource-variable/source-sans-3": "^5.2.9",
+    "@fontsource/biz-udpgothic": "^5.2.9",
+    "@fontsource/nanum-gothic": "^5.2.7",
+    "astro": "^6.3.6",
+    "budoux": "^0.8.4",
+    "svelte": "^5.55.9"
+  },
+  "devDependencies": {
+    "@astrojs/check": "^0.9.9",
+    "typescript": "^6.0.3"
+  }
+}

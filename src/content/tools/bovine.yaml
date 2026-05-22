@@ -1,0 +1,13 @@
+name: Bovine
+lane: build
+category: toolkit
+summary:
+  en: A Python toolkit and set of building blocks for experimenting with ActivityPub and the fediverse.
+  ja: ActivityPub とフェディバースを試すための、Python のツールキットと部品集。
+  ko: ActivityPub와 페디버스를 자유롭게 실험해 볼 수 있는 Python 툴킷이에요. 필요한 구성 요소가 함께 들어 있어요.
+links:
+  home: https://bovine.readthedocs.io
+  repo: https://codeberg.org/bovine/bovine
+license: MIT
+tags:
+  - python

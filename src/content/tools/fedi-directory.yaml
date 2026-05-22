@@ -1,0 +1,11 @@
+name: Fedi.Directory
+lane: use
+category: discovery
+summary:
+  en: A hand-curated directory of interesting accounts to follow across the fediverse.
+  ja: フェディバースの、フォローして面白いアカウントを手で選んだディレクトリ。
+  ko: 페디버스에서 팔로우할 만한 흥미로운 계정을 사람이 직접 골라 모은 디렉터리예요.
+links:
+  home: https://fedi.directory
+tags:
+  - web

@@ -1,0 +1,34 @@
+---
+import type { CollectionEntry } from 'astro:content';
+import type { Locale } from '../i18n/ui';
+import { useTranslations, localizedSummary, resolveUrl } from '../i18n/utils';
+import Phrase from './Phrase.astro';
+
+interface Props {
+  tool: CollectionEntry<'tools'>;
+  lang: Locale;
+}
+
+const { tool, lang } = Astro.props;
+const t = useTranslations(lang);
+const { name, category, summary, links, tags, discontinued } = tool.data;
+---
+
+<li class="tool-card" data-category={category}>
+  <h3>
+    {name}
+    {discontinued && <span class="mark-ended">{t('tool.discontinued')}</span>}
+  </h3>
+  <p class="tool-summary">
+    <Phrase text={localizedSummary(summary, lang)} lang={lang} />
+  </p>
+  <div class="tool-meta">
+    <span class="tag">{t(`cat.${category}`)}</span>
+    {tags.map((tag) => <span class="tag">{tag}</span>)}
+  </div>
+  <div class="tool-links">
+    <a href={resolveUrl(links.home, lang)}>{t('tool.home')}</a>
+    {links.repo && <a href={resolveUrl(links.repo, lang)}>{t('tool.repo')}</a>}
+    {links.docs && <a href={resolveUrl(links.docs, lang)}>{t('tool.docs')}</a>}
+  </div>
+</li>
