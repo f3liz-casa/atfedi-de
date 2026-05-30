@@ -84,7 +84,10 @@ const hrefFor = langHref ?? ((l: string) => `/${l}${rest}`);
       <slot />
     </main>
     <footer class="site-footer">
-      <p>atfedi.de — an open catalog of fediverse tools.</p>
+      <div class="footer-inner">
+        <p>atfedi.de — an open catalog of fediverse tools.</p>
+        <a href="https://github.com/f3liz-casa/atfedi-de">GitHub</a>
+      </div>
     </footer>
   </body>
 </html>

@@ -23,7 +23,7 @@ The home page is a short intro plus the two doors.
 
 - **Astro 6** — static output, deploys to Cloudflare Pages with no adapter.
 - **Svelte 5** — used for interactive islands (currently the category filter).
-- Three languages: `en`, `ja`, `ko`. i18n is hand-rolled in `src/i18n/`.
+- Three languages: `en`, `ja`, `ko`. i18n is hand-rolled in `catalog/src/i18n/`.
   Copy is written per language — see `docs/writing.md`, with Korean-specific
   pitfalls in `docs/translation-ko.md`.
   Japanese line breaks are preprocessed with BudouX at build time; Korean
@@ -43,8 +43,8 @@ npm run check    # type-check
 
 ## Adding a tool
 
-Drop one YAML file into `src/content/tools/`. The schema lives in
-`src/content.config.ts`. Name, links, and category are written once; only
+Drop one YAML file into `catalog/src/content/tools/`. The schema lives in
+`catalog/src/content.config.ts`. Name, links, and category are written once; only
 `summary` is translated, and `ja` / `ko` are optional — a missing translation
 falls back to English.
 
@@ -78,7 +78,7 @@ links:
 
 ## Shared styling — so the future app can reuse it
 
-All visual styling lives in `src/styles/` as **plain, framework-agnostic CSS**:
+All visual styling lives in `catalog/src/styles/` as **plain, framework-agnostic CSS**:
 
 - `tokens.css` — design tokens (colors, fonts, spacing) as CSS custom properties
 - `base.css` — reset, element defaults, layout helpers
@@ -92,13 +92,13 @@ blocks or in Svelte `<style>` blocks. They are plain classes. That means:
 - a future standalone Svelte / SvelteKit app can `import` these three CSS files
   unchanged and get the identical look.
 
-When adding UI, keep this rule: put shared visuals in `src/styles/`, not inside
+When adding UI, keep this rule: put shared visuals in `catalog/src/styles/`, not inside
 a single component.
 
 ## Structure
 
 ```
-src/
+catalog/src/
   content.config.ts      tool collection schema
   content/tools/         one YAML file per tool
   i18n/                  ui strings + translation helpers

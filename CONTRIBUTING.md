@@ -1,25 +1,63 @@
 # Contributing
 
-## ブランチの名前
+Thanks for helping out — whether you're adding a tool, fixing a typo, or
+writing a blog post. This page covers two small things that are easy to trip
+over: how to name your branch, and how to preview a blog post before it ships.
 
-`pr-` で始まるブランチは **作りません**。
+For the bigger picture (the project layout, running it locally), see the
+[README](README.md).
 
-ライブプレビュー（`blog.atfedi.de/v/preview/{ref}/-/{lang}/{slug}`）は、
-`{ref}` が `pr-123` のとき「プルリクエスト #123」と解釈します。`pr-` で
-始まるブランチが存在しないことで、この解釈は曖昧になりません。
+## Adding a tool
 
-ブランチは `pr-` 以外の名前で。スラッシュを含んでも構いません
-（`/v/preview/` は ref と content path を `/-/` で区切るため）。
+A tool is one YAML file dropped into:
 
-## ブログ記事のプレビュー
+```
+catalog/src/content/tools/{name}.yaml
+```
 
-記事は `blog/src/content/posts/{lang}/{slug}.mdoc`。push 済みのブランチ、
-または開いている PR を、ビルド前にそのまま見られます:
+The schema lives next to it, in `catalog/src/content.config.ts`, and the
+[README](README.md#adding-a-tool) walks through every field with an example.
+The short version: name, links, and category are written once; only `summary`
+is translated, and the `ja` / `ko` translations are optional — a missing one
+falls back to English.
+
+## Naming your branch
+
+**Please don't create branches that start with `pr-`.**
+
+Here's why. The live preview URL looks like this:
+
+```
+blog.atfedi.de/v/preview/{ref}/-/{lang}/{slug}
+```
+
+When `{ref}` is something like `pr-123`, the preview reads it as
+"pull request #123" and shows that PR. So as long as no *branch* is ever named
+`pr-123`, there's never any confusion about whether `pr-123` means a branch or
+a PR — it always means the PR.
+
+Anything other than a `pr-` prefix is fine. Slashes are welcome too
+(`feature/new-card`, say) — the URL uses `/-/` to separate the ref from the
+content path, so a slash in your branch name won't break anything.
+
+## Previewing a blog post
+
+Posts live at:
+
+```
+blog/src/content/posts/{lang}/{slug}.mdoc
+```
+
+Once your branch is pushed — or once your PR is open — you can see the post
+rendered before it's built into the site. Two URL shapes work:
 
 ```
 https://blog.atfedi.de/v/preview/{branch}/-/{lang}/{slug}
 https://blog.atfedi.de/v/preview/pr-{number}/-/{lang}/{slug}
 ```
 
-プレビューは「本番に十分近いもの」で、Astro ビルドと 1:1 ではありません。
-すべて noindex です。
+A couple of things to keep in mind:
+
+- The preview is meant to be *close to* production, not pixel-identical to the
+  final Astro build. Treat it as a good-enough look, not the last word.
+- Every preview page is `noindex`, so search engines won't pick it up.
