@@ -72,6 +72,13 @@ export default {
       return env.ASSETS.fetch(new Request(new URL(path, url), request));
     }
 
+    // --- danro.atfedi.de: a one-page intro for the danro-talk widget ---
+    if (host === 'danro.atfedi.de') {
+      let path = url.pathname;
+      if (!path.endsWith('/') && !/\.[^/]+$/.test(path)) path += '/';
+      return env.ASSETS.fetch(new Request(new URL(`/danro${path}`, url), request));
+    }
+
     // --- blog.atfedi.de: serve the blog (path-based locales) ---
     if (host === 'blog.atfedi.de') {
       let path = url.pathname;

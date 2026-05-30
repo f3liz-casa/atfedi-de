@@ -1,0 +1,178 @@
+---
+import '@atfedi/shared/styles/tokens.css';
+import '@atfedi/shared/styles/base.css';
+import '@fontsource-variable/source-sans-3';
+
+const title = 'danro-talk — a chat widget that lands in your team chat';
+const description =
+  "A small chat widget that bridges website visitors to your team's Zulip or Discord. No new dashboard.";
+const canonical = 'https://danro.atfedi.de/';
+---
+
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+    <link rel="canonical" href={canonical} />
+    <title>{title}</title>
+    <meta name="description" content={description} />
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content={title} />
+    <meta property="og:description" content={description} />
+    <meta property="og:url" content={canonical} />
+    <meta name="twitter:card" content="summary" />
+  </head>
+  <body>
+    <main class="page">
+      <header>
+        <p class="kicker">danro-talk · 暖炉</p>
+        <h1>A chat widget that lands in your team chat.</h1>
+        <p class="lede">
+          Visitors on your site type a message. Your team reads it where they
+          already are — Zulip or Discord. No new dashboard, no separate inbox.
+        </p>
+      </header>
+
+      <section>
+        <h2>The shape of it</h2>
+        <ul class="facts">
+          <li>~9 KB Web Component. Drop in a <code>&lt;script&gt;</code> and a tag.</li>
+          <li>Runs on a Cloudflare Worker. Free tier is enough.</li>
+          <li>Visitor messages arrive as a Zulip topic or a Discord thread, named after the visitor's nickname.</li>
+          <li>Localised: English, 日本語, 한국어.</li>
+        </ul>
+      </section>
+
+      <section>
+        <h2>You're looking at it</h2>
+        <p>
+          The little fireplace in the corner is danro-talk. The same widget
+          this catalog uses to listen for visitor questions. Open it, say
+          hello, and it will land in our Zulip — someone will read it when
+          they sit down at the keyboard.
+        </p>
+      </section>
+
+      <section class="links">
+        <a class="primary" href="https://github.com/f3liz-casa/danro-talk">
+          GitHub →
+        </a>
+        <a href="https://atfedi.de">atfedi.de</a>
+      </section>
+
+      <footer>
+        <p>
+          暖炉 — a fireplace. Visitors warm up on one side; the team gathers
+          around the same fire on the other.
+        </p>
+      </footer>
+    </main>
+
+    <script type="module" src="https://danro-api.atfedi.de/widget.js"></script>
+    <danro-talk site-id="zl_e58vy-Iq0x1m"></danro-talk>
+
+    <style>
+      .page {
+        max-width: 36rem;
+        margin-inline: auto;
+        padding: clamp(3rem, 8vw, 6rem) var(--space-6) 6rem;
+        display: flex;
+        flex-direction: column;
+        gap: var(--space-12);
+      }
+
+      header h1 {
+        font-size: clamp(1.75rem, 4vw, 2.5rem);
+        letter-spacing: -0.02em;
+        line-height: 1.15;
+        margin: var(--space-3) 0 var(--space-6);
+        text-wrap: balance;
+      }
+
+      .kicker {
+        font-size: var(--text-sm);
+        letter-spacing: 0.18em;
+        text-transform: uppercase;
+        color: var(--color-text-muted);
+        margin: 0;
+      }
+
+      .lede {
+        font-size: var(--text-lg);
+        color: var(--color-text-muted);
+        max-width: var(--measure);
+      }
+
+      section h2 {
+        font-size: var(--text-lg);
+        letter-spacing: -0.01em;
+        margin: 0 0 var(--space-3);
+      }
+
+      .facts {
+        list-style: none;
+        padding: 0;
+        margin: 0;
+        display: flex;
+        flex-direction: column;
+        gap: var(--space-2);
+        color: var(--color-text-muted);
+      }
+
+      .facts li {
+        padding-left: 1.25em;
+        position: relative;
+      }
+
+      .facts li::before {
+        content: '·';
+        position: absolute;
+        left: 0.25em;
+        color: var(--color-text);
+      }
+
+      code {
+        font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+        font-size: 0.9em;
+        background: var(--color-surface);
+        padding: 1px 4px;
+        border-radius: var(--radius-sm);
+      }
+
+      .links {
+        display: flex;
+        gap: var(--space-6);
+        align-items: baseline;
+      }
+
+      .links a {
+        text-decoration: none;
+        color: var(--color-text-muted);
+      }
+
+      .links a.primary {
+        color: var(--color-text);
+        border-bottom: 2px solid var(--color-text);
+        padding-bottom: 2px;
+      }
+
+      .links a:hover {
+        color: var(--color-text);
+      }
+
+      footer {
+        padding-top: var(--space-8);
+        border-top: 1px solid var(--color-border);
+        color: var(--color-text-muted);
+        font-size: var(--text-sm);
+      }
+
+      footer p {
+        margin: 0;
+        max-width: var(--measure);
+      }
+    </style>
+  </body>
+</html>
