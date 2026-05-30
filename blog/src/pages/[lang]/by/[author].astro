@@ -1,0 +1,86 @@
+---
+import { getCollection, render } from 'astro:content';
+import { locales, type Locale } from '../../../locales';
+import Base from '../../../layouts/Base.astro';
+
+// One profile page per author per locale. Author entries are multilingual
+// (authors/{lang}/{id}.mdoc) with English as the fallback, so a page exists
+// in every locale even when only the English bio is written.
+export async function getStaticPaths() {
+  const all = await getCollection('authors');
+  const ids = [...new Set(all.map((a) => a.id.slice(a.id.indexOf('/') + 1)))];
+  return locales.flatMap((lang) =>
+    ids.map((author) => ({ params: { lang, author } })),
+  );
+}
+
+const lang = Astro.params.lang as Locale;
+const id = Astro.params.author as string;
+
+const all = await getCollection('authors');
+const entry =
+  all.find((a) => a.id === `${lang}/${id}`) ?? all.find((a) => a.id === `en/${id}`);
+if (!entry) throw new Error(`No author entry for "${id}"`);
+const { Content } = await render(entry);
+
+const posts = (await getCollection('posts'))
+  .filter((p) => p.id.startsWith(`${lang}/`) && p.data.author === id)
+  .sort((a, b) => b.data.date.valueOf() - a.data.date.valueOf());
+
+const heading: Record<string, string> = { en: 'Posts', ja: '記事', ko: '글' };
+const none: Record<string, string> = {
+  en: 'No posts here yet.',
+  ja: 'この言語の記事はまだありません。',
+  ko: '이 언어로 쓴 글은 아직 없어요.',
+};
+
+const displayName = entry.data.name ?? entry.data.handle;
+---
+
+<Base lang={lang} title={`${displayName} — atfedi.de blog`} description={entry.data.handle}>
+  <div class="wrap">
+    <section class="author">
+      <h1>{displayName}</h1>
+      {entry.data.name && <p class="author-handle">{entry.data.handle}</p>}
+
+      {
+        entry.data.links && entry.data.links.length > 0 && (
+          <ul class="author-links">
+            {entry.data.links.map((link) => (
+              <li>
+                <a href={link.url}>
+                  {link.icon && <img src={link.icon} alt="" width="16" height="16" />}
+                  {link.name}
+                </a>
+              </li>
+            ))}
+          </ul>
+        )
+      }
+
+      <div class="author-bio">
+        <Content />
+      </div>
+    </section>
+
+    <section class="author-posts">
+      <h2>{heading[lang] ?? heading.en}</h2>
+      {
+        posts.length > 0 ? (
+          <ul class="post-list">
+            {posts.map((post) => (
+              <li>
+                <a href={`/${post.id}/`}>{post.data.title}</a>
+                <time datetime={post.data.date.toISOString()}>
+                  {post.data.date.toISOString().slice(0, 10)}
+                </time>
+              </li>
+            ))}
+          </ul>
+        ) : (
+          <p class="note">{none[lang] ?? none.en}</p>
+        )
+      }
+    </section>
+  </div>
+</Base>

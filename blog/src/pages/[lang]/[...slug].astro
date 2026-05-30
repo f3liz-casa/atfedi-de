@@ -2,6 +2,9 @@
 import { getCollection, render } from 'astro:content';
 import Base from '../../layouts/Base.astro';
 
+// Byline label, per locale.
+const byLabel: Record<string, string> = { en: 'Written by', ja: '文', ko: '글' };
+
 // One route per post. A post's id is {lang}/{slug}; the route splits it,
 // and collects which locales share each slug — so the language switcher
 // only offers translations that actually exist.
@@ -30,6 +33,14 @@ export async function getStaticPaths() {
 const { post, langs } = Astro.props;
 const { Content } = await render(post);
 const lang = Astro.params.lang as string;
+
+// Resolve the post's author — prefer this locale's entry, fall back to en.
+const authorId = post.data.author;
+const allAuthors = await getCollection('authors');
+const author =
+  allAuthors.find((a) => a.id === `${lang}/${authorId}`) ??
+  allAuthors.find((a) => a.id === `en/${authorId}`);
+if (!author) throw new Error(`Unknown author "${authorId}" in ${post.id}`);
 ---
 
 <Base
@@ -47,6 +58,10 @@ const lang = Astro.params.lang as string;
         </time>
       </header>
       <Content />
+      <footer class="post-by">
+        {byLabel[lang] ?? byLabel.en}{' '}
+        <a href={`/${lang}/by/${authorId}/`}>{author.data.handle}</a>
+      </footer>
     </article>
   </div>
 </Base>

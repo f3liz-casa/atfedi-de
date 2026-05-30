@@ -119,6 +119,78 @@
   color: var(--color-text-muted);
 }
 
+/* post byline — who wrote this, at the foot of the article */
+.post-by {
+  margin-top: var(--space-12);
+  padding-top: var(--space-4);
+  border-top: 1px solid var(--color-border);
+  color: var(--color-text-muted);
+  font-size: var(--text-sm);
+}
+
+.post-by a {
+  color: var(--color-text);
+  font-weight: 600;
+}
+
+/* author profile */
+.author {
+  max-width: var(--measure);
+  padding-block: var(--space-8) var(--space-4);
+}
+
+.author h1 {
+  font-size: var(--text-2xl);
+  letter-spacing: -0.015em;
+}
+
+.author-handle {
+  margin-top: var(--space-1);
+  color: var(--color-text-muted);
+  font-size: var(--text-sm);
+}
+
+.author-links {
+  list-style: none;
+  padding: 0;
+  margin-top: var(--space-6);
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-5);
+}
+
+.author-links a {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  color: var(--color-text);
+  text-decoration: none;
+  font-size: var(--text-sm);
+  font-weight: 600;
+}
+
+.author-links a:hover {
+  text-decoration: underline;
+}
+
+.author-bio {
+  margin-top: var(--space-6);
+}
+
+.author-bio p {
+  margin-top: var(--space-4);
+}
+
+.author-posts {
+  max-width: var(--measure);
+  margin-top: var(--space-12);
+  padding-bottom: var(--space-16);
+}
+
+.author-posts h2 {
+  font-size: var(--text-lg);
+}
+
 /* live preview — the one band the published blog never wears */
 .preview-banner {
   padding: var(--space-2) var(--space-4);
