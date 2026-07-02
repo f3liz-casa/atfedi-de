@@ -5,16 +5,16 @@
  * background, paper text, and a few quiet tints from the site's lanes. */
 :root {
   --astro-code-background: var(--color-text);
-  --astro-code-foreground: #e9e7db;
-  --astro-code-token-comment: #8f8d80;
-  --astro-code-token-punctuation: #a5a396;
-  --astro-code-token-keyword: #a9c9b1;
-  --astro-code-token-string: #d9b48d;
-  --astro-code-token-string-expression: #d9b48d;
-  --astro-code-token-constant: #cdc59c;
-  --astro-code-token-function: #dfd9c3;
-  --astro-code-token-parameter: #e9e7db;
-  --astro-code-token-link: #a9c9b1;
+  --astro-code-foreground: #ece9dd;
+  --astro-code-token-comment: #94927f;
+  --astro-code-token-punctuation: #aaa89a;
+  --astro-code-token-keyword: #9fd8b4;
+  --astro-code-token-string: #f2c49b;
+  --astro-code-token-string-expression: #f2c49b;
+  --astro-code-token-constant: #e8d898;
+  --astro-code-token-function: #b7d0ea;
+  --astro-code-token-parameter: #ece9dd;
+  --astro-code-token-link: #9fd8b4;
 }
 
 /* post list (home) */
