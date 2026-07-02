@@ -48,6 +48,20 @@ const title =
       ? 'atfedi.de blog · preview'
       : 'preview';
 
+// The AI-author strings — mirrors the blog's [...slug].astro.
+const aiNotice: Record<string, string> = {
+  en: 'This post was written by Shiro, an AI.',
+  ja: 'この記事は、AI のシロが書いています。',
+  ko: '이 글은 AI인 시로가 썼어요.',
+};
+const aiMore: Record<string, string> = { en: 'More', ja: 'くわしく', ko: '자세히' };
+const aiOk: Record<string, string> = { en: 'Got it', ja: 'わかった', ko: '알겠어요' };
+const aiBadge: Record<string, string> = { en: 'Shiro · AI', ja: 'シロ · AI', ko: '시로 · AI' };
+const tocLabel: Record<string, string> = { en: 'On this page', ja: '目次', ko: '목차' };
+
+const toc =
+  result.kind === 'post' ? result.headings.filter((h) => h.depth === 2 || h.depth === 3) : [];
+
 // The language switcher stays inside this preview world.
 let langHref: (l: string) => string = (l) => `/${l}/`;
 if (result.kind === 'post') {
@@ -63,16 +77,48 @@ if (result.kind === 'post') {
 ---
 
 <Base lang={lang} title={title} banner={banner} langHref={langHref}>
-  <div class="wrap">
+  <div class={result.kind === 'post' ? 'wrap post-page' : 'wrap'}>
     {
       result.kind === 'post' && (
         <article class="post">
+          {result.authorIsAi && (
+            <aside class="ai-note">
+              <span>
+                {aiNotice[lang] ?? aiNotice.en}{' '}
+                <a href={`/${lang}/llm/`}>{aiMore[lang] ?? aiMore.en}</a>
+              </span>
+              <button type="button" class="ai-note-dismiss" hidden>
+                {aiOk[lang] ?? aiOk.en}
+              </button>
+            </aside>
+          )}
           <header class="post-head">
             <h1>{result.title}</h1>
-            {result.date && <time datetime={result.date}>{result.date}</time>}
+            <p class="post-meta">
+              {result.date && <time datetime={result.date}>{result.date}</time>}
+              {result.authorIsAi && (
+                <a class="ai-badge" href={`/${lang}/llm/`}>
+                  {aiBadge[lang] ?? aiBadge.en}
+                </a>
+              )}
+            </p>
           </header>
           <Fragment set:html={result.html} />
         </article>
+      )
+    }
+
+    {
+      result.kind === 'post' && toc.length > 1 && (
+        <nav class="toc" aria-label={tocLabel[lang] ?? tocLabel.en}>
+          <ul>
+            {toc.map((heading) => (
+              <li class={heading.depth === 3 ? 'toc-sub' : undefined}>
+                <a href={`#${heading.slug}`}>{heading.text}</a>
+              </li>
+            ))}
+          </ul>
+        </nav>
       )
     }
 
@@ -118,3 +164,63 @@ if (result.kind === 'post') {
     }
   </div>
 </Base>
+
+<script>
+  // Mirrors the blog's [...slug].astro — the AI notice dismissal and the
+  // toc's current-section marker, so a preview behaves like the real page.
+  const note = document.querySelector('.ai-note');
+  if (note !== null) {
+    const KEY = 'shiro-ai-note-dismissed';
+    let remembered = false;
+    try {
+      remembered = localStorage.getItem(KEY) === '1';
+    } catch {
+      /* private mode — just keep showing the notice */
+    }
+    if (remembered) {
+      note.remove();
+    } else {
+      const button = note.querySelector<HTMLButtonElement>('.ai-note-dismiss');
+      if (button !== null) {
+        button.hidden = false;
+        button.addEventListener('click', () => {
+          try {
+            localStorage.setItem(KEY, '1');
+          } catch {
+            /* fine — it will show again next time */
+          }
+          note.remove();
+        });
+      }
+    }
+  }
+
+  const toc = document.querySelector('.toc');
+  if (toc !== null) {
+    const links = new Map(
+      [...toc.querySelectorAll<HTMLAnchorElement>('a[href^="#"]')].map((a) => [
+        decodeURIComponent(a.hash.slice(1)),
+        a,
+      ]),
+    );
+    const headings = [...document.querySelectorAll<HTMLElement>('.post :is(h2, h3)[id]')].filter(
+      (h) => links.has(h.id),
+    );
+    let markedId: string | null = null;
+    const update = () => {
+      const line = window.innerHeight / 3;
+      let activeId: string | null = null;
+      for (const heading of headings) {
+        if (heading.getBoundingClientRect().top > line) break;
+        activeId = heading.id;
+      }
+      if (activeId === markedId) return;
+      if (markedId !== null) links.get(markedId)?.removeAttribute('aria-current');
+      if (activeId !== null) links.get(activeId)?.setAttribute('aria-current', 'location');
+      markedId = activeId;
+    };
+    document.addEventListener('scroll', update, { passive: true });
+    window.addEventListener('resize', update, { passive: true });
+    update();
+  }
+</script>

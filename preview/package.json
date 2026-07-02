@@ -14,7 +14,9 @@
     "@fontsource/biz-udpgothic": "^5.2.9",
     "@fontsource/nanum-gothic": "^5.2.7",
     "@markdoc/markdoc": "^0.5.7",
-    "astro": "^6.3.6"
+    "astro": "^6.3.6",
+    "github-slugger": "^2.0.0",
+    "shiki": "^4.3.0"
   },
   "devDependencies": {
     "@astrojs/check": "^0.9.9",

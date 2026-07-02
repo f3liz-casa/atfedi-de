@@ -13,7 +13,10 @@
 // markdown-it's `html: false`, so raw HTML in a post is escaped to text —
 // a PR's contents are not trusted.
 
-import Markdoc from '@markdoc/markdoc';
+import Markdoc, { type RenderableTreeNode } from '@markdoc/markdoc';
+import GithubSlugger from 'github-slugger';
+import { createHighlighterCore, createCssVariablesTheme, type HighlighterCore } from '@shikijs/core';
+import { createJavaScriptRegexEngine } from '@shikijs/engine-javascript';
 
 // The catalog repo. A PR may live in a fork — resolveRef returns the head.
 const REPO = { owner: 'f3liz-casa', repo: 'atfedi-de' };
@@ -35,6 +38,12 @@ export interface PostMeta {
   date: string;
 }
 
+export interface PreviewHeading {
+  depth: number;
+  slug: string;
+  text: string;
+}
+
 export type PreviewResult =
   | { kind: 'redirect'; to: string }
   | { kind: 'home'; ref: string; refLabel: string; lang: string; posts: PostMeta[] }
@@ -47,6 +56,8 @@ export type PreviewResult =
       title: string;
       date: string;
       html: string;
+      headings: PreviewHeading[];
+      authorIsAi: boolean;
     }
   | {
       kind: 'error';
@@ -160,6 +171,104 @@ async function listSlugs(
     .map((e) => e.name.slice(0, -'.mdoc'.length));
 }
 
+// Whether a post's author is flagged ai: true — the author entry lives in
+// the same ref, with English as the fallback locale (like the blog itself).
+async function authorIsAi(src: Source, lang: string, id: string): Promise<boolean> {
+  if (!/^[\w-]+$/.test(id)) return false;
+  for (const l of [lang, 'en']) {
+    const raw = await fetchRaw(src, `blog/src/content/authors/${l}/${id}.mdoc`);
+    if (raw !== null) return frontmatterOf(raw).ai === 'true';
+  }
+  return false;
+}
+
+// --- headings ------------------------------------------------------------
+// The static blog gets heading ids from @astrojs/markdoc; here the heading
+// node is overridden to do the same (github-slugger, like Astro), and the
+// h2/h3 entries are collected for the table of contents.
+
+function textOf(node: RenderableTreeNode): string {
+  if (typeof node === 'string' || typeof node === 'number') return String(node);
+  if (node !== null && typeof node === 'object' && 'children' in node)
+    return node.children.map(textOf).join('');
+  return '';
+}
+
+function headingNodeFor(slugger: GithubSlugger, headings: PreviewHeading[]) {
+  return {
+    children: ['inline'],
+    attributes: {
+      id: { type: String },
+      level: { type: Number, required: true, default: 1 },
+    },
+    transform(node: any, config: any) {
+      const children = node.transformChildren(config);
+      const level: number = node.attributes.level;
+      const slug = slugger.slug(children.map(textOf).join(''));
+      if (level === 2 || level === 3)
+        headings.push({ depth: level, slug, text: children.map(textOf).join('') });
+      return new Markdoc.Tag(`h${level}`, { id: slug }, children);
+    },
+  };
+}
+
+// --- syntax highlighting --------------------------------------------------
+// Markdoc's html renderer emits <pre data-language="…">escaped</pre>; those
+// are re-rendered with shiki using the same css-variables theme as the blog
+// (the colors come from blog.css's --astro-code-* definitions).
+
+let highlighter: Promise<HighlighterCore> | null = null;
+
+function getHighlighter(): Promise<HighlighterCore> {
+  highlighter ??= createHighlighterCore({
+    themes: [createCssVariablesTheme({ name: 'css-variables', variablePrefix: '--astro-code-' })],
+    langs: [
+      import('@shikijs/langs/typescript'),
+      import('@shikijs/langs/shellscript'),
+      import('@shikijs/langs/json'),
+      import('@shikijs/langs/graphql'),
+    ],
+    engine: createJavaScriptRegexEngine({ forgiving: true }),
+  });
+  return highlighter;
+}
+
+function unescapeHtml(text: string): string {
+  return text
+    .replaceAll('&quot;', '"')
+    .replaceAll('&#39;', "'")
+    .replaceAll('&#x27;', "'")
+    .replaceAll('&lt;', '<')
+    .replaceAll('&gt;', '>')
+    .replaceAll('&amp;', '&');
+}
+
+async function highlightFences(html: string): Promise<string> {
+  const fence = /<pre data-language="([^"]+)">([\s\S]*?)<\/pre>/g;
+  if (!fence.test(html)) return html;
+  fence.lastIndex = 0;
+
+  const hl = await getHighlighter();
+  const loaded = new Set(hl.getLoadedLanguages());
+
+  let out = '';
+  let last = 0;
+  for (const m of html.matchAll(fence)) {
+    const [raw, lang, body] = m;
+    out += html.slice(last, m.index);
+    last = m.index + raw.length;
+    if (loaded.has(lang)) {
+      out += hl.codeToHtml(unescapeHtml(body).replace(/\n$/, ''), {
+        lang,
+        theme: 'css-variables',
+      });
+    } else {
+      out += raw;
+    }
+  }
+  return out + html.slice(last);
+}
+
 // pathParam is the [...path] — `{ref}/-/{lang}/{slug}` (slug optional).
 export async function loadPreview(
   pathParam: string,
@@ -265,8 +374,13 @@ export async function loadPreview(
   try {
     const ast = Markdoc.parse(raw);
     const fm = parseFrontmatter((ast.attributes.frontmatter as string) || '');
-    // default config: no custom tags, default nodes, raw HTML escaped
-    const html = Markdoc.renderers.html(Markdoc.transform(ast));
+    // default config plus heading ids; no custom tags, raw HTML escaped
+    const headings: PreviewHeading[] = [];
+    const transformed = Markdoc.transform(ast, {
+      nodes: { heading: headingNodeFor(new GithubSlugger(), headings) },
+    });
+    const html = await highlightFences(Markdoc.renderers.html(transformed));
+    const ai = fm.author ? await authorIsAi(src, lang, fm.author) : false;
     return {
       kind: 'post',
       ref,
@@ -276,6 +390,8 @@ export async function loadPreview(
       title: fm.title || slug,
       date: fm.date || '',
       html,
+      headings,
+      authorIsAi: ai,
     };
   } catch (e) {
     return {
