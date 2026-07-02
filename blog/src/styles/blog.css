@@ -1,6 +1,16 @@
 /* Blog-specific styles. The shared tokens / base / components carry the
  * site's look; this only adds the blog's post list and article typography. */
 
+/* home hero — the blog sets its heading on the right */
+.hero {
+  text-align: right;
+}
+
+.hero h1,
+.hero .tagline {
+  margin-left: auto;
+}
+
 /* post list (home) */
 .post-list {
   list-style: none;
@@ -39,6 +49,7 @@
 /* article */
 .post {
   max-width: var(--measure);
+  margin-inline: auto;
   padding-block: var(--space-8) var(--space-16);
 }
 
@@ -136,6 +147,7 @@
 /* author profile */
 .author {
   max-width: var(--measure);
+  margin-inline: auto;
   padding-block: var(--space-8) var(--space-4);
 }
 
@@ -183,6 +195,7 @@
 
 .author-posts {
   max-width: var(--measure);
+  margin-inline: auto;
   margin-top: var(--space-12);
   padding-bottom: var(--space-16);
 }
