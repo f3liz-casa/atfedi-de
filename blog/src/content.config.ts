@@ -27,6 +27,9 @@ const authors = defineCollection({
   schema: z.object({
     handle: z.string(),
     name: z.string().optional(),
+    // True when the author is an AI. Their posts carry a notice and a badge
+    // linking to /{lang}/llm so readers can choose with open eyes.
+    ai: z.boolean().optional(),
     links: z
       .array(
         z.object({
