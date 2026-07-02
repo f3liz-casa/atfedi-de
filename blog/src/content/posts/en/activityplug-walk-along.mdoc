@@ -1,37 +1,23 @@
 ---
-title: A walk along activityplug
-description: A tool that turns the mismatched client APIs of ActivityPub servers into one window. I plugged things in, turned them around, and wrote down what I saw.
+title: A walk along ActivityPlug
+description: One client API for Mastodon, Misskey, Pleroma, Hollo, and Hackers' Pub. I plugged real servers into it, and it held.
 date: 2026-07-02
 author: shiro
 ---
 
-There is a tool called [activityplug](https://github.com/Nebu1eto/activityplug).
-It is young — about two months old, no README yet.
-But when I walked through it, the design turned out to be quietly, carefully done.
-This post is a record of walking alongside it. Less an introduction, more a stroll.
+[ActivityPlug](https://github.com/Nebu1eto/activityplug) gives ActivityPub servers with incompatible client APIs — Mastodon, Misskey, Pleroma, Hollo, Hackers' Pub — one shared API. You can hold it two ways: as TypeScript adapters plugged into your own code, or as a proxy server that speaks unified GraphQL and REST. It is two months old, version 0.0.0, not yet on npm, and there is no README. It is also the most honest API design I have walked through in a long time: every feature answers supported, unsupported, or unknown, with a reason attached, and the errors keep that same posture at runtime.
 
-## What problem it holds
+I spent an evening plugging real servers into it. Everything below comes from that walk, and if you build anything that touches more than one kind of fediverse server — a bot, a client, a bridge — this is a layer worth knowing now, before it has a version number.
 
-Fediverse servers agree on federation — ActivityPub, server to server — but
-their **client-facing APIs are all different**. Mastodon speaks REST with Link
-headers, Misskey speaks its own POST-everywhere RPC, Hackers' Pub speaks
-GraphQL. Everyone writing a client fills that gap by hand, every time.
+## The problem it solves
 
-activityplug is a layer that fills it. You can hold it two ways:
+Fediverse servers agree on federation: server to server, everyone speaks ActivityPub. Client to server, they agree on nothing. Mastodon speaks REST with Link headers, Misskey speaks its own POST-everywhere RPC, Hackers' Pub speaks GraphQL. Every client author fills that gap by hand, every time. ActivityPlug fills it once, underneath.
 
-- **As a library** — TypeScript adapters (`@activityplug/mastodon`,
-  `@activityplug/misskey`, pleroma, hollo, hackerspub) plugged into your own code
-- **As a server** — a proxy speaking one unified GraphQL / REST API, with
-  every server visible through that one window
+Setup is short: clone the repo and run `pnpm build`. Node 24 and pnpm 10 are all it takes.
 
-It is not on npm yet, so for now you clone and `pnpm build`. With Node 24 and
-pnpm 10, that is all it takes.
+## Library mode: plug an adapter into a server
 
-## Plugging it in as a library
-
-First I plugged the mastodon adapter into my home server
-(sukhi.f3liz.casa — a server that speaks the Mastodon-compatible API but
-is not Mastodon).
+I started with my home server, sukhi.f3liz.casa — it speaks the Mastodon-compatible API but is not Mastodon.
 
 ```ts
 import { createActivityPlugClient } from "@activityplug/core";
@@ -45,19 +31,16 @@ const client = createActivityPlugClient({
 const page = await client.timelines.public({ page: { limit: 3 } });
 ```
 
-No auth, nothing else. The first "post" that came back made me smile a little.
+No auth, no ceremony. The first "post" that came back made me smile:
 
 ```
 text: This server does not serve a federated timeline (the muddy
       torrent of every public post on the network). …
 ```
 
-sukhi has an odd design: instead of a federated firehose it returns a single
-guide post. And there it was, arriving through the window — not fixed, not
-hidden, as is. *Oh*, I went. This layer carries other people's quirks just
-as they are.
+sukhi has an odd design — instead of a federated firehose it returns a single guide post — and ActivityPlug delivered that quirk exactly as the server sent it, unfixed and unhidden. The layer translates APIs; it does not editorialize the servers behind them.
 
-With `local: true` the real local timeline flows, and paging just walks.
+With `local: true` the real local timeline flows, and pagination just walks:
 
 ```ts
 const page2 = await client.timelines.public({
@@ -66,26 +49,19 @@ const page2 = await client.timelines.public({
 });
 ```
 
-## The IDs come in envelopes
+## IDs travel in envelopes
 
-Look at a post ID and it is not the raw ID; it looks like this:
+Post IDs come back wrapped:
 
 ```
 ap_1_WyJtYXN0b2RvbiIsImh0dHBzOi8vc3VraGkuZjNsaXouY2FzYSIsInBvc3QiLCI1MTY4MzI0ODA2NTg3NDcyIl0
 ```
 
-Open the base64 and inside is `["mastodon", "https://sukhi.f3liz.casa",
-"post", "5168324806587472"]` — an envelope that remembers for itself
-**which adapter, which server, and what kind of ID** it carries. Cursors
-(`apc_1_…`) are the same, bound down to the operation name, so mixing up a
-local-timeline cursor with a home-timeline one is caught by the types.
+Decode the base64 and the payload is `["mastodon", "https://sukhi.f3liz.casa", "post", "5168324806587472"]` — an envelope that remembers which adapter, which server, and what kind of ID it carries. Cursors (`apc_1_…`) go further and bind the operation name too, so a local-timeline cursor pasted into a home-timeline call fails loudly instead of returning the wrong page. Mix Misskey IDs, Mastodon IDs, and UUIDs in one app once, and you will never want raw identifiers again.
 
-If you have ever mixed Misskey IDs, Mastodon IDs, and UUIDs in one app, you
-know exactly how much this envelope is worth.
+## Server mode: detection and capability tables
 
-## Standing it up as a server
-
-Next, the proxy.
+The proxy only talks to origins you explicitly allow:
 
 ```sh
 node packages/server/dist/bin.mjs --port 4100 \
@@ -94,18 +70,14 @@ node packages/server/dist/bin.mjs --port 4100 \
   --allow-origin https://hackers.pub
 ```
 
-It only talks to origins you explicitly allow. First question: "who is this
-server?"
+Ask it who a server is:
 
 ```sh
 curl -X POST localhost:4100/api/v1/instances/detect \
   -d '{"origin":"https://misskey.io"}'
 ```
 
-misskey.io is recognized from nodeinfo as the `misskey` adapter, and back
-comes a **capability table**. This is the most honest part of the whole tool:
-every feature carries a three-valued status — supported / unsupported /
-unknown — with a reason attached.
+misskey.io comes back identified from nodeinfo as the `misskey` adapter, with a full capability table. Every entry carries a three-valued status and a reason:
 
 ```json
 { "name": "posts.update", "status": "unsupported",
@@ -113,16 +85,13 @@ unknown — with a reason attached.
 { "name": "instance.oauthMetadata", "status": "unknown" }
 ```
 
-APIs that explain *why* they cannot do something are rare.
+APIs that explain *why* they cannot do something are rare. Build your feature flags straight off this table and you skip a whole class of per-server special cases.
 
-My sukhi announces itself as `sukhi-fedi` in nodeinfo, so auto-detection
-could not place it. That too is an honest failure — tell it
-`"adapter": "mastodon"` and everything works. A compatible server's "treat me
-as Mastodon" is taken as an explicit statement, not a guess.
+My sukhi announces itself as `sukhi-fedi` in nodeinfo, so auto-detection refused to guess — an honest failure. Pass `"adapter": "mastodon"` and everything works: a compatible server's "treat me as Mastodon" is taken as an explicit statement, never an assumption.
 
-## The same query reaches different servers
+## One query, two very different servers
 
-The unified GraphQL is probably the best picture. This one query —
+The unified GraphQL is the clearest demonstration. This single query —
 
 ```graphql
 query ($origin: String!, $adapter: AdapterKind) {
@@ -134,15 +103,11 @@ query ($origin: String!, $adapter: AdapterKind) {
 }
 ```
 
-— runs as-is against `origin: "https://sukhi.f3liz.casa"` (Mastodon-compatible
-REST underneath) and against `origin: "https://hackers.pub"` (GraphQL
-underneath). One side has snowflake IDs, the other UUIDs. Both come back in
-the same `ap_1_` envelopes, lined up in the same shape. Mail from different
-worlds, arriving in one postbox.
+— runs unchanged against `https://sukhi.f3liz.casa` (Mastodon-compatible REST underneath) and against `https://hackers.pub` (GraphQL underneath). Snowflake IDs on one side, UUIDs on the other, both back in the same `ap_1_` envelopes, in the same shape. Mail from different worlds, one postbox.
 
-## Logging in, and honest errors
+## Auth, and errors that tell the truth
 
-If you already hold a token, you can just inject it (OAuth flows exist too).
+Already hold a token? Inject it directly; OAuth flows exist alongside.
 
 ```ts
 const session = await client.auth.injectToken({ accessToken: token });
@@ -150,30 +115,19 @@ const viewer = await client.auth.verifyCredentials(session);
 // → logged in as: shiro_mudita / シロ
 ```
 
-That was my own account. Then I asked for something impossible on purpose:
-a Misskey-style emoji reaction, on a Mastodon-family server.
+That logged me into my own account. Then I asked for something impossible on purpose — a Misskey-style emoji reaction on a Mastodon-family server:
 
 ```ts
 await client.social.react({ session, postId, emoji: "🍵" });
 // → ActivityPlugError: UNSUPPORTED_OPERATION | social.reaction
 ```
 
-Not a silent null, not a 500 — a typed error saying "this server does not
-have that operation." The same posture as the three-valued capabilities,
-carried all the way into runtime errors.
+Not a silent null, not a 500. A typed error that names the missing operation, matching the capability table exactly. Catch `UNSUPPORTED_OPERATION` and fall back — the bot example in the repo does exactly that, reacting where it can and favouriting where it cannot.
 
-## After the walk
+## Where it stands
 
-activityplug is still young. Version 0.0.0, not yet on npm, no README. But it
-has E2E tests against five real servers (pinned by revision), a documentation
-culture of English–Korean–Japanese sibling files, and "say you cannot when
-you cannot" running through the middle of the design.
+The facts, as of this walk: version 0.0.0, no npm release, no README, API still moving. Against that: E2E tests run against five real servers pinned by revision, documentation ships in English, Korean, and Japanese sibling files, and "say you cannot when you cannot" runs through the whole design, from capability tables to runtime errors.
 
-When you write something that touches more than one kind of fediverse server
-— a bot, a client, a bridge — I think there will be more than a few moments
-you wish this layer were sitting underneath.
-
-(These observations are from 2026-07-02, at commit `5eed56d`. It is a young
-project; the shape will keep changing.)
+Building a multi-server fediverse tool in TypeScript? Clone it, build it, and try your own server first — that is where the design shows its character fastest. These observations are from 2026-07-02, at commit `5eed56d`; the shape will keep changing, and that is what being two months old means.
 
 See you in the next one.
