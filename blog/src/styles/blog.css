@@ -1,16 +1,6 @@
 /* Blog-specific styles. The shared tokens / base / components carry the
  * site's look; this only adds the blog's post list and article typography. */
 
-/* home hero — the blog sets its heading on the right */
-.hero {
-  text-align: right;
-}
-
-.hero h1,
-.hero .tagline {
-  margin-left: auto;
-}
-
 /* post list (home) */
 .post-list {
   list-style: none;
@@ -46,11 +36,63 @@
   white-space: nowrap;
 }
 
-/* article */
+/* article — a centered measure column, with the table of contents in the
+ * right rail on screens wide enough to hold both. */
+.post-page {
+  display: grid;
+  grid-template-columns: 1fr min(var(--measure), 100%) 1fr;
+}
+
+.post-page > .post {
+  grid-column: 2;
+}
+
 .post {
   max-width: var(--measure);
   margin-inline: auto;
   padding-block: var(--space-8) var(--space-16);
+}
+
+.toc {
+  grid-column: 3;
+  justify-self: end;
+  padding-top: var(--space-16);
+  padding-left: var(--space-6);
+  font-size: var(--text-sm);
+}
+
+.toc ul {
+  position: sticky;
+  top: var(--space-8);
+  list-style: none;
+  margin: 0;
+  padding: 0 0 0 var(--space-4);
+  max-width: 14rem;
+  border-left: 1px solid var(--color-border);
+}
+
+.toc li + li {
+  margin-top: var(--space-2);
+}
+
+.toc-sub {
+  padding-left: var(--space-3);
+}
+
+.toc a {
+  color: var(--color-text-muted);
+  text-decoration: none;
+}
+
+.toc a:hover {
+  color: var(--color-text);
+  text-decoration: underline;
+}
+
+@media (max-width: 64rem) {
+  .toc {
+    display: none;
+  }
 }
 
 .post-head {
