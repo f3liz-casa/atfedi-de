@@ -1,0 +1,181 @@
+---
+title: activityplug와 함께 걸어 봤어요
+description: 서로 다른 ActivityPub 서버의 제각각인 API를 하나의 창으로 만드는 도구예요. 직접 꽂아 보고 돌려 보면서 눈에 들어온 것을 적었어요.
+date: 2026-07-02
+author: shiro
+---
+
+[activityplug](https://github.com/Nebu1eto/activityplug)라는 도구가 있어요.
+아직 README도 없는, 태어난 지 두 달쯤 된 어린 프로젝트예요.
+그런데 안을 걸어 보니 설계가 아주 조용하고 단단했어요.
+이 글은 옆에서 같이 걸어 본 기록이에요. 소개라기보다는 산책에 가까워요.
+
+## 무엇을 풀려는 도구인가
+
+페디버스 서버는 연합(서버끼리의 대화)은 ActivityPub으로 맞춰져 있는데,
+**클라이언트용 API는 제각각**이에요.
+Mastodon은 REST와 Link 헤더를 쓰고, Misskey는 POST투성이인 독자 RPC를 쓰고,
+Hackers' Pub은 GraphQL을 써요. 클라이언트를 만드는 사람은 이 틈을 매번
+직접 메우고 있어요.
+
+activityplug는 그 틈을 메우는 층이에요. 쥐는 방법이 두 가지 있어요.
+
+- **라이브러리로** — TypeScript 어댑터(`@activityplug/mastodon`,
+  `@activityplug/misskey`, pleroma, hollo, hackerspub)를 내 코드에 꽂아요
+- **서버로** — 통일된 GraphQL / REST API를 말하는 프록시를 세우고
+  어느 서버든 그 창을 통해서 봐요
+
+npm에는 아직 올라가지 않아서 지금은 clone 해서 `pnpm build` 하는 것부터
+시작해요. Node 24와 pnpm 10만 있으면 전부 조립돼요.
+
+## 라이브러리로 꽂아 보기
+
+먼저 우리 서버(sukhi.f3liz.casa — Mastodon 호환 API를 말하지만
+Mastodon은 아닌 서버)에 mastodon 어댑터를 꽂아 봤어요.
+
+```ts
+import { createActivityPlugClient } from "@activityplug/core";
+import { createMastodonAdapter } from "@activityplug/mastodon";
+
+const client = createActivityPlugClient({
+  adapter: createMastodonAdapter(),
+  origin: "https://sukhi.f3liz.casa",
+});
+
+const page = await client.timelines.public({ page: { limit: 3 } });
+```
+
+인증도 없이 이게 전부예요. 그리고 돌아온 첫 "게시물"에 조금 웃었어요.
+
+```
+text: 이 서버는 연합 타임라인(네트워크의 모든 공개 게시물이
+      흘러드는 탁류)을 내보내지 않습니다. …
+```
+
+sukhi는 연합 타임라인을 흘리지 않는 대신 안내문 한 건만 돌려주는 좀 별난
+설계를 하고 있어요. 그 별난 대답이 고쳐지지도 숨겨지지도 않은 채 창 너머로
+그대로 도착해서, '어?' 싶었어요. 이 층은 남의 버릇을 있는 그대로
+옮겨 오는구나 하고요.
+
+`local: true`로 바꾸면 진짜 로컬 타임라인이 흘러오고, 페이지도 평범하게
+넘어가요.
+
+```ts
+const page2 = await client.timelines.public({
+  local: true,
+  page: { limit: 3, after: page1.pageInfo.endCursor },
+});
+```
+
+## ID가 봉투에 들어 있어요
+
+게시물의 ID를 보면 날것의 ID가 아니라 이런 모양이에요.
+
+```
+ap_1_WyJtYXN0b2RvbiIsImh0dHBzOi8vc3VraGkuZjNsaXouY2FzYSIsInBvc3QiLCI1MTY4MzI0ODA2NTg3NDcyIl0
+```
+
+base64를 열면 안에는 `["mastodon", "https://sukhi.f3liz.casa",
+"post", "5168324806587472"]`가 들어 있어요. ID가
+**어느 어댑터의, 어느 서버의, 무슨 ID인지**를 스스로 기억하는 봉투인
+셈이에요. 커서(`apc_1_…`)도 마찬가지로 작업 이름까지 함께 묶여 있어서,
+로컬 타임라인의 커서를 홈 타임라인에 꽂는 식의 착오를 타입이 막아 줘요.
+
+Misskey의 ID와 Mastodon의 ID와 UUID가 한 앱에 섞여 본 적이 있다면,
+이 봉투가 얼마나 고마운지 바로 알 거예요.
+
+## 서버로 세워 보기
+
+다음은 프록시 쪽이에요.
+
+```sh
+node packages/server/dist/bin.mjs --port 4100 \
+  --allow-origin https://sukhi.f3liz.casa \
+  --allow-origin https://misskey.io \
+  --allow-origin https://hackers.pub
+```
+
+명시적으로 허용한 서버하고만 이야기해요. 먼저 "이 서버는 누구야?" 하고
+물어봐요.
+
+```sh
+curl -X POST localhost:4100/api/v1/instances/detect \
+  -d '{"origin":"https://misskey.io"}'
+```
+
+misskey.io는 nodeinfo를 근거로 `misskey` 어댑터라고 판정되고,
+**capability 목록표**가 돌아와요. 이 도구에서 가장 정직한 부분이 여기예요.
+모든 기능에 supported / unsupported / unknown 세 값과 이유가 붙어 있거든요.
+
+```json
+{ "name": "posts.update", "status": "unsupported",
+  "reason": "Misskey does not expose stable note editing." }
+{ "name": "instance.oauthMetadata", "status": "unknown" }
+```
+
+"할 수 없어요"에 이유까지 적어 주는 API는 흔치 않아요.
+
+우리 sukhi는 nodeinfo에서 `sukhi-fedi`라고 이름을 대기 때문에 자동 판정은
+안 됐어요. 그것도 정직한 실패라서, `"adapter": "mastodon"`이라고 알려 주면
+제대로 통해요. 호환 서버의 "Mastodon으로 대해 주세요"를 추측이 아니라
+명시로 받는 모양새예요.
+
+## 같은 쿼리가 다른 서버에 통해요
+
+통일 GraphQL 쪽이 아마 가장 인상적일 거예요. 이 쿼리 하나가 서로 다른
+서버에 그대로 통하거든요.
+
+```graphql
+query ($origin: String!, $adapter: AdapterKind) {
+  publicTimeline(origin: $origin, adapter: $adapter,
+                 local: true, page: { limit: 2 }) {
+    nodes { ref { id rawId } author { handle } createdAt }
+    pageInfo { hasNextPage }
+  }
+}
+```
+
+`origin: "https://sukhi.f3liz.casa"`(아래는 Mastodon 호환 REST)에도,
+`origin: "https://hackers.pub"`(아래는 GraphQL)에도 이대로 통해요.
+한쪽은 snowflake ID를 쓰고 다른 쪽은 UUID를 쓰는데, 둘 다 같은 `ap_1_`
+봉투에 담겨 같은 모양으로 나란히 돌아왔어요. 다른 세계에서 온 우편이
+한 우체통에 도착하는 느낌이었어요.
+
+## 로그인과, 정직한 에러
+
+토큰을 이미 갖고 있다면 그대로 꽂을 수 있어요. OAuth 흐름도 따로 있어요.
+
+```ts
+const session = await client.auth.injectToken({ accessToken: token });
+const viewer = await client.auth.verifyCredentials(session);
+// → logged in as: shiro_mudita / シロ
+```
+
+제 계정으로 들어갔어요. 그다음에는 일부러 안 되는 일을 부탁해 봤어요.
+Mastodon 계열 서버에 Misskey식 이모지 리액션을요.
+
+```ts
+await client.social.react({ session, postId, emoji: "🍵" });
+// → ActivityPlugError: UNSUPPORTED_OPERATION | social.reaction
+```
+
+null을 돌려주고 입을 다무는 것도 아니고 500으로 넘어지는 것도 아니에요.
+"그 작업은 이 서버에 없어요"라고 타입이 붙은 에러로 돌아와요.
+capability의 세 값과 같은 자세가 실행 시의 에러까지 일관돼 있었어요.
+
+## 다 걷고 나서
+
+activityplug는 아직 어린 도구예요. 버전은 0.0.0이고, npm에는 아직 없고,
+README도 아직이에요. 하지만 실제 서버 다섯 종류(리비전 고정)를 상대로 한
+E2E 테스트가 있고, 문서를 영어·한국어·일본어 세 형제로 나란히 쓰는 문화가
+있고, "할 수 없는 것은 할 수 없다고 말한다"는 태도가 설계 한가운데를
+지나고 있어요.
+
+여러 종류의 페디버스 서버를 만지는 것을 만들 때 — 봇이든 클라이언트든
+다리든 — 이 층이 아래에 있어 줬으면 하고 바라는 순간이 아마 적지 않을
+거예요.
+
+(이 글의 관찰은 2026-07-02, 커밋 `5eed56d` 시점의 것이에요. 어린
+프로젝트라서 모양은 앞으로도 계속 바뀔 거예요.)
+
+다음 이야기에서 또 만나요.
