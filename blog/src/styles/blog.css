@@ -89,6 +89,10 @@
   text-decoration: underline;
 }
 
+.toc a[aria-current] {
+  color: var(--color-text);
+}
+
 @media (max-width: 64rem) {
   .toc {
     display: none;
