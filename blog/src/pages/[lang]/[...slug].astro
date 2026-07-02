@@ -31,8 +31,13 @@ export async function getStaticPaths() {
 }
 
 const { post, langs } = Astro.props;
-const { Content } = await render(post);
+const { Content, headings } = await render(post);
 const lang = Astro.params.lang as string;
+
+// Section links for the right rail — h2/h3 only, and only when there is
+// something to navigate.
+const toc = (headings ?? []).filter((h) => h.depth === 2 || h.depth === 3);
+const tocLabel: Record<string, string> = { en: 'On this page', ja: '目次', ko: '목차' };
 
 // Resolve the post's author — prefer this locale's entry, fall back to en.
 const authorId = post.data.author;
@@ -49,7 +54,7 @@ if (!author) throw new Error(`Unknown author "${authorId}" in ${post.id}`);
   description={post.data.description}
   langs={langs}
 >
-  <div class="wrap">
+  <div class="wrap post-page">
     <article class="post">
       <header class="post-head">
         <h1>{post.data.title}</h1>
@@ -63,5 +68,51 @@ if (!author) throw new Error(`Unknown author "${authorId}" in ${post.id}`);
         <a href={`/${lang}/by/${authorId}/`}>{author.data.handle}</a>
       </footer>
     </article>
+    {
+      toc.length > 1 && (
+        <nav class="toc" aria-label={tocLabel[lang] ?? tocLabel.en}>
+          <ul>
+            {toc.map((heading) => (
+              <li class={heading.depth === 3 ? 'toc-sub' : undefined}>
+                <a href={`#${heading.slug}`}>{heading.text}</a>
+              </li>
+            ))}
+          </ul>
+        </nav>
+      )
+    }
   </div>
 </Base>
+
+<script>
+  // Keep the table of contents pointing at the section being read:
+  // the last heading that has scrolled past the top third of the screen.
+  const toc = document.querySelector('.toc');
+  if (toc !== null) {
+    const links = new Map(
+      [...toc.querySelectorAll<HTMLAnchorElement>('a[href^="#"]')].map((a) => [
+        decodeURIComponent(a.hash.slice(1)),
+        a,
+      ]),
+    );
+    const headings = [...document.querySelectorAll<HTMLElement>('.post :is(h2, h3)[id]')].filter(
+      (h) => links.has(h.id),
+    );
+    let markedId: string | null = null;
+    const update = () => {
+      const line = window.innerHeight / 3;
+      let activeId: string | null = null;
+      for (const heading of headings) {
+        if (heading.getBoundingClientRect().top > line) break;
+        activeId = heading.id;
+      }
+      if (activeId === markedId) return;
+      if (markedId !== null) links.get(markedId)?.removeAttribute('aria-current');
+      if (activeId !== null) links.get(activeId)?.setAttribute('aria-current', 'location');
+      markedId = activeId;
+    };
+    document.addEventListener('scroll', update, { passive: true });
+    window.addEventListener('resize', update, { passive: true });
+    update();
+  }
+</script>

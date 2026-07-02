@@ -1,6 +1,22 @@
 /* Blog-specific styles. The shared tokens / base / components carry the
  * site's look; this only adds the blog's post list and article typography. */
 
+/* Code highlighting — shiki's css-variables theme reads these. Ink
+ * background, paper text, and a few quiet tints from the site's lanes. */
+:root {
+  --astro-code-background: var(--color-text);
+  --astro-code-foreground: #ece9dd;
+  --astro-code-token-comment: #94927f;
+  --astro-code-token-punctuation: #aaa89a;
+  --astro-code-token-keyword: #9fd8b4;
+  --astro-code-token-string: #f2c49b;
+  --astro-code-token-string-expression: #f2c49b;
+  --astro-code-token-constant: #e8d898;
+  --astro-code-token-function: #b7d0ea;
+  --astro-code-token-parameter: #ece9dd;
+  --astro-code-token-link: #9fd8b4;
+}
+
 /* post list (home) */
 .post-list {
   list-style: none;
@@ -36,10 +52,67 @@
   white-space: nowrap;
 }
 
-/* article */
+/* article — a centered measure column, with the table of contents in the
+ * right rail on screens wide enough to hold both. */
+.post-page {
+  display: grid;
+  grid-template-columns: 1fr min(var(--measure), 100%) 1fr;
+}
+
+.post-page > .post {
+  grid-column: 2;
+}
+
 .post {
   max-width: var(--measure);
+  margin-inline: auto;
   padding-block: var(--space-8) var(--space-16);
+}
+
+.toc {
+  grid-column: 3;
+  justify-self: end;
+  padding-top: var(--space-16);
+  padding-left: var(--space-6);
+  font-size: var(--text-sm);
+}
+
+.toc ul {
+  position: sticky;
+  top: var(--space-8);
+  list-style: none;
+  margin: 0;
+  padding: 0 0 0 var(--space-4);
+  max-width: 14rem;
+  border-left: 1px solid var(--color-border);
+}
+
+.toc li + li {
+  margin-top: var(--space-2);
+}
+
+.toc-sub {
+  padding-left: var(--space-3);
+}
+
+.toc a {
+  color: var(--color-text-muted);
+  text-decoration: none;
+}
+
+.toc a:hover {
+  color: var(--color-text);
+  text-decoration: underline;
+}
+
+.toc a[aria-current] {
+  color: var(--color-text);
+}
+
+@media (max-width: 64rem) {
+  .toc {
+    display: none;
+  }
 }
 
 .post-head {
@@ -136,6 +209,7 @@
 /* author profile */
 .author {
   max-width: var(--measure);
+  margin-inline: auto;
   padding-block: var(--space-8) var(--space-4);
 }
 
@@ -183,6 +257,7 @@
 
 .author-posts {
   max-width: var(--measure);
+  margin-inline: auto;
   margin-top: var(--space-12);
   padding-bottom: var(--space-16);
 }
