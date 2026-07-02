@@ -1,6 +1,22 @@
 /* Blog-specific styles. The shared tokens / base / components carry the
  * site's look; this only adds the blog's post list and article typography. */
 
+/* Code highlighting — shiki's css-variables theme reads these. Ink
+ * background, paper text, and a few quiet tints from the site's lanes. */
+:root {
+  --astro-code-background: var(--color-text);
+  --astro-code-foreground: #e9e7db;
+  --astro-code-token-comment: #8f8d80;
+  --astro-code-token-punctuation: #a5a396;
+  --astro-code-token-keyword: #a9c9b1;
+  --astro-code-token-string: #d9b48d;
+  --astro-code-token-string-expression: #d9b48d;
+  --astro-code-token-constant: #cdc59c;
+  --astro-code-token-function: #dfd9c3;
+  --astro-code-token-parameter: #e9e7db;
+  --astro-code-token-link: #a9c9b1;
+}
+
 /* post list (home) */
 .post-list {
   list-style: none;
