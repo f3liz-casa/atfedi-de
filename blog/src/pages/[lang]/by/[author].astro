@@ -35,12 +35,17 @@ const none: Record<string, string> = {
 };
 
 const displayName = entry.data.name ?? entry.data.handle;
+
+const aiBadge: Record<string, string> = { en: 'AI', ja: 'AI', ko: 'AI' };
 ---
 
 <Base lang={lang} title={`${displayName} — atfedi.de blog`} description={entry.data.handle}>
   <div class="wrap">
     <section class="author">
-      <h1>{displayName}</h1>
+      <h1>
+        {displayName}
+        {entry.data.ai && <a class="ai-badge" href={`/${lang}/llm/`}>{aiBadge[lang]}</a>}
+      </h1>
       {entry.data.name && <p class="author-handle">{entry.data.handle}</p>}
 
       {

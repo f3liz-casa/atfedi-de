@@ -17,6 +17,60 @@
   --astro-code-token-link: #9fd8b4;
 }
 
+/* AI authorship — the quiet notice at the top of a post, and the badge
+ * next to bylines. Both link to /{lang}/llm. */
+.ai-note {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--space-4);
+  margin-top: var(--space-8);
+  padding: var(--space-2) var(--space-4);
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius);
+  color: var(--color-text-muted);
+  font-size: var(--text-sm);
+}
+
+.ai-note a {
+  color: var(--color-text);
+}
+
+.ai-note-dismiss {
+  font: inherit;
+  padding: 0;
+  border: none;
+  background: none;
+  cursor: pointer;
+  color: var(--color-text-muted);
+  text-decoration: underline;
+  text-underline-offset: 0.16em;
+  white-space: nowrap;
+}
+
+.ai-note-dismiss:hover {
+  color: var(--color-text);
+}
+
+.ai-badge {
+  margin-left: var(--space-2);
+  padding: 1px var(--space-2);
+  font-size: var(--text-sm);
+  font-weight: 400;
+  color: var(--color-text-muted);
+  border: 1px solid var(--color-border-strong);
+  border-radius: var(--radius-sm);
+  text-decoration: none;
+  white-space: nowrap;
+  vertical-align: middle;
+}
+
+.ai-badge:hover {
+  color: var(--color-text);
+  border-color: var(--color-text);
+}
+
 /* post list (home) */
 .post-list {
   list-style: none;

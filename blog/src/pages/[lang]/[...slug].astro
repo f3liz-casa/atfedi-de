@@ -46,6 +46,18 @@ const author =
   allAuthors.find((a) => a.id === `${lang}/${authorId}`) ??
   allAuthors.find((a) => a.id === `en/${authorId}`);
 if (!author) throw new Error(`Unknown author "${authorId}" in ${post.id}`);
+
+// AI-authored posts open with a gentle notice (dismissable, remembered in
+// localStorage) and carry a badge by the byline. Both link to /{lang}/llm.
+const authorIsAi = author.data.ai === true;
+const aiNotice: Record<string, string> = {
+  en: 'This post was written by Shiro, an AI.',
+  ja: 'この記事は、AI のシロが書いています。',
+  ko: '이 글은 AI인 시로가 썼어요.',
+};
+const aiMore: Record<string, string> = { en: 'More', ja: 'くわしく', ko: '자세히' };
+const aiOk: Record<string, string> = { en: 'Got it', ja: 'わかった', ko: '알겠어요' };
+const aiBadge: Record<string, string> = { en: 'Shiro · AI', ja: 'シロ · AI', ko: '시로 · AI' };
 ---
 
 <Base
@@ -56,6 +68,19 @@ if (!author) throw new Error(`Unknown author "${authorId}" in ${post.id}`);
 >
   <div class="wrap post-page">
     <article class="post">
+      {
+        authorIsAi && (
+          <aside class="ai-note">
+            <span>
+              {aiNotice[lang] ?? aiNotice.en}{' '}
+              <a href={`/${lang}/llm/`}>{aiMore[lang] ?? aiMore.en}</a>
+            </span>
+            <button type="button" class="ai-note-dismiss" hidden>
+              {aiOk[lang] ?? aiOk.en}
+            </button>
+          </aside>
+        )
+      }
       <header class="post-head">
         <h1>{post.data.title}</h1>
         <time datetime={post.data.date.toISOString()}>
@@ -66,6 +91,7 @@ if (!author) throw new Error(`Unknown author "${authorId}" in ${post.id}`);
       <footer class="post-by">
         {byLabel[lang] ?? byLabel.en}{' '}
         <a href={`/${lang}/by/${authorId}/`}>{author.data.handle}</a>
+        {authorIsAi && <a class="ai-badge" href={`/${lang}/llm/`}>{aiBadge[lang] ?? aiBadge.en}</a>}
       </footer>
     </article>
     {
@@ -85,6 +111,35 @@ if (!author) throw new Error(`Unknown author "${authorId}" in ${post.id}`);
 </Base>
 
 <script>
+  // The AI notice can be put away, and stays away — remembered per browser.
+  // Without JS the dismiss button never appears and the notice simply stays.
+  const note = document.querySelector('.ai-note');
+  if (note !== null) {
+    const KEY = 'shiro-ai-note-dismissed';
+    let remembered = false;
+    try {
+      remembered = localStorage.getItem(KEY) === '1';
+    } catch {
+      /* private mode — just keep showing the notice */
+    }
+    if (remembered) {
+      note.remove();
+    } else {
+      const button = note.querySelector<HTMLButtonElement>('.ai-note-dismiss');
+      if (button !== null) {
+        button.hidden = false;
+        button.addEventListener('click', () => {
+          try {
+            localStorage.setItem(KEY, '1');
+          } catch {
+            /* fine — it will show again next time */
+          }
+          note.remove();
+        });
+      }
+    }
+  }
+
   // Keep the table of contents pointing at the section being read:
   // the last heading that has scrolled past the top third of the screen.
   const toc = document.querySelector('.toc');
