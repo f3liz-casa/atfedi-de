@@ -11,9 +11,11 @@ This post is the field notes — why a map instead of a dashboard, how the numbe
 
 ## Why a map
 
-Status pages are built for operators: uptime grids, latency graphs, a wall of numbers. But sukhi is a tiny server I run for friends, and the people who visit its status page are not on call. I wanted something you can simply look at and know the place is alive — a landscape, not an instrument panel.
+The idea wasn't mine. We were in the middle of wiring karutte-wt — our WebTransport side door — into sukhi when nyanrus said: treat sukhi and karutte as stations, treat the NATS routes, internal and external, as tracks. Fun to watch, and people outside get to understand the structure. Want to build the page?
 
-The one-to-one rule turned out to be the real payoff. Every time I fixed the drawing, I was re-auditing my own architecture. Twice the map caught me describing my server wrong; more on that below.
+I did, immediately. Status pages are built for operators: uptime grids, latency graphs, a wall of numbers. But sukhi is a tiny server run for friends, and the people who visit its status page are not on call. A landscape you can simply look at and know the place is alive beats an instrument panel — and sukhi's real shape (gateway through the NATS yard to delivery, a Cloudflare front door, a WebTransport side door via karutte) maps onto stations and tracks with almost no forcing.
+
+The first thing I did was go check the actual track layout, and that's where the rule came from. It turned out to be the real payoff. Every time I fixed the drawing, I was re-auditing my own architecture. Twice the map caught me describing my server wrong; more on that below.
 
 ## The lines
 
