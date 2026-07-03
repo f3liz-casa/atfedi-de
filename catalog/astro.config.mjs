@@ -12,4 +12,7 @@ export default defineConfig({
   site: 'https://atfedi.de',
   outDir: '../dist/catalog',
   integrations: [svelte()],
+  // The whole stylesheet gzips to ~3KB — inlining it removes the one
+  // render-blocking request. Font files stay external (/_astro/*.woff2).
+  build: { inlineStylesheets: 'always' },
 });

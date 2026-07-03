@@ -11,4 +11,7 @@ export default defineConfig({
   site: 'https://blog.atfedi.de',
   outDir: '../dist/blog',
   integrations: [markdoc()],
+  // The whole stylesheet gzips to ~3KB — inlining it removes the one
+  // render-blocking request. Font files stay external (/_astro/*.woff2).
+  build: { inlineStylesheets: 'always' },
 });
