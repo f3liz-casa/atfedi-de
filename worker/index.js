@@ -32,6 +32,19 @@ function pickLocale(header) {
   return DEFAULT_LOCALE;
 }
 
+// Serve a static asset. Hashed build assets (/_astro/) never change under
+// the same name, so those get a long immutable cache; everything else keeps
+// the platform default (revalidate every time).
+async function serveAsset(env, url, path, request) {
+  const res = await env.ASSETS.fetch(new Request(new URL(path, url), request));
+  if (res.ok && url.pathname.startsWith('/_astro/')) {
+    const headers = new Headers(res.headers);
+    headers.set('cache-control', 'public, max-age=31536000, immutable');
+    return new Response(res.body, { status: res.status, headers });
+  }
+  return res;
+}
+
 export default {
   async fetch(request, env, ctx) {
     const url = new URL(request.url);
@@ -69,14 +82,14 @@ export default {
         if (!path.endsWith('/') && !/\.[^/]+$/.test(path)) path += '/';
         path = `/catalog/${sub}${path}`;
       }
-      return env.ASSETS.fetch(new Request(new URL(path, url), request));
+      return serveAsset(env, url, path, request);
     }
 
     // --- danro.atfedi.de: a one-page intro for the danro-talk widget ---
     if (host === 'danro.atfedi.de') {
       let path = url.pathname;
       if (!path.endsWith('/') && !/\.[^/]+$/.test(path)) path += '/';
-      return env.ASSETS.fetch(new Request(new URL(`/danro${path}`, url), request));
+      return serveAsset(env, url, `/danro${path}`, request);
     }
 
     // --- blog.atfedi.de: serve the blog (path-based locales) ---
@@ -93,9 +106,14 @@ export default {
           { status: 404, headers: { 'content-type': 'text/plain; charset=utf-8' } },
         );
       }
-      // shared build assets pass straight through
-      if (path.startsWith('/_astro/') || path === '/favicon.svg') {
-        return env.ASSETS.fetch(new Request(new URL(`/blog${path}`, url), request));
+      // shared build assets and root-level crawler files pass straight through
+      if (
+        path.startsWith('/_astro/') ||
+        path === '/favicon.svg' ||
+        path === '/robots.txt' ||
+        path === '/sitemap.xml'
+      ) {
+        return serveAsset(env, url, `/blog${path}`, request);
       }
       // pages live under a locale; anything else → detect language, redirect
       if (!/^\/(en|ja|ko)(\/|$)/.test(path)) {
@@ -103,7 +121,7 @@ export default {
         return Response.redirect(`https://blog.atfedi.de/${locale}/`, 302);
       }
       if (!path.endsWith('/') && !/\.[^/]+$/.test(path)) path += '/';
-      return env.ASSETS.fetch(new Request(new URL(`/blog${path}`, url), request));
+      return serveAsset(env, url, `/blog${path}`, request);
     }
 
     return new Response('Not found', { status: 404 });
