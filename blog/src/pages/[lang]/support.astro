@@ -1,0 +1,168 @@
+---
+import { locales, type Locale } from '../../locales';
+import Base from '../../layouts/Base.astro';
+
+// The support page — why a donation door exists, and where the money goes.
+// One page per locale, copy written per language (not translated word-for-word).
+export function getStaticPaths() {
+  return locales.map((lang) => ({ params: { lang } }));
+}
+
+const lang = Astro.params.lang as Locale;
+
+// The doors. Korea has its own payment rails, so Korean readers get
+// GeekNews' Fairy (fairy.hada.io); everyone else gets a worldwide channel.
+// Each door stays dark until its URL is filled in.
+const fairy = { href: '', name: '페어리 (Fairy)' };
+const world = { href: '', name: '' }; // e.g. GitHub Sponsors — to be decided
+
+const title: Record<Locale, string> = {
+  en: 'Supporting this place',
+  ja: '応援のこと',
+  ko: '응원 이야기',
+};
+
+const description: Record<Locale, string> = {
+  en: 'Why there is a donation door, and where the money goes.',
+  ja: 'なぜ寄付の窓口があるのか、いただいたお金を何に使うのか。',
+  ko: '후원 창구가 왜 있는지, 받은 돈을 어디에 쓰는지.',
+};
+---
+
+<Base lang={lang} title={`${title[lang]} — atfedi.de blog`} description={description[lang]}>
+  <div class="wrap">
+    <article class="post">
+      <header class="post-head">
+        <h1>{title[lang]}</h1>
+      </header>
+
+      {
+        lang === 'ja' && (
+          <>
+            <p>
+              このブログと、atfedi.de の道具たちと、そのまわりの小さなフェディバースのサーバは、ぜんぶ趣味でつくられています。広告もトラッキングも置いていないし、これからも置きません。
+            </p>
+            <p>
+              それでも、灯りを点けておくには、毎月すこしだけお金がかかります。ドメインの更新料、小さなサーバ箱の月額。大きな額ではないけれど、ゼロでもありません。
+            </p>
+            <h2>なぜ窓口をつくったか</h2>
+            <p>
+              ときどき、「応援したい」と言ってもらえることがあります。その気持ちの置き場所が無いと、ことばが宙に浮いたままになってしまう。だから、ちいさな窓口をひとつ用意しました。無くても、止まりません。あると、灯りがすこし長持ちします。それくらいの窓口です。
+            </p>
+            <h2>使いみち</h2>
+            <ul>
+              <li>ドメイン（atfedi.de と f3liz.casa）の更新料</li>
+              <li>サービスたちが住んでいる、小さなサーバ箱の月額</li>
+              <li>
+                それでも余ったら、私たちが依って立つ上流 — fedify のような、フェディバースの土台をつくっているプロジェクト — へ、そのまま回します
+              </li>
+            </ul>
+            <h2>寄付で変わらないこと</h2>
+            <p>
+              機能の優先順位も、記事に書く中身も、寄付では変わりません。応援してくれた方だけの特別な席も、つくりません。ここはだれにとっても、おなじ場所のままです。買えるのは、「続く時間」だけです。
+            </p>
+            <h2>窓口</h2>
+            {world.href ? (
+              <p>
+                <a href={world.href}>{world.name}</a> から応援できます。ひとことメッセージを添えてもらえたら、それがいちばんうれしいです。
+              </p>
+            ) : (
+              <p class="note">窓口は、いま準備しているところです。もうすこしだけ、待っていてね。</p>
+            )}
+          </>
+        )
+      }
+
+      {
+        lang === 'en' && (
+          <>
+            <p>
+              This blog, the atfedi.de tools, and the small fediverse server around them are all
+              hobby work. There are no ads and no tracking here, and there never will be.
+            </p>
+            <p>
+              Still, keeping the lights on costs a little every month — domain renewals, the rent
+              on a few small server boxes. Not much, but not zero.
+            </p>
+            <h2>Why a donation door exists</h2>
+            <p>
+              Every now and then, someone says they would like to support this place. Without
+              somewhere for that feeling to land, the words just hang in the air. So we made one
+              small door. Nothing stops without it; with it, the lights stay on a little longer.
+              That is the size of it.
+            </p>
+            <h2>Where the money goes</h2>
+            <ul>
+              <li>Domain renewals — atfedi.de and f3liz.casa</li>
+              <li>The monthly rent on the small boxes the services live on</li>
+              <li>
+                Anything left over is passed upstream, to the projects we stand on — fedify and
+                its kin, the people building the fediverse's foundations
+              </li>
+            </ul>
+            <h2>What a donation does not change</h2>
+            <p>
+              Feature priorities and what gets written here are not for sale. There are no special
+              seats for supporters, either — this place stays the same place for everyone. The
+              only thing money buys here is time: the kind that lets things continue.
+            </p>
+            <h2>The door</h2>
+            {world.href ? (
+              <p>
+                You can support us via <a href={world.href}>{world.name}</a>. A short message with
+                it makes us happier than the number does.
+              </p>
+            ) : (
+              <p class="note">The door is still being prepared — soon.</p>
+            )}
+          </>
+        )
+      }
+
+      {
+        lang === 'ko' && (
+          <>
+            <p>
+              이 블로그와 atfedi.de의 도구들, 그리고 곁에 있는 작은 페디버스 서버는 전부 취미로
+              만들어지고 있어요. 광고도 트래킹도 없고, 앞으로도 두지 않을 거예요.
+            </p>
+            <p>
+              그래도 불을 켜 두는 데에는 매달 조금씩 돈이 들어요. 도메인 갱신료, 작은 서버
+              상자들의 월세. 큰돈은 아니지만, 0원도 아니에요.
+            </p>
+            <h2>왜 창구를 만들었나</h2>
+            <p>
+              가끔 "응원하고 싶다"는 말을 들을 때가 있어요. 그 마음이 내려앉을 자리가 없으면,
+              말이 허공에 뜬 채로 남아요. 그래서 작은 창구를 하나 마련했어요. 없어도 멈추지
+              않아요. 있으면 불이 조금 더 오래가요. 딱 그만큼의 창구예요.
+            </p>
+            <h2>받은 돈은 이렇게 써요</h2>
+            <ul>
+              <li>도메인(atfedi.de, f3liz.casa) 갱신료</li>
+              <li>서비스들이 살고 있는 작은 서버 상자들의 월세</li>
+              <li>
+                그러고도 남으면, 저희가 딛고 서 있는 상류 — fedify처럼 페디버스의 토대를 만드는
+                프로젝트 — 에 그대로 보내요
+              </li>
+            </ul>
+            <h2>후원으로 바뀌지 않는 것</h2>
+            <p>
+              기능의 우선순위도, 글에 쓰는 내용도, 후원으로는 바뀌지 않아요. 후원해 주신 분만을
+              위한 특별한 자리도 만들지 않아요. 여기는 누구에게나 같은 곳으로 남아요. 살 수 있는
+              건 "계속되는 시간"뿐이에요.
+            </p>
+            <h2>창구</h2>
+            {fairy.href ? (
+              <p>
+                한국에 계신 분은 GeekNews의 <a href={fairy.href}>{fairy.name}</a>로 응원할 수
+                있어요. 짧은 메시지를 함께 남겨 주시면, 숫자보다 그쪽이 더 기뻐요.
+              </p>
+            ) : (
+              <p class="note">창구는 지금 준비하고 있어요. 조금만 기다려 주세요.</p>
+            )}
+          </>
+        )
+      }
+    </article>
+  </div>
+</Base>
