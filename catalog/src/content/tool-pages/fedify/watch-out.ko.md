@@ -3,7 +3,7 @@
 두 가지 목록이에요: fedify가 일부러 남겨둔 몫, 그리고 저희가 직접
 부딪힌 날카로운 함정들 — 어디에 적혀 있는지도 같이 짚어둘게요.
 
-### 설계상 내 몫인 일
+## 설계상 내 몫인 일
 
 fedify는 애플리케이션이 아니라 프로토콜 계층이에요. Hollo와 Hackers'
 Pub를 나란히 읽어보면, 앱의 진짜 일이 어디서부터 시작되는지 정확히
@@ -35,7 +35,7 @@ fan-out해야 해요. fedify에는 수신용 idempotency cache가
 계정을 지우고 연쇄 삭제하고 — `setOutboxPermanentFailureHandler`의
 몫이에요([manual/send](https://fedify.dev/manual/send#error-handling)).
 
-### 날카로운 함정과 적혀 있는 곳
+## 날카로운 함정과 적혀 있는 곳
 
 두 코드베이스를 읽으며(그리고 직접 몇 개는 부딪히며) 찾아낸 함정들이에요.
 경고가 적힌 페이지도 같이 짚어둘게요:

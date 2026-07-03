@@ -126,7 +126,7 @@ const slugify = (t: string): string =>
     .replace(/^-+|-+$/g, '') || 'section';
 
 const tocify = (html: string): { html: string; toc: string } => {
-  const heads: { depth: number; id: string; text: string }[] = [];
+  const heads: { depth: number; id: string; text: string; lead: boolean }[] = [];
   const seen = new Map<string, number>();
   const uniq = (id: string): string => {
     const n = seen.get(id) ?? 0;
@@ -145,20 +145,26 @@ const tocify = (html: string): { html: string; toc: string } => {
         .trim();
       const text = raw.replace(/[.:。．：]$/, '');
       const id = uniq(slugify(text));
-      heads.push({ depth: tag ? +tag[1] : 3, id, text });
+      heads.push({ depth: tag ? +tag[1] : 3, id, text, lead: !tag });
       return tag
         ? `<${tag} id="${id}">${inner}</${tag}>`
         : `<p id="${id}"><strong>${lead}</strong>`;
     },
   );
-  const hasH2 = heads.some((h) => h.depth === 2);
+  // Depth is relative: the shallowest real heading on the page is the top
+  // level; deeper headings — and bold leads, whenever real headings exist —
+  // indent under it. A page with only bold leads stays flat.
+  const headingDepths = heads.filter((h) => !h.lead).map((h) => h.depth);
+  const minDepth = headingDepths.length > 0 ? Math.min(...headingDepths) : null;
+  const isSub = (h: { depth: number; lead: boolean }) =>
+    minDepth !== null && (h.lead || h.depth > minDepth);
   const toc =
     heads.length > 1
       ? `<ul>\n` +
         heads
           .map(
             (h) =>
-              `<li${h.depth === 3 && hasH2 ? ' class="toc-sub"' : ''}><a href="#${h.id}">${h.text}</a></li>`,
+              `<li${isSub(h) ? ' class="toc-sub"' : ''}><a href="#${h.id}">${h.text}</a></li>`,
           )
           .join('\n') +
         `\n</ul>`
