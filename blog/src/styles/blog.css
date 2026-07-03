@@ -350,3 +350,10 @@ html[lang='ja'] body {
   letter-spacing: 0.03em;
   text-align: center;
 }
+
+/* footer — the links sit together on the right; .footer-inner's
+   space-between keeps them opposite the site line. */
+.footer-links {
+  display: flex;
+  gap: var(--space-6);
+}

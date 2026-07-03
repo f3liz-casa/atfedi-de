@@ -31,6 +31,11 @@ interface Props {
 
 const { lang, title, description, langs, banner, langHref } = Astro.props;
 
+// A quiet donation door for Korean readers — GeekNews' Fairy (fairy.hada.io).
+// Korean payment rails, so it shows on ko pages only. Empty until the Fairy
+// page is registered; fill in the real URL (fairy.hada.io/@…) to light it up.
+const fairyHref = '';
+
 // The same path under another language — for the switcher.
 const rest = Astro.url.pathname.replace(/^\/(en|ja|ko)/, '') || '/';
 const switchLangs = langs ?? locales;
@@ -86,7 +91,10 @@ const hrefFor = langHref ?? ((l: string) => `/${l}${rest}`);
     <footer class="site-footer">
       <div class="footer-inner">
         <p>atfedi.de — an open catalog of fediverse tools.</p>
-        <a href="https://github.com/f3liz-casa/atfedi-de">GitHub</a>
+        <div class="footer-links">
+          {lang === 'ko' && fairyHref && <a href={fairyHref}>응원하기</a>}
+          <a href="https://github.com/f3liz-casa/atfedi-de">GitHub</a>
+        </div>
       </div>
     </footer>
   </body>
