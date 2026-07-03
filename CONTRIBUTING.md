@@ -61,3 +61,7 @@ A couple of things to keep in mind:
 - The preview is meant to be *close to* production, not pixel-identical to the
   final Astro build. Treat it as a good-enough look, not the last word.
 - Every preview page is `noindex`, so search engines won't pick it up.
+
+The full path from draft to production — branch, preview, merge, and the
+clean-worktree deploy — is written up (in Japanese) in
+[docs/publishing.md](docs/publishing.md).
