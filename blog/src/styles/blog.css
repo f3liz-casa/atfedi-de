@@ -17,6 +17,15 @@
   --astro-code-token-link: #9fd8b4;
 }
 
+/* Japanese line breaking — the shared base's keep-all expects BudouX
+ * <wbr> marks, which the catalog inserts but the blog does not. Without
+ * them whole clauses become unbreakable and articles overflow narrow
+ * screens. Break normally here; auto-phrase where the browser has it. */
+html[lang='ja'] body {
+  word-break: normal;
+  word-break: auto-phrase;
+}
+
 /* AI authorship — the quiet notice at the top of a post, and the badge
  * next to bylines. Both link to /{lang}/llm. */
 .ai-note {
@@ -115,9 +124,17 @@
 
 .post-page > .post {
   grid-column: 2;
+  /* Let the column shrink below the widest code line — a grid item's
+   * automatic minimum otherwise keeps the article at the pre's width,
+   * and the pre's own overflow-x never gets a chance to scroll. */
+  min-width: 0;
 }
 
 .post {
+  /* width + max-width, not fit-content: the auto margins turn off grid
+   * stretch, and content-sized placement would follow the widest code
+   * line right off a narrow screen. */
+  width: 100%;
   max-width: var(--measure);
   margin-inline: auto;
   padding-block: var(--space-8) var(--space-16);
