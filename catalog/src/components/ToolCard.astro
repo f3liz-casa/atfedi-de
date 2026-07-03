@@ -11,7 +11,7 @@ interface Props {
 
 const { tool, lang } = Astro.props;
 const t = useTranslations(lang);
-const { name, category, summary, links, tags, discontinued } = tool.data;
+const { name, category, summary, links, tags, discontinued, page } = tool.data;
 ---
 
 <li class="tool-card" data-category={category}>
@@ -27,6 +27,7 @@ const { name, category, summary, links, tags, discontinued } = tool.data;
     {tags.map((tag) => <span class="tag">{tag}</span>)}
   </div>
   <div class="tool-links">
+    {page && <a href={page}>{t('tool.guide')}</a>}
     <a href={resolveUrl(links.home, lang)}>{t('tool.home')}</a>
     {links.repo && <a href={resolveUrl(links.repo, lang)}>{t('tool.repo')}</a>}
     {links.docs && <a href={resolveUrl(links.docs, lang)}>{t('tool.docs')}</a>}

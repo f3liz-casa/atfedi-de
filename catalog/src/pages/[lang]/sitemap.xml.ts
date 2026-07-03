@@ -7,7 +7,16 @@ export function getStaticPaths() {
   return locales.map((lang) => ({ params: { lang } }));
 }
 
-const pages = ['/', '/use/', '/build/'];
+const pages = [
+  '/',
+  '/use/',
+  '/build/',
+  '/build/fedify/',
+  '/build/fedify/roadmap/',
+  '/build/fedify/feels-good/',
+  '/build/fedify/watch-out/',
+  '/build/fedify/running/',
+];
 
 export const GET: APIRoute = ({ params }) => {
   const urls = pages

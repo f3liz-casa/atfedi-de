@@ -45,6 +45,9 @@ const tools = defineCollection({
       docs: localizedUrl.optional(),
     }),
     license: z.string().optional(),
+    // Site-local path of this tool's own guide pages (e.g. /build/fedify) —
+    // rendered from src/content/tool-pages/, shown as a "Guide" card link.
+    page: z.string().optional(),
     tags: z.array(z.string()).default([]),
     // Set true for a service that has shut down — it stays listed, but marked.
     discontinued: z.boolean().default(false),
