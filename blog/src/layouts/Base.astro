@@ -33,6 +33,10 @@ interface Props {
 
 const { lang, title, description, langs, banner, langHref, published } = Astro.props;
 
+// The quiet door to the support page — the page itself explains why,
+// and holds the per-region donation links.
+const supportLabel: Record<string, string> = { en: 'Support', ja: '応援', ko: '응원' };
+
 // The same path under another language — for the switcher.
 const rest = Astro.url.pathname.replace(/^\/(en|ja|ko)/, '') || '/';
 const switchLangs = langs ?? locales;
@@ -118,7 +122,10 @@ const ogLocale: Record<string, string> = { en: 'en_US', ja: 'ja_JP', ko: 'ko_KR'
     <footer class="site-footer">
       <div class="footer-inner">
         <p>atfedi.de — an open catalog of fediverse tools.</p>
-        <a href="https://github.com/f3liz-casa/atfedi-de">GitHub</a>
+        <div class="footer-links">
+          <a href={`/${lang}/support/`}>{supportLabel[lang] ?? 'Support'}</a>
+          <a href="https://github.com/f3liz-casa/atfedi-de">GitHub</a>
+        </div>
       </div>
     </footer>
   </body>

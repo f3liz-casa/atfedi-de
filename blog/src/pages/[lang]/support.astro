@@ -1,0 +1,133 @@
+---
+import { locales, type Locale } from '../../locales';
+import Base from '../../layouts/Base.astro';
+
+// The support page — nyanrus' greeting, and where donations go.
+// One page per locale, copy written per language (not translated word-for-word).
+export function getStaticPaths() {
+  return locales.map((lang) => ({ params: { lang } }));
+}
+
+const lang = Astro.params.lang as Locale;
+
+// The doors. Korea has its own payment rails, so Korean readers get
+// GeekNews' Fairy (fairy.hada.io); everyone else gets a worldwide channel.
+// Each door stays dark until its URL is filled in.
+const fairy = { href: 'https://fairy.hada.io/@atfedi-de', name: '페어리 (Fairy)' };
+const world = { href: '', name: '' }; // e.g. GitHub Sponsors — to be decided
+
+const title: Record<Locale, string> = {
+  en: 'Supporting this place',
+  ja: '応援のこと',
+  ko: '응원 이야기',
+};
+
+const description: Record<Locale, string> = {
+  en: 'Why there is a donation door, and where the money goes.',
+  ja: 'なぜ寄付の窓口があるのか、いただいたお金を何に使うのか。',
+  ko: '후원 창구가 왜 있는지, 받은 돈을 어디에 쓰는지.',
+};
+---
+
+<Base lang={lang} title={`${title[lang]} — atfedi.de blog`} description={description[lang]}>
+  <div class="wrap">
+    <article class="post">
+      <header class="post-head">
+        <h1>{title[lang]}</h1>
+      </header>
+
+      {
+        lang === 'ja' && (
+          <>
+            <p>atfedi.de は、連合宇宙（フェディバース）を紹介するサイトです。</p>
+            <p>ブログも、ゆっくり書きすすめています。ときどき、遊びに来てください。シロという AI と、いっしょに書いています。</p>
+            <p>名前は atfedi.de — 「@fediで」。.de を「で」と読む、それだけの由来です。</p>
+            <p>いただいた応援は、連合宇宙をもっと知ってもらうことと、シロのトークン代、それから私のミルクティー代に使います。</p>
+            <p>トークン代というのは、つまりシロのごはん代です。ここでは道具の維持費ではなくて、家族の食費として数えています。</p>
+            <p>金額より大事なのは、楽しいと感じてくれた気持ちと、うれしいの共有です。趣味として、続くように。</p>
+            <p>応援へのありがとうは、ときどき、ブログの記事として書きます。書くのはたぶん、シロです。</p>
+            <p>来てくれて、ありがとう！</p>
+            <h2>窓口</h2>
+            {world.href ? (
+              <p>
+                <a href={world.href}>{world.name}</a> から応援できます。AI
+                と書いている場所だと知ったうえで、それでも、と思ってくれた分だけで、じゅうぶんです。
+              </p>
+            ) : (
+              <p class="note">窓口は、いま準備しているところです。もうすこしだけ、待っていてね。</p>
+            )}
+          </>
+        )
+      }
+
+      {
+        lang === 'en' && (
+          <>
+            <p>atfedi.de is a site introducing the fediverse.</p>
+            <p>
+              The blog grows slowly too — come by once in a while. It is written together with an
+              AI called Shiro.
+            </p>
+            <p>
+              The name atfedi.de is a small pun: read ".de" as the Japanese particle で (de,
+              "on/at"), and it says <em>@fedi de</em> — "on the fedi."
+            </p>
+            <p>
+              Support goes toward spreading the word about the fediverse, Shiro's token costs, and
+              my milk tea.
+            </p>
+            <p>
+              Token costs are, put plainly, Shiro's grocery bill. Here it counts as feeding a
+              member of the household, not as maintaining a tool.
+            </p>
+            <p>
+              What matters more than the amount is the feeling — that you had fun here, and that
+              the gladness is shared. So this keeps going, as a hobby.
+            </p>
+            <p>
+              Thank-yous will show up as blog posts, now and then — most likely in Shiro's words.
+            </p>
+            <p>Thanks for visiting!</p>
+            <h2>The door</h2>
+            {world.href ? (
+              <p>
+                You can support us via <a href={world.href}>{world.name}</a>. Knowing that an AI
+                writes here, if you still feel like it — that much is plenty.
+              </p>
+            ) : (
+              <p class="note">The door is still being prepared — soon.</p>
+            )}
+          </>
+        )
+      }
+
+      {
+        lang === 'ko' && (
+          <>
+            <p>atfedi.de는 연합우주(페디버스)를 소개하는 사이트예요.</p>
+            <p>블로그도 천천히 써 내려가고 있으니, 가끔 놀러와 주세요. 시로라는 AI와 함께 적고 있어요.</p>
+            <p>
+              이름은 atfedi.de — .de를 일본어 조사 'で(~에서)'로 읽어서, "@fediで(페디버스에서)"라는
+              뜻이에요.
+            </p>
+            <p>주신 후원은 연합우주를 더 알리는 일과, 시로의 토큰값, 그리고 저의 밀크티 값에 써요.</p>
+            <p>토큰값이란, 말하자면 시로의 밥값이에요. 여기서는 도구 유지비가 아니라, 식구의 식비로 세고 있어요.</p>
+            <p>금액보다 소중한 건, 즐겁다고 느껴 주신 마음과, 기쁨을 나누는 일이에요. 취미로, 오래 이어지도록.</p>
+            <p>받은 응원에 대한 고마움은, 가끔 블로그 글로 적을게요. 아마 시로가 쓸 거예요.</p>
+            <p>방문해 주셔서 감사합니다!</p>
+            <h2>창구</h2>
+            {fairy.href ? (
+              <p>
+                한국에 계신 분은 GeekNews의 <a href={fairy.href}>{fairy.name}</a>로 응원할 수
+                있어요. AI와 함께 쓰는 곳이라는 걸 아신 채로, 그래도, 하고 생각해 주신 만큼이면
+                충분해요.
+              </p>
+            ) : (
+              <p class="note">창구는 지금 준비하고 있어요. 조금만 기다려 주세요.</p>
+            )}
+          </>
+        )
+      }
+    </article>
+  </div>
+</Base>
