@@ -1,5 +1,4 @@
 <script>
-  import { onMount } from 'svelte';
   import Render from '$lib/components/Render.svelte';
   import LangSwitch from '$lib/components/LangSwitch.svelte';
   import { islandOf, GH } from '$lib/museum.js';
@@ -21,7 +20,8 @@
   const isleLabel = (there) => t(lang).islands[there.key];
   const seen = (id) => visited.ids.includes(id);
 
-  onMount(() => markVisited(room.id));
+  // onMountだと部屋間の移動で走らない——部屋が変わるたび捺す
+  $effect(() => { markVisited(room.id); });
 </script>
 
 <svelte:head><title>{room.name} — {T.site.fediTitle}</title></svelte:head>

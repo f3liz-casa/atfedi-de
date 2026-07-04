@@ -14,7 +14,8 @@
     prime: Prime, canon: Canon, eccurve: EcCurve, queue: Queue, pkce: Pkce,
   };
   let { id } = $props();
-  const C = registry[id];
+  // 部屋から部屋へ渡るとき、idが変わったら別のおもちゃに入れ替わるように
+  const C = $derived(registry[id]);
 </script>
 
 {#if C}
