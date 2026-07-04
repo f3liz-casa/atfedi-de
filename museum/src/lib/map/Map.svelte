@@ -427,6 +427,11 @@
   }
   function open(id, { hash = true } = {}) {
     if (!DATA[id]) return;
+    // 部屋の世界に合わせてレンズを掛け外しする(隠れ街=夜、地上=昼)
+    if (id !== 'welcome') {
+      const night = id.startsWith('math-');
+      if (ui.lens !== night) ui.lens = night;
+    }
     firstStamp = id !== 'welcome' && !visited.ids.includes(id);
     if (id !== 'welcome') markVisited(id);
     sel = id;
