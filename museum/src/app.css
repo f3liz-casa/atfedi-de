@@ -1,0 +1,262 @@
+/* フェディの博物街 — 共通の衣装 */
+:root{
+  --paper:#E9E3D0; --card:#F5EFDD; --wall:#F7F2E3;
+  --sea:#8FB3AE; --sea-deep:#7CA29D; --land:#EDE6D1; --coast:#B9AE8F;
+  --ink:#3B372E; --ink-soft:#6B6455; --shu:#C6472E;
+  --roof-fedify:#68808C; --roof-hollo:#B0714F; --roof-hp:#5E7B5A;
+  --tree:#9AAE7C; --tree2:#7D9663; --path:#D8CDA9;
+  --gold:#E8C168; --thread:#9FD8D2;
+  --panel-bg:#F5EFDD; --panel-ink:#3B372E;
+  --code-bg:#2E2A22; --code-ink:#E7DFC9;
+}
+*{margin:0;padding:0;box-sizing:border-box}
+body{
+  font-family:"Hiragino Kaku Gothic ProN","Yu Gothic","Noto Sans JP",sans-serif;
+  background:var(--paper); color:var(--ink); line-height:1.9;
+}
+
+/* ===== 展示室 ===== */
+.sheet{max-width:700px; margin:0 auto; padding:26px 18px 70px; animation:rise .75s ease both}
+@keyframes rise{from{opacity:0; transform:translateY(10px)}}
+.backline{font-size:.8rem; margin-bottom:18px}
+.backline a{color:var(--ink-soft); text-decoration:none; border-bottom:1px solid var(--shu)}
+header.plaque{
+  background:var(--card); border:1.5px solid var(--ink); border-radius:3px;
+  box-shadow:4px 4px 0 rgba(59,55,46,.16); padding:22px 26px 20px; margin-bottom:30px;
+}
+.plain{background:var(--wall); border:1px dashed rgba(59,55,46,.55); border-radius:3px;
+  padding:11px 15px; font-size:.86rem; margin-bottom:28px; line-height:1.8}
+.plain .plabel{display:block; font-size:.66rem; letter-spacing:.26em;
+  color:var(--shu); margin-bottom:3px}
+.kind{font-size:.68rem; letter-spacing:.28em; color:var(--ink-soft);
+  display:flex; align-items:center; gap:8px}
+.kind::before{content:""; width:8px; height:8px; border-radius:50%; background:var(--shu); flex:none}
+h1{font-family:"Hiragino Mincho ProN","Yu Mincho","Noto Serif JP",serif;
+  font-weight:600; font-size:1.7rem; letter-spacing:.12em; margin-top:8px; text-wrap:balance}
+.sheet h2{font-family:"Hiragino Mincho ProN","Yu Mincho",serif; font-weight:600;
+  font-size:1.02rem; letter-spacing:.22em; margin:38px 0 12px;
+  display:flex; align-items:center; gap:12px}
+.sheet h2::after{content:""; height:1px; background:var(--ink); opacity:.25; flex:1}
+.sheet p{font-size:.92rem; margin-bottom:12px; max-width:65ch}
+.sheet ul{list-style:none; display:flex; flex-direction:column; gap:9px; margin-bottom:12px}
+.sheet ul li{font-size:.88rem; padding-left:1.1em; position:relative}
+.sheet ul li::before{content:"、"; position:absolute; left:0; color:var(--shu)}
+.sheet code{font-family:ui-monospace,"SF Mono",Menlo,monospace; font-size:.85em;
+  background:rgba(59,55,46,.08); border-radius:2px; padding:1px 4px}
+.files{display:flex; flex-direction:column; gap:10px}
+.file{background:var(--card); border:1px solid rgba(59,55,46,.4); border-radius:3px;
+  padding:9px 13px; font-size:.85rem}
+.file a{font-family:ui-monospace,"SF Mono",Menlo,monospace; font-size:.8rem;
+  color:var(--ink); text-decoration:none; border-bottom:1px solid var(--shu); word-break:break-all}
+.file .what{color:var(--ink-soft); font-size:.82rem; margin-top:2px}
+figure.sutra{margin:0}
+.sheet pre{background:var(--code-bg); color:var(--code-ink); border-radius:4px;
+  padding:15px 17px; overflow-x:auto; font-size:.78rem; line-height:1.7;
+  font-family:ui-monospace,"SF Mono",Menlo,monospace}
+.sheet pre.shiki{border:1px solid rgba(59,55,46,.45)}
+.sheet pre code{background:none; padding:0; font-size:1em}
+figcaption{font-size:.75rem; color:var(--ink-soft); margin-top:7px}
+figcaption a{color:var(--ink-soft); border-bottom:1px solid var(--shu); text-decoration:none}
+.chips{display:flex; flex-wrap:wrap; gap:8px}
+.chips a{font-size:.8rem; text-decoration:none; color:var(--ink);
+  background:var(--wall); border:1px solid var(--ink); border-radius:999px; padding:5px 13px}
+.links{display:flex; flex-direction:column; gap:7px; margin-top:4px}
+.links a{font-size:.85rem; color:var(--ink); text-decoration:none;
+  border-bottom:1px solid var(--shu); align-self:flex-start}
+.links a::after{content:" ↗"; color:var(--shu)}
+nav.route{display:flex; justify-content:space-between; gap:12px; margin-top:46px;
+  border-top:1px solid rgba(59,55,46,.3); padding-top:18px; font-size:.84rem}
+nav.route a{color:var(--ink); text-decoration:none; border-bottom:1px solid var(--shu)}
+nav.route .to-map{color:var(--ink-soft)}
+.isle{font-size:.68rem; letter-spacing:.05em; margin-left:7px; white-space:nowrap}
+/* めぐりの印: 白丸=まだ / 朱=見た */
+.chips a.seen::before,.chips a.unseen::before,
+nav.route a.seen::before,nav.route a.unseen::before{
+  content:""; display:inline-block; width:8px; height:8px; border-radius:50%;
+  border:1.5px solid var(--shu); background:var(--wall); margin-right:6px; vertical-align:0}
+.chips a.seen::before,nav.route a.seen::before{background:var(--shu)}
+/* 変わった部分の蛍光ペン(Shikiのパレットにない色) */
+mark.chg,.chg{background:#F6DE6B; color:var(--ink); border-radius:2px; padding:0 1px}
+.chg-line{background:#F6DE6B55; display:inline-block; min-width:100%; border-radius:2px}
+
+/* ===== 動くおもちゃ ===== */
+.toy{background:var(--card); border:1.5px solid var(--ink); border-radius:3px;
+  box-shadow:3px 3px 0 rgba(59,55,46,.16); padding:16px 18px;
+  display:flex; flex-direction:column; gap:11px; font-size:.85rem}
+.toy input[type=text],.toy textarea,.toy select{font:inherit; font-size:.85rem;
+  padding:7px 10px; border:1px solid var(--ink); border-radius:3px;
+  background:var(--wall); color:var(--ink); width:100%}
+.toy textarea{resize:vertical; min-height:56px}
+.toy button{font:inherit; font-size:.82rem; letter-spacing:.08em; color:var(--ink);
+  background:var(--wall); border:1.5px solid var(--ink); border-radius:3px;
+  padding:8px 14px; cursor:pointer; box-shadow:2px 2px 0 rgba(59,55,46,.18);
+  align-self:flex-start}
+.toy button:active{transform:translate(1px,1px); box-shadow:none}
+.toy button:disabled{opacity:.35; cursor:default; box-shadow:none}
+.toy pre{margin:0; font-size:.74rem}
+.toy .row{display:flex; gap:10px; flex-wrap:wrap; align-items:center}
+.toy .row>*{flex:1; min-width:120px}
+.toy .row button,.toy .row label{flex:none}
+.toy label{display:flex; gap:6px; align-items:center; font-size:.8rem}
+.toy .ok{color:#2E7D4F; font-weight:600}
+.toy .bad{color:var(--shu); font-weight:600}
+.toy .hint{font-size:.75rem; color:var(--ink-soft)}
+.toy canvas{max-width:100%; background:var(--wall); border:1px solid var(--ink);
+  border-radius:3px; touch-action:none}
+.toy .mono{font-family:ui-monospace,"SF Mono",Menlo,monospace; font-size:.76rem;
+  word-break:break-all}
+.toy pre.light{background:var(--wall); color:var(--ink);
+  border:1px solid rgba(59,55,46,.45)}
+.toy .j-key{color:#998418} .toy .j-str{color:#B56959}
+.toy .j-num{color:#2F798A} .toy .j-punc{color:#6B6455}
+.toy .qrow{display:flex; gap:6px; flex-wrap:wrap; min-height:34px; align-items:center}
+.toy .env{border:1px solid var(--ink); background:var(--wall); border-radius:3px;
+  padding:3px 8px; font-size:.75rem}
+.toy .env.retry{border-color:var(--shu); color:var(--shu)}
+
+/* ===== 扉(ページ間の間) ===== */
+#door{position:fixed; inset:0; background:var(--panel-bg); z-index:30;
+  display:flex; flex-direction:column; align-items:center; justify-content:center;
+  gap:12px; opacity:0; pointer-events:none; transition:opacity .45s; color:var(--panel-ink)}
+#door.open{opacity:1; pointer-events:auto}
+#door.night{background:#232B44; color:#C9CEDF}
+#door .d-kind{font-size:.7rem; letter-spacing:.3em; color:var(--ink-soft);
+  display:flex; align-items:center; gap:8px}
+#door .d-kind::before{content:""; width:8px; height:8px; border-radius:50%;
+  background:var(--shu); flex:none}
+#door .d-name{font-family:"Hiragino Mincho ProN","Yu Mincho",serif;
+  font-weight:600; font-size:1.4rem; letter-spacing:.2em}
+#door .d-dots{letter-spacing:.5em; color:var(--shu); animation:dots 1.2s ease infinite}
+@keyframes dots{50%{opacity:.25}}
+/* 夜から入るとき: 中央から朝がひろがる。文字は光が生まれたらすぐ墨色に */
+#door .dawnlight{position:absolute; inset:0; background:var(--panel-bg);
+  clip-path:circle(0% at 50% 50%); pointer-events:none}
+#door>div{position:relative}
+#door .dawnlight{position:absolute}
+#door.dawn .dawnlight{clip-path:circle(75% at 50% 50%); transition:clip-path 1.55s ease}
+#door.dawn{color:var(--panel-ink); transition:opacity .45s, color .3s ease .18s}
+#door.dawn .d-kind{color:#6B6455; transition:color .3s ease .18s}
+
+/* ===== 地図 ===== */
+.map-root{position:fixed; inset:0; background:var(--sea); overflow:hidden;
+  transition:background .9s}
+.map-root.lens{
+  --sea:#1C2338; --sea-deep:#161C2E; --land:#242C46; --coast:#39425F;
+  --ink:#C9CEDF; --ink-soft:#8B92AB; --wall:#2D3653;
+  --roof-fedify:#3B4666; --roof-hollo:#3B4666; --roof-hp:#3B4666;
+  --tree:#2E3A55; --tree2:#28334C; --path:#2E3A55; --shu:#D96A4F;
+}
+.map-root #map{position:absolute; inset:0; width:100%; height:100%; touch-action:none;
+  user-select:none; -webkit-user-select:none; cursor:grab; display:block}
+.map-root #map.dragging{cursor:grabbing}
+.map-root #map [data-id]{cursor:pointer}
+.map-root #map [data-goto]{cursor:pointer}
+.map-root #map text{pointer-events:none}
+.f-sea{fill:var(--sea)} .f-land{fill:var(--land);stroke:var(--coast);stroke-width:3}
+.f-wall{fill:var(--wall);stroke:var(--ink);stroke-width:1.5}
+.f-wave{stroke:var(--sea-deep);fill:none;stroke-width:2;stroke-linecap:round}
+.f-path{stroke:var(--path);fill:none;stroke-width:7;stroke-linecap:round}
+.f-tree{fill:var(--tree)} .f-tree2{fill:var(--tree2)}
+.f-ink{fill:var(--ink)} .f-shadow{fill:rgba(59,55,46,.14)}
+.map-root.lens .f-shadow{fill:rgba(0,0,0,.25)}
+.map-root #map .sw{transition:fill .9s, stroke .9s}
+.map-root text.name{font-family:"Hiragino Mincho ProN","Yu Mincho","Noto Serif JP",serif;
+  fill:var(--ink); font-weight:600; letter-spacing:.14em}
+.map-root text.lbl{fill:var(--ink); font-weight:600}
+.map-root text.lbl-soft{fill:var(--ink-soft)}
+.map-root text.mono{font-family:ui-monospace,"SF Mono",Menlo,monospace}
+.map-root .far text.sm{opacity:0}
+.map-root text.sm{transition:opacity .4s}
+#gMath,#gThreads{opacity:0; transition:opacity 1.1s; pointer-events:none}
+.map-root.lens #gMath{opacity:1; pointer-events:auto}
+.map-root.lens #gThreads{opacity:1}
+.m-glow{fill:#2B3557;stroke:var(--gold);stroke-width:2}
+.m-line{stroke:var(--gold);fill:none;stroke-width:2;stroke-linecap:round}
+.m-text{fill:var(--gold)}
+.thread{stroke:var(--thread);stroke-width:2.5;fill:none;opacity:.85;
+  stroke-dasharray:5 11; stroke-linecap:round}
+.bead{fill:var(--gold); opacity:.95}
+.surface{transition:opacity 1.1s}
+.map-root.lens .surface{opacity:.09; pointer-events:none}
+.signpost{opacity:0; pointer-events:none; transition:opacity .45s}
+.map-root .near .signpost{opacity:1; pointer-events:auto}
+.mk{transform:scale(var(--mk-scale,1))}
+.mkr .base{fill:var(--wall); stroke:var(--shu); stroke-width:1.6; transition:fill .9s,stroke .9s}
+.mkr .core{fill:var(--shu); opacity:0; transition:opacity .35s}
+.mkr.done .core{opacity:1}
+.mkr .ring{fill:none; stroke:var(--shu); stroke-width:1.5; opacity:0; transition:opacity .3s}
+.mkr.sel .ring{opacity:.95}
+#gMath .mkr .base{stroke:var(--gold); fill:#161C2E}
+#gMath .mkr .core{fill:var(--gold)}
+#gMath .mkr .ring{stroke:var(--gold)}
+.map-root #map .sel:not(.mkr){filter:drop-shadow(0 0 2px rgba(198,71,46,.8)) drop-shadow(0 0 7px rgba(198,71,46,.5))}
+.map-root.lens #map .sel:not(.mkr){filter:drop-shadow(0 0 2px rgba(232,193,104,.9)) drop-shadow(0 0 8px rgba(232,193,104,.5))}
+/* 滑空中とドラッグ中は灯を休ませる(毎フレームのフィルタ再計算が滑空をかくつかせる) */
+.map-root #map.gliding .sel:not(.mkr),
+.map-root #map.dragging .sel:not(.mkr){filter:none}
+
+/* 地図の家具(看板・操作・御朱印・札) */
+.map-root .plaque{position:absolute; top:14px; left:14px; z-index:5;
+  background:var(--panel-bg); border:1.5px solid var(--ink);
+  border-radius:3px; padding:10px 16px 12px;
+  box-shadow:3px 3px 0 rgba(59,55,46,.18); max-width:min(78vw,380px);
+  transition:background .9s,border-color .9s,color .9s}
+.map-root .plaque h1{font-size:1.25rem; letter-spacing:.22em; margin-top:0}
+.map-root .plaque p{font-size:.72rem; color:var(--ink-soft); margin-top:3px; letter-spacing:.06em}
+.map-root.lens .plaque,.map-root.lens .ctrl button,.map-root.lens .panel,.map-root.lens .stamp{
+  background:#232B44; border-color:#4A557A; color:#C9CEDF; --panel-ink:#C9CEDF}
+.map-root .ctrl{position:absolute; right:14px; bottom:14px; z-index:5; display:flex;
+  flex-direction:column; gap:8px; align-items:flex-end}
+.map-root .ctrl button{
+  font:inherit; font-size:.82rem; letter-spacing:.12em; color:var(--panel-ink);
+  background:var(--panel-bg); border:1.5px solid var(--ink); border-radius:3px;
+  padding:9px 14px; cursor:pointer; box-shadow:2px 2px 0 rgba(59,55,46,.18);
+  transition:background .9s,border-color .9s,color .9s}
+.map-root .ctrl button:active{transform:translate(1px,1px); box-shadow:none}
+.map-root .ctrl button b{color:var(--shu); font-weight:600}
+.map-root .stamp{position:absolute; left:14px; bottom:14px; z-index:5;
+  background:var(--panel-bg); border:1.5px solid var(--ink); border-radius:3px;
+  padding:7px 12px; font-size:.75rem; letter-spacing:.1em; color:var(--panel-ink);
+  box-shadow:2px 2px 0 rgba(59,55,46,.18); transition:background .9s,border-color .9s}
+.map-root .stamp b{color:var(--shu); font-family:ui-monospace,"SF Mono",Menlo,monospace}
+.map-root .stamp .wipe{font:inherit; font-size:.68rem; margin-left:8px; padding:1px 6px;
+  background:none; border:1px solid var(--ink-soft); border-radius:3px;
+  color:var(--ink-soft); cursor:pointer}
+.map-root .stamp .wipe:hover{border-color:var(--shu); color:var(--shu)}
+.map-root .panel{position:absolute; top:14px; right:14px; z-index:6;
+  width:min(340px,calc(100vw - 28px));
+  background:var(--panel-bg); border:1.5px solid var(--ink); border-radius:3px;
+  box-shadow:4px 4px 0 rgba(59,55,46,.18); padding:16px 18px 15px;
+  transform:translateX(calc(100% + 30px));
+  transition:transform .35s cubic-bezier(.2,.8,.25,1),background .9s,border-color .9s;
+  max-height:calc(100vh - 28px); overflow-y:auto; color:var(--panel-ink)}
+.map-root .panel.open{transform:none}
+.map-root .panel h2{font-family:"Hiragino Mincho ProN","Yu Mincho",serif; font-weight:600;
+  font-size:1.15rem; letter-spacing:.1em; margin:7px 0 9px; text-wrap:balance}
+.map-root .panel p{font-size:.83rem; line-height:1.85; color:var(--panel-ink)}
+.map-root .panel .plinks{margin-top:12px; display:flex; flex-direction:column; gap:6px}
+.map-root .panel .plinks a{font-size:.78rem; color:var(--panel-ink); text-decoration:none;
+  border-bottom:1px solid var(--shu); align-self:flex-start; padding-bottom:1px}
+.map-root .panel .plinks a.ext::after{content:" ↗"; color:var(--shu)}
+.map-root .panel .plinks a.roomlink{border:1.5px solid var(--shu); border-radius:3px;
+  padding:5px 10px; font-weight:600}
+.map-root .panel .plinks a.roomlink::after{content:" →"}
+.map-root .panel .visitedline{margin-top:12px; font-size:.68rem; letter-spacing:.14em; color:var(--shu)}
+.map-root .pclose{position:absolute; top:8px; right:10px; font:inherit; font-size:1rem;
+  background:none; border:none; color:var(--ink-soft); cursor:pointer; padding:4px 6px}
+
+@media (max-width:720px){
+  .map-root .panel{top:auto; bottom:0; right:0; left:0; width:100%;
+    border-left:none; border-right:none; border-bottom:none; border-radius:10px 10px 0 0;
+    transform:translateY(110%); max-height:46vh;
+    padding-bottom:max(15px,env(safe-area-inset-bottom))}
+  .map-root .panel.open{transform:none}
+  .map-root .ctrl{bottom:auto; top:14px}
+  .map-root .stamp{bottom:max(14px,env(safe-area-inset-bottom))}
+  .map-root .plaque h1{font-size:1.05rem}
+}
+@media (prefers-reduced-motion:reduce){
+  .sheet{animation:none}
+  .map-root .panel{transition:none}
+  #door .d-dots{animation:none}
+}

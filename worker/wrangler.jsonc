@@ -17,6 +17,7 @@
     { "pattern": "ja.atfedi.de", "custom_domain": true },
     { "pattern": "ko.atfedi.de", "custom_domain": true },
     { "pattern": "blog.atfedi.de", "custom_domain": true },
-    { "pattern": "danro.atfedi.de", "custom_domain": true }
+    { "pattern": "danro.atfedi.de", "custom_domain": true },
+    { "pattern": "museum.atfedi.de", "custom_domain": true }
   ]
 }

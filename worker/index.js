@@ -37,7 +37,11 @@ function pickLocale(header) {
 // the platform default (revalidate every time).
 async function serveAsset(env, url, path, request) {
   const res = await env.ASSETS.fetch(new Request(new URL(path, url), request));
-  if (res.ok && url.pathname.startsWith('/_astro/')) {
+  // /_astro/ は Astro、/_app/immutable/ は SvelteKit(museum)のハッシュ付き資産
+  const immutable =
+    url.pathname.startsWith('/_astro/') ||
+    url.pathname.startsWith('/_app/immutable/');
+  if (res.ok && immutable) {
     const headers = new Headers(res.headers);
     headers.set('cache-control', 'public, max-age=31536000, immutable');
     return new Response(res.body, { status: res.status, headers });
@@ -90,6 +94,13 @@ export default {
       let path = url.pathname;
       if (!path.endsWith('/') && !/\.[^/]+$/.test(path)) path += '/';
       return serveAsset(env, url, `/danro${path}`, request);
+    }
+
+    // --- museum.atfedi.de: 博物街(SvelteKit static) ---
+    if (host === 'museum.atfedi.de') {
+      let path = url.pathname;
+      if (!path.endsWith('/') && !/\.[^/]+$/.test(path)) path += '/';
+      return serveAsset(env, url, `/museum${path}`, request);
     }
 
     // --- blog.atfedi.de: serve the blog (path-based locales) ---
