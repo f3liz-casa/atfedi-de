@@ -18,11 +18,9 @@ links:
     href: https://www.npmjs.com/package/@fedify/fedify
 ---
 
-npmの蔵版から写経されたfedifyが、ここに納まっています。package.jsonには@fedify/\*の経が八巻——fedify本体、honoの橋、postgresの倉、vocab、webfinger、debugger、markdown-itの小径が二本——ぜんぶ ^2.3.0 で揃い踏み。
+`npm install` ひとつで、この館の外交がぜんぶ手に入りました——それがこの塔です。package.jsonに@fedify/\*の経が八巻、揃い踏み。
 
-別院と館の接合は、たった一行です。`src/index.tsx` の `app.use(federation(fedi, ...))`。しかもpages/oauth/apiのルータより前に置かれているので、`/@handle` という同じ住所が、訪ね方(Acceptヘッダ)によってfedifyの顔にも客間の顔にもなります。別院は目立たないのに、館の玄関の作法はぜんぶ別院が決めている。
-
-ところで、この館の表札(packageのname)は `@fedify/hollo`。holloはいま、fedify-devの家の一員です。別院と総本山が、同じ苗字を名乗っている。
+別院と館の接合は、たった一行です。`app.use(federation(fedi, ...))`。しかもルータたちより前に立つので、`/@handle` という同じ住所が、訪ね方によってfedifyの顔にも客間の顔にもなります。ところで、この館の表札は `@fedify/hollo`——別院と総本山が、同じ苗字を名乗っています。
 
 ## 見どころ
 

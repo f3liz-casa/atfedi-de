@@ -14,11 +14,9 @@ links:
     href: "https://github.com/fedify-dev/fedify/tree/main/packages/webfinger"
 ---
 
-섬의 첫 번째 문이에요. "@handle@host"라는 이름을 actor의 주소(URL)로 풀어줘요 — 연합 우주에서 누군가를 찾아가는 여정은 언제나 이 문을 지나면서 시작돼요.
+수신인 하나면, 우주 어디에 있는 누구든 찾아낼 수 있어요. "@friend@mastodon.social"이라고만 적으면, 상대가 어느 서버에 살든 앱은 진짜 주소(URL)를 끌어낼 수 있어요. 직접 만들 때는 `lookupWebFinger()`를 한 번 부르면 돼요 — 전화번호부가 안에서 어떻게 돌아가는지는 몰라도 괜찮아요.
 
-꾸러미로 보면 작아서, 공개된 입구는 lookupWebFinger() 하나뿐이에요. 돌아오는 건 JRD(JSON Resource Descriptor)라는 표인데, subject(이름), aliases(다른 이름), links(이 사람의 actor 문서는 여기, 하고 알려주는 길잡이)가 적혀 있어요.
-
-재미있는 건, 이 꾸러미가 "찾아가는 쪽" 절반만 맡는다는 점이에요. 누가 찾아왔을 때 /.well-known/webfinger로 답하는 쪽은 본당(federation/webfinger.ts)에 살아요. 이 문은 바깥으로 나가는 사람을 위한 거죠.
+이 꾸러미는 "찾아가는 쪽" 절반만 맡아요. 누가 찾아왔을 때 /.well-known/webfinger로 답하는 쪽은 본당에 살아요. 이 문은 바깥으로 나가는 사람을 위한 거죠.
 
 ## 볼거리
 

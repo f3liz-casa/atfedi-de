@@ -9,9 +9,9 @@ files:
     what: "The door's site: the Digest / Content-Digest headers"
 ---
 
-The door of SHA-256. A document of any length, once it passes through this door, comes out as a 32-byte shadow. There is no road back from the shadow to the original document. And if the document differs by even one character, the shadow becomes something entirely different.
+Know this door and you can answer "how can you be sure nothing was tampered with?" Any document, once it passes through this door, becomes a 32-byte shadow, and there is no road back from the shadow to the document. Differ by even one character and the shadow becomes something entirely different.
 
-Upstairs, the `Digest` header on a diplomatic document is this door's work. An island that receives a document by ship first passes it through the door itself, and checks whether the shadow matches what the envelope declares. If it doesn't match, someone touched the text along the way.
+Upstairs, the digest on a diplomatic document is this door's work. You pass an arriving document through the door yourself and see whether its shadow matches what the envelope declares. If it doesn't match, someone touched it along the way.
 
 ## Highlights
 

@@ -16,9 +16,9 @@ links:
     href: "https://github.com/fedify-dev/fedify/tree/main/packages"
 ---
 
-hono、express、fastify、koa、h3、elysia、nestjs、next、nuxt、sveltekit、fresh、astro、solidstart、cfworkers。どのフレームワークの岸にも、同じ形の橋が架かっています。
+いま使っているフレームワークのまま、連合を足せます。honoでもExpressでもNextでもSvelteKitでも、橋を一本importすれば、同じURLがブラウザにはHTMLを、fediクライアントにはJSON-LDを返すようになる。乗り換えは要りません。
 
-橋の設計図はどれも同じです。federation(fed, contextDataFactory)がその框組の作法のミドルウェアを返し、中でfederation.fetch()を呼ぶ。妙味はonNotFound/onNotAcceptableが框組のnext()に譲るところ——「うちの用でなければ、そちらへどうぞ」。この譲り合いのおかげで、同じURLがfediクライアントにはJSON-LDを、ブラウザにはHTMLを返せます。
+橋の妙味は譲り合いです。fedifyの用でなければ框組のnext()にそっと譲る——この一手で、あなたの既存のルーティングと連合が、同じ住所に同居できます。
 
 ## 見どころ
 

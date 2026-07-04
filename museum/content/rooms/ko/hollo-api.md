@@ -18,9 +18,9 @@ links:
     href: "https://github.com/fedify-dev/hollo/tree/main/src/api"
 ---
 
-쓰던 Mastodon 앱이 그대로 말을 걸 수 있는 창구예요. v1에는 자원 라우터 14개(accounts, statuses, timelines, notifications……)가 늘어서 있고, 인증은 tokenRequired → scopeRequired → withAccountOwner라는 세 단계 복도를 지나고 나서 각 방으로 가요.
+쓰던 Mastodon 앱으로 그대로 지낼 수 있어요. IceCubes든 Toot!이든, 접속할 곳만 hollo로 바꾸면 돼요. 서버를 옮겨도 손에 익은 앱은 그대로 — 그게 이 접수처의 약속이에요.
 
-재미있는 건, 접수처가 번역 담당이기도 하다는 점이에요. 앱이 "게시해 줘"라고 하면, 핸들러 안에서 그대로 fedify의 문맥(fedCtx)을 써서, 바깥 우주로 배달하는 일까지 끝내 버려요 — 명시된 수신자에게 한 번, followers에게 또 한 번, sendActivity()를 두 번. 접수처와 외교실이 복도로 이어져 있어요.
+그리고 접수처는 번역 담당이기도 해요. 앱이 "게시해 줘"라고 하면, 그대로 바깥 우주로 배달하는 일까지 끝내 버려요. 접수처와 외교실이 복도로 이어져 있어요.
 
 ## 볼거리
 

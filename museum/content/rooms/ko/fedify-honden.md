@@ -18,11 +18,9 @@ links:
     href: "https://github.com/fedify-dev/fedify/tree/main/packages/fedify/src/federation"
 ---
 
-fedify의 심장부예요. inbox에 도착한 문서를 받고, outbox에서 부치고, actor 장부를 챙기고 — 연합의 살림살이 전부를 여기 있는 Federation이 도맡아요.
+이 방이 있어서 "연합하는 앱"이 몇 줄이면 세워져요. inbox 접수, outbox 발송, actor 장부, 실패한 배달 다시 하기 — 연합의 살림살이를 통째로 맡기면, 앱의 알맹이(무엇을 올릴 수 있고 어떻게 보여줄지)만 생각하면 돼요. hollo도 hackers.pub도 그렇게 세워졌어요.
 
-배치도의 숫자부터가 벌써 볼거리예요. middleware.ts 한 장이 4697줄이거든요. FederationImpl, ContextImpl, InboxContextImpl, OutboxContextImpl — 일하는 실체는 거의 이 한 장에 살고, 옆의 federation.ts(1615줄)는 반대로 거의 타입과 계약뿐이에요. "약속의 책"과 "일하는 몸"이 뚜렷하게 다른 두루마리로 갈라져 있어요.
-
-가장 좋아하는 구석은 KvSpecDeterminer라는 작은 장부예요. 상대 섬(origin)마다 "이 사람한테는 어떤 봉랍 방식이 통했는지"를 곳간(KvStore)에 적어둬요. 연합은 의전이 아직 과도기라 모두가 같은 방식을 읽을 수 있는 건 아니거든요 — 그래서 기억해 둬요.
+가장 좋아하는 구석은 KvSpecDeterminer라는 작은 장부예요. 상대 섬마다 "어떤 봉랍 방식이 통했는지"를 기억해 둬요. 연합은 의전이 아직 과도기라 모두가 같은 방식을 읽을 수 있는 건 아니거든요 — 그런 현실과 어울리는 방법까지 맡길 수 있어요.
 
 ## 볼거리
 

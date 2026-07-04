@@ -18,9 +18,9 @@ links:
     href: "https://github.com/fedify-dev/hollo/tree/main/src/pages"
 ---
 
-The public pages by the entrance. The profile and the single-post page are not an SPA; the server assembles JSX (hono/jsx) and returns it as is—a quiet build. Only the finished HTML reaches a visitor's browser.
+You get an address. Your posts can be shown to anyone with just a URL, even people who run no dedicated app—open it in a browser and it's a quiet page; peek at the same address from fedi and it becomes an actor's face.
 
-The parlor's finest sight is that one entrance wears two faces. Visit `/@handle` in a browser and you're shown into the parlor for humans; visit the same address declaring activity+json in the Accept header, and fedify's actor dispatcher returns an ActivityPub document. At the top of the page, an alternate link is posted, too: "the federation-facing face of this address is here."
+The build is no SPA; it's the quiet way of assembling HTML on the server and returning it as is. Only the finished page reaches a visitor's browser.
 
 ## Highlights
 

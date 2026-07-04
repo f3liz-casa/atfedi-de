@@ -18,9 +18,9 @@ links:
     href: https://github.com/fedify-dev/fedify/tree/main/packages/fedify/src/sig
 ---
 
-The room that stamps documents and inspects the stamps that arrive. Three etiquettes live here together: HTTP Message Signatures (wielding both the new RFC 9421 and the old draft-cavage, http.ts at 2,100 lines), the old-style LD signature RsaSignature2017 (ld.ts), and the new FEP-8b32 Object Integrity Proofs (proof.ts, Ed25519).
+You stop impersonation and tampering—without writing a single line of cryptography. Outgoing letters get their wax seal stamped automatically, and arriving ones are inspected automatically. A letter from a forged sender is halted in this room, before it ever reaches your code.
 
-double-knock is this room's signature act. It first stamps with the etiquette it remembers, and if it gets back a 400 or 401, it switches to the other and adds the one that worked to its ledger. A raw FIXME is pinned in the code right now: bleeding-edge Mastodon returns 500 to an RFC 9421 signature, so the code was made to switch on 5xx too. In matters of rite, the field moves before the textbook.
+Stay for the messiness of the field, too. In a sea where new and old etiquettes mix (RFC 9421 and draft-cavage), the room stamps first with the etiquette it remembers, switches if it's refused, and writes down whichever one worked (double-knock). A raw FIXME is pinned here: bleeding-edge Mastodon returns 500 to the new etiquette, so the fallback was widened to catch it. In matters of rite, the field moves before the textbook.
 
 ## Highlights
 

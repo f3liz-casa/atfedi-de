@@ -18,9 +18,9 @@ links:
     href: "https://github.com/hackers-pub/hackerspub/tree/main/federation"
 ---
 
-この棟は、fedifyの配線だけのためにあります。builder.tsが空のFederationBuilderを作り、actor、collections、inbox、objects、outbox、webfinger——棟のみんなが副作用importで、自分の担当のディスパッチャを掛けていく。組み上がった設計図は、まだ生きていません。息を吹き込むのは閲覧室側(web/federation.ts)の仕事。
+holloと同じことが、Denoでもできます。外交の間取りを共有の設計図(builder)にしておけば、複数の棟から同じ配線を使い回せる——大きくなるアプリの、連合の置き場所の見本です。
 
-inbox/mod.tsは、動詞の路線図として読めます。Accept、Follow、Create、Announce、Undo……16種の.on()。多義的な動詞は、その場で中身を見て振り分ける——Undoが来たらgetObject()を覗いて、フォロー取り消しか、リアクション取り消しか、ブロック解除かを見極める。
+inbox/mod.tsは、動詞の路線図として読めます。Accept、Follow、Undo……多義的な動詞は中身を見て振り分ける。届く手紙の種類が、一枚で見渡せます。
 
 ## 見どころ
 

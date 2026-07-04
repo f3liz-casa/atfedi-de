@@ -16,9 +16,9 @@ links:
     href: "https://github.com/fedify-dev/fedify/tree/main/packages/fedify/src/nodeinfo"
 ---
 
-A notice board where a server posts who it is and how many residents it has. Both the posting side and the reading side live here: handleNodeInfo() and handleNodeInfoJrd() raise the notice, and getNodeInfo() goes to read someone else's.
+You post your server's self-introduction in a form the whole universe can read. What software it runs, how many people live here—your island shows up on fedi statistics sites thanks to this notice board. Raising it and reading it are each one function.
 
-The reader's etiquette is what's worth seeing here. Other people's notices are often malformed, so parseNodeInfo, parseSoftware, parseProtocol… form a chain of defensive parsers that quietly turn a broken placard into null. It is built to let another island's circumstances pass without blame.
+The reader's etiquette is what's worth seeing here. Other people's notices are often malformed, so a chain of defensive parsers quietly turns a broken placard into null. It's built to let another island's circumstances pass without blame.
 
 ## Highlights
 

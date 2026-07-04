@@ -18,11 +18,9 @@ links:
     href: "https://github.com/fedify-dev/hollo/tree/main/src/federation"
 ---
 
-fedify別院に常駐してもらい、外の宇宙との文通をぜんぶ任せている部屋です。createFederation()は館でただの一度——このひと呼びで、hollo全体がひとつの連合ノードになります。
+一人のサーバでも、宇宙全体と文通できます。外交の実務はfedify別院に任せているから、holloの外交はこの数ファイルで済んでいる——「自分のSNSを持つ」が、一人の趣味プロジェクトの規模に収まる理由がここにあります。
 
-台所事情が潔い。KVも配達キューも@fedify/postgres一本(PostgresKvStore+10並列のParallelMessageQueue)で、Redisも別のブローカーも置いていません。小さな館には、倉がひとつで足りる。
-
-もうひとつ、正直な貼り紙があります。封蝋の最初の作法(firstKnock)をわざと旧式のdraft-cavageに固定していて、コメントに「bonfireのissueが直ったらRFC 9421優先に戻す」と書いてある。相手がまだ新しい儀典を読めないという連合の現実に合わせて、礼儀の順番を変えているのです。
+台所事情も潔い。KVも配達キューも@fedify/postgres一本で、Redisも別のブローカーも置いていません。小さな館には、倉がひとつで足りる。
 
 ## 見どころ
 

@@ -18,11 +18,9 @@ links:
     href: "https://github.com/hackers-pub/hackerspub/tree/main/web"
 ---
 
-Fresh 2.0(alpha)の閲覧室です。routes/の下がそのまま廊下の図面で、@[username]/の小路にプロフィール、記事一覧、フォロワー、投稿一枚ずつの間が並びます。
+読む人は、JSなしでもぜんぶ読めます。書く人には、書き心地のいい島(Composer)がある。速いページと豊かな編集を両立させたいときの、間取りの見本がこの棟です。
 
-「島(islands)」という言葉が、この館では建築用語です。クライアントで動くJSは、Composer、Editor、PollCard、RemoteFollowModalといった対話の縁側だけ。あとはぜんぶサーバで組んだHTML。静かな読書室に、必要なところだけ小さな島が浮かんでいる。
-
-そしてこの棟自体は、薄い組み立て層です。db、drive、email、kv、federationの配線だけ自分で持って、中身の仕事はmodels/graphql/federationの棟に渡す。
+「島(islands)」という言葉が、この館では建築用語です。クライアントで動くJSは対話の縁側だけ。あとはぜんぶサーバで組んだHTML——静かな読書室に、必要なところだけ小さな島が浮かんでいます。
 
 ## 見どころ
 

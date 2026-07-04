@@ -9,9 +9,9 @@ files:
     what: "The well-digging site: two pairs, RSA-4096 and Ed25519"
 ---
 
-The well of RSA. A stone-laid well, older than the Elliptic Curve Atelier. The fediverse's old etiquette (draft-cavage's HTTP signatures) still draws water from this well. So fedify carries both RSA and Ed25519 keys—to speak with both the new town and the old.
+Know this well and you feel in your body what "a longer key is safer" means. Multiplying two large primes takes an instant; dividing back from the product takes a thousand years—a well where falling is easy and climbing is hard.
 
-The principle fits in one line. Picking two large primes and multiplying them takes an instant. Shown only the product and asked to divide back to the original two, you would need a thousand years, if the digits are large enough. Multiplication is walking downhill; factoring is climbing. In the well, falling is easy and climbing is hard.
+The fediverse's old etiquette (draft-cavage's HTTP signatures) still draws water from this well. So fedify carries both RSA and Ed25519 keys—to speak with the new town and the old alike.
 
 ## Highlights
 

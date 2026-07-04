@@ -18,9 +18,9 @@ links:
     href: "https://github.com/hackers-pub/hackerspub/tree/main/graphql"
 ---
 
-다음 관(web-next)을 위한, GraphQL 조회 창구예요. Pothos의 code-first — SDL을 손으로 쓰지 않고, 코드로 짠 schema를 printSchema()로 뽑아내요. 플러그인은 아홉 장을 겹쳐요(Complexity, Relay, ScopeAuth, Drizzle, Dataloader……).
+화면이 원하는 데이터를, 원하는 모양으로, 한 번에 물어볼 수 있어요. 새 화면을 만들 때마다 서버에 새 창구를 부탁하지 않아도 돼요 — 다음 관(web-next)이 어떤 모습이 되어도, 이 조회실이 답해요.
 
-가장 큰 볼거리는, 같은 postTable이 variant로 Note, Article, Question이라는 세 얼굴로 변한다는 점이에요. 장부는 한 권인데, 조회 창으로 보면 세 종류의 자료로 보이는 거죠.
+가장 큰 볼거리는, 같은 postTable이 Note, Article, Question이라는 세 얼굴로 변한다는 점이에요. 장부는 한 권인데, 조회 창으로 보면 세 종류의 자료로 보이는 거죠.
 
 ## 볼거리
 

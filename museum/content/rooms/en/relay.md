@@ -18,9 +18,9 @@ links:
     href: "https://github.com/fedify-dev/fedify/tree/main/packages/relay"
 ---
 
-Instead of one-to-one correspondence, a lighthouse takes it all in and carries it around for delivery—the lighthouse of an ActivityPub relay. A new face since fedify 2.0.0.
+You connect small islands to one another all at once. Instead of writing letter by letter to each one, subscribe to a lighthouse and the sea's news arrives in a batch. For a sparsely populated island, whether a relay exists changes the whole experience of federation—and this is the kit for building that lighthouse yourself.
 
-Offshore there are two styles, Mastodon and LitePub, and their subscription handshakes differ slightly. So two children of BaseRelay live here, MastodonRelay and LitePubRelay, and createRelay() chooses which one to light.
+Offshore there are two styles, Mastodon and LitePub, and their subscription handshakes differ slightly. So this lighthouse wears both faces at once.
 
 ## Highlights
 

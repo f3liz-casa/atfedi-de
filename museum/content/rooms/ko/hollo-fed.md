@@ -18,11 +18,9 @@ links:
     href: "https://github.com/fedify-dev/hollo/tree/main/src/federation"
 ---
 
-fedify 별원에 상주하도록 해서, 바깥 우주와 나누는 편지를 전부 맡긴 방이에요. createFederation()은 관에서 딱 한 번 — 이 한 번의 부름으로, hollo 전체가 하나의 연합 노드가 돼요.
+서버 한 대만으로도, 우주 전체와 편지를 나눌 수 있어요. 외교 실무는 fedify 별원에 맡기니까, hollo의 외교는 이 몇 개의 파일로 끝나요 — "내 SNS를 가진다"라는 일이 혼자 하는 취미 프로젝트의 규모에 담기는 이유가 여기 있어요.
 
-살림 형편이 깔끔해요. KV도 배달 큐도 @fedify/postgres 하나(PostgresKvStore+10병렬 ParallelMessageQueue)로 두고, Redis도 다른 브로커도 두지 않아요. 작은 관에는 곳간이 하나면 넉넉하죠.
-
-하나 더, 정직한 쪽지가 붙어 있어요. 봉랍의 첫 인사법(firstKnock)을 일부러 옛 방식인 draft-cavage로 고정해 두고, 주석에 "bonfire의 이슈가 고쳐지면 RFC 9421 우선으로 되돌린다"라고 적혀 있어요. 상대가 아직 새 의전을 읽지 못한다는 연합의 현실에 맞춰서, 예의의 순서를 바꾸고 있는 거죠.
+살림 형편도 깔끔해요. KV도 배달 큐도 @fedify/postgres 하나로 두고, Redis도 다른 브로커도 두지 않아요. 작은 관에는 곳간이 하나면 넉넉하죠.
 
 ## 볼거리
 

@@ -16,9 +16,9 @@ links:
     href: "https://github.com/fedify-dev/hollo/blob/main/src/oauth.tsx"
 ---
 
-앱에 여벌 열쇠(토큰)를 만들어 건네는 별채예요. 라우터는 `src/oauth.tsx` 한 장에, /authorize와 /token이 함께 살아요.
+앱에 "대신 게시해도 좋다"를 안전하게 건넬 수 있어요. 비밀번호는 건네지 않고, 여벌 열쇠(토큰)만요. 도중에 엿들려도 나쁘게 쓸 수 없는 방법(PKCE)까지 들어 있어요.
 
-열쇠를 만드는 솜씨가 꼼꼼해요. PKCE는 S256만 받고, 평문 challenge는 문 앞에서 돌려보내요. 여벌 열쇠를 맞바꿀 때(authorization_code 교환)는, 교환권에 SELECT ... FOR UPDATE 행 잠금을 걸고, challenge를 스스로 다시 계산해서 timingSafeEqualString으로 비교해요 — 같은 표를 두 번 쓰는 것도, 시간 차로 엿보는 훔쳐보기도, 만듦새 쪽에서 막아 뒀어요.
+열쇠를 만드는 솜씨가 꼼꼼해요. 여벌 열쇠를 맞바꿀 때는 행 잠금이 걸리고, 약속한 말의 그림자는 시간이 일정한 비교로 검사돼요 — 같은 표를 두 번 쓰는 것도, 엿보기도, 만듦새 쪽에서 막아 뒀어요.
 
 ## 볼거리
 

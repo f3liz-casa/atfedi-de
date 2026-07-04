@@ -18,9 +18,9 @@ links:
     href: "https://github.com/hackers-pub/hackerspub/tree/main/models"
 ---
 
-ドメインモデルの書庫です。Drizzle ORMのschema.tsに54の卓(テーブル)——account、actor、post、following、blocking、poll、reaction、notification、そしてmoderationの一式まで。連合SNSという世界が、そのまま台帳の形で並んでいます。
+連合SNSの世界ぜんぶ——投稿、フォロー、ブロック、投票、通報——が、54枚の台帳にどう収まるかを見られます。自分で連合アプリを作る人にとって、この書庫は間取りの参考書です。
 
-芯にあるのはrunInTransaction()という小さな作法。すでにトランザクションの中に居るなら乗り合い、外なら新しく開く。館じゅうの棟が、この一つの作法に寄りかかっています。
+芯にあるのはrunInTransaction()という小さな作法。すでにトランザクションの中なら乗り合い、外なら新しく開く。館じゅうの棟が、この一つの作法に寄りかかっています。
 
 ## 見どころ
 

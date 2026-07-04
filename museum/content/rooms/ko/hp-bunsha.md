@@ -20,11 +20,9 @@ links:
     href: "https://jsr.io/@fedify/fedify"
 ---
 
-이쪽 별원은 JSR 판본에서 사경했고, 워크스페이스 전체를 2.3.1로 pin해 뒀어요(fedify 본체, vocab, vocab-runtime, postgres, redis).
+판본이 JSR이어도, 경전은 같아요. 런타임이 Node든 Deno든, 같은 라이브러리로 같은 연합을 할 수 있어요 — 그 실례가 이 탑이에요. 워크스페이스 전체를 2.3.1로 pin해 뒀어요.
 
-설계도(federation 동의 builder)가 살아 있는 Federation이 되는 건, web/federation.ts의 builder.build() — 단 한 곳이에요. 곳간을 고르는 방식도 현실적이라, 배달 큐는 반드시 Postgres(handlerTimeout은 180초로 늘려요), KV는 KV_URL이 redis:면 Redis, 아니면 Postgres예요.
-
-그리고, 쪽지를 잘 봐 주세요. firstKnock을 draft-cavage로 고정하고, "bonfire의 이슈가 고쳐지면 되돌린다" — hollo 외교실과, 한 글자도 다르지 않은 같은 TODO예요. 두 관이 같은 아픔을 알고 있어서, 같은 쪽지를 붙여 뒀어요. 연합의 상호 운용성은, 이런 작은 쪽지가 모여서 이뤄지는 거죠.
+쪽지를 잘 봐 주세요. firstKnock을 draft-cavage로 고정하고 "이슈가 고쳐지면 되돌린다" — hollo 외교실과 한 글자도 다르지 않은 같은 TODO예요. 두 관이 같은 아픔을 알고 있어서, 같은 쪽지를 붙여 뒀어요. 연합의 상호 운용성은, 이런 작은 쪽지가 모여서 이뤄지는 거죠.
 
 ## 볼거리
 

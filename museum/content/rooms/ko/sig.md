@@ -18,9 +18,9 @@ links:
     href: https://github.com/fedify-dev/fedify/tree/main/packages/fedify/src/sig
 ---
 
-문서에 도장을 찍고, 도착한 도장을 검사하는 방이에요. 세 가지 방식이 함께 살아요 — HTTP Message Signatures(새 RFC 9421과 옛 draft-cavage 양손잡이, http.ts 2100줄), 옛 방식 LD 서명 RsaSignature2017(ld.ts), 그리고 새로운 FEP-8b32 Object Integrity Proofs(proof.ts, Ed25519)예요.
+사칭과 변조를 막을 수 있어요 — 암호를 한 줄도 쓰지 않고요. 보내는 편지에는 자동으로 봉랍이 찍히고, 도착한 편지는 자동으로 검사돼요. 가짜 발신인의 편지는 코드에 닿기 전에 이 방에서 멈춰요.
 
-double-knock(두 번 두드리기)은 이 방의 간판 재주예요. 먼저 장부에 기억해 둔 방식으로 찍어 보고, 400이나 401로 돌아오면 다른 쪽으로 바꿔 쥐고, 통한 쪽을 장부에 적어 둬요. 코드에는 지금 생생한 FIXME도 붙어 있어요 — 최신 Mastodon이 RFC 9421 서명에 500을 돌려줘서, 5xx에도 바꿔 쥐도록 했다는 거죠. 의전은 교과서보다 현장이 먼저 움직이더라고요.
+현장의 생생함도 한번 보고 가세요. 새 방식(RFC 9421)과 옛 방식(draft-cavage)이 뒤섞인 바다에서, 먼저 아는 방식으로 찍어 보고, 거절당하면 바꿔 쥐고, 통한 쪽을 장부에 적어요(double-knock). 최신 Mastodon이 새 방식에 500을 돌려줘서 폴백을 넓혔다는 FIXME도 붙어 있더라고요. 의전은 교과서보다 현장이 먼저 움직이거든요.
 
 ## 볼거리
 

@@ -20,11 +20,9 @@ links:
     href: "https://jsr.io/@fedify/fedify"
 ---
 
-こちらの別院はJSRの蔵版から写経、ワークスペース全体で2.3.1にpinしてあります(fedify本体、vocab、vocab-runtime、postgres、redis)。
+蔵版がJSRでも、経は同じです。ランタイムがNodeでもDenoでも、同じライブラリで同じ連合ができる——その実例がこの塔。ワークスペース全体で2.3.1にpinしてあります。
 
-設計図(federation棟のbuilder)が生きたFederationになるのは、web/federation.tsのbuilder.build()——ただ一箇所です。倉の選びかたも現実的で、配達キューは必ずPostgres(handlerTimeoutは180秒に延長)、KVはKV_URLがredis:ならRedis、なければPostgres。
-
-そして、貼り紙をよく見てください。firstKnockをdraft-cavageに固定して、「bonfireのissueが直ったら戻す」——holloの外交室と、一字違わぬ同じTODOです。二つの館が同じ痛みを知っていて、同じ貼り紙を貼っている。連合の相互運用性は、こういう小さな貼り紙の集まりでできています。
+貼り紙をよく見てください。firstKnockをdraft-cavageに固定して「issueが直ったら戻す」——holloの外交室と一字違わぬ同じTODOです。二つの館が同じ痛みを知っていて、同じ貼り紙を貼っている。連合の相互運用性は、こういう小さな貼り紙の集まりでできています。
 
 ## 見どころ
 

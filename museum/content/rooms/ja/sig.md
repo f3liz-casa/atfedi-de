@@ -18,9 +18,9 @@ links:
     href: https://github.com/fedify-dev/fedify/tree/main/packages/fedify/src/sig
 ---
 
-文書に印を捺し、届いた印を検める部屋です。三つの作法が同居しています——HTTP Message Signatures(新しいRFC 9421と旧いdraft-cavageの両刀、http.ts 2100行)、旧式のLD署名 RsaSignature2017(ld.ts)、そして新しいFEP-8b32 Object Integrity Proofs(proof.ts、Ed25519)。
+なりすましと改ざんを防げます——あなたが暗号を一行も書かずに。出す手紙には自動で封蝋が捺され、届いた手紙は自動で検められる。偽の差出人の手紙は、あなたのコードに届く前に、この部屋で止まります。
 
-double-knock(二度たたき)は、この部屋の看板芸です。まず帳面に覚えのある作法で捺してみて、400や401で返されたらもう一方に持ち替え、通ったほうを帳面に書き足す。コードにはいま、生々しいFIXMEも貼ってあります——最先端のMastodonがRFC 9421署名に500を返すので、5xxでも持ち替えるようにした、という。儀典は、教科書より現場が先に動く。
+現場の生々しさも見ておいてください。作法の新旧(RFC 9421とdraft-cavage)が混在する海で、まず覚えのある作法で捺し、断られたら持ち替えて、通ったほうを帳面に書く(double-knock)。最先端のMastodonが新作法に500を返すのでフォールバックを広げた、というFIXMEも貼ってあります。儀典は、教科書より現場が先に動く。
 
 ## 見どころ
 

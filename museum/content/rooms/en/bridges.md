@@ -16,9 +16,9 @@ links:
     href: "https://github.com/fedify-dev/fedify/tree/main/packages"
 ---
 
-hono, express, fastify, koa, h3, elysia, nestjs, next, nuxt, sveltekit, fresh, astro, solidstart, cfworkers. To every framework's shore, a bridge of the same shape is built.
+You add federation without leaving the framework you already use. hono, Express, Next, SvelteKit—import one bridge, and the same URL starts returning HTML to a browser and JSON-LD to a fedi client. No migration required.
 
-Every bridge's blueprint is the same. federation(fed, contextDataFactory) returns middleware in that framework's idiom and calls federation.fetch() inside. The finesse is where onNotFound/onNotAcceptable yield to the framework's next()—"if it's not our errand, please, go on through." Thanks to this yielding, the same URL can return JSON-LD to a fedi client and HTML to a browser.
+The finesse of a bridge is in how it yields. If the errand isn't fedify's, it quietly hands off to the framework's next()—and with that one move, your existing routing and federation can share the same address.
 
 ## Highlights
 

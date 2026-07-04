@@ -18,7 +18,7 @@ links:
     href: "https://github.com/hackers-pub/hackerspub/tree/main/models"
 ---
 
-도메인 모델 서고예요. Drizzle ORM의 schema.ts에 54개의 상(테이블) — account, actor, post, following, blocking, poll, reaction, notification, 그리고 moderation 한 벌까지. 연합 SNS라는 세계가, 그대로 장부의 모양으로 늘어서 있어요.
+연합 SNS라는 세계 전부 — 게시물, 팔로우, 차단, 투표, 신고 — 가, 54개의 장부에 어떻게 담기는지를 볼 수 있어요. 직접 연합 앱을 만드는 사람에게, 이 서고는 배치도 참고서예요.
 
 한가운데에 있는 건 runInTransaction()이라는 작은 작법이에요. 이미 트랜잭션 안에 있으면 함께 타고, 밖이면 새로 열어요. 관 곳곳의 동이, 이 하나의 작법에 기대고 있어요.
 

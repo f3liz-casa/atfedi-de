@@ -12,11 +12,9 @@ links:
     href: "https://www.w3.org/TR/rdf-canon/"
 ---
 
-An archive for a plain-faced but deep problem: the canonicalization of JSON-LD.
+Know this archive, and you can read one of federation's stranger accidents: a signature that won't match even though the meaning is identical. The same meaning can be written any number of ways—so before signing, you rearrange the document so that identical meaning always yields the same byte string. That is canonicalization.
 
-The same meaning can be written countless ways. Swap the order of keys, use shorthand—the meaning holds. But a signature is stamped onto a byte string, so when the writing wavers, the seal no longer matches. So before signing, you rearrange the document, so that identical meaning (the same RDF graph) always yields the same bytes. That is canonicalization, and the algorithm RDFC-1.0 (formerly URDNA2015) does the work.
-
-Deciding whether two graphs are the same is a cousin of graph isomorphism—a famously unsettled problem in complexity theory. Assigning canonical names to blank nodes is designed right up against that difficulty. Under the floorboards no one ever looks, a heavyweight lives.
+Deciding whether two things are "the same graph" is a cousin of graph isomorphism, a famously unsettled problem in complexity theory. Under the floorboards no one ever looks, a heavyweight like this lives.
 
 ## Highlights
 

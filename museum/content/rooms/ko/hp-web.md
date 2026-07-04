@@ -18,11 +18,9 @@ links:
     href: "https://github.com/hackers-pub/hackerspub/tree/main/web"
 ---
 
-Fresh 2.0(alpha) 열람실이에요. routes/ 아래가 그대로 복도의 도면이고, @[username]/ 샛길에 프로필, 글 목록, 팔로워, 게시물 한 장씩의 방이 늘어서 있어요.
+읽는 사람은, JS 없이도 전부 읽을 수 있어요. 쓰는 사람에게는, 쓰는 맛이 좋은 섬(Composer)이 있고요. 빠른 페이지와 넉넉한 편집을 둘 다 챙기고 싶을 때의, 배치도 본보기가 이 동이에요.
 
-"섬(islands)"이라는 말이, 이 관에서는 건축 용어예요. 클라이언트에서 도는 JS는 Composer, Editor, PollCard, RemoteFollowModal 같은 대화의 툇마루뿐이에요. 나머지는 전부 서버에서 짠 HTML이에요. 조용한 독서실에, 필요한 곳에만 작은 섬이 떠 있는 거죠.
-
-그리고 이 동 자체는 얇은 조립 층이에요. db, drive, email, kv, federation 배선만 직접 챙기고, 알맹이 일은 models/graphql/federation 동에 넘겨요.
+"섬(islands)"이라는 말이, 이 관에서는 건축 용어예요. 클라이언트에서 도는 JS는 대화의 툇마루뿐이에요. 나머지는 전부 서버에서 짠 HTML이에요 — 조용한 독서실에, 필요한 곳에만 작은 섬이 떠 있어요.
 
 ## 볼거리
 

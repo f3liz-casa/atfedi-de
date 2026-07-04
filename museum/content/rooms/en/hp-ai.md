@@ -18,9 +18,9 @@ links:
     href: "https://github.com/hackers-pub/hackerspub/tree/main/ai"
 ---
 
-The AI experiment wing. It exposes exactly four capabilities—altText (alt text for images), moderation (a first read of reports), summary, and translate. It's built on Vercel's ai SDK, and the caller brings their own model (Anthropic/Google).
+Images get captions, long texts get summarized, posts get translated—as tools that lower the barrier to reading and writing, exactly four AI capabilities are at work.
 
-On the moderation wall it's written plainly: this is reference material for human moderators, not an automatic verdict. It only returns confidence and reasons for each clause of the code of conduct. The judgment stays a human's work.
+And the way the line is drawn is the sight to see. On the moderation wall it's written: this is reference material for human moderators, not an automatic verdict. It only returns confidence and reasons. The judgment stays a human's work.
 
 ## Highlights
 

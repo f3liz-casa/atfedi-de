@@ -18,9 +18,9 @@ links:
     href: "https://github.com/hackers-pub/hackerspub/tree/main/graphql"
 ---
 
-次の館(web-next)のための、GraphQLの照会窓口です。Pothosのcode-first——SDLを手で書かず、コードから組んだschemaをprintSchema()で吐き出します。プラグインは九枚重ね(Complexity、Relay、ScopeAuth、Drizzle、Dataloader……)。
+画面がほしいデータを、ほしい形で、一度に聞けます。新しい画面を作るたびにサーバへ新しい窓口を頼まなくていい——次の館(web-next)がどんな姿になっても、この照会室が応えます。
 
-いちばんの見どころは、同じpostTableがvariantでNote、Article、Questionという三つの顔に化けること。台帳は一冊なのに、照会の窓からは三種類の資料に見える。
+いちばんの見どころは、同じpostTableがNote、Article、Questionという三つの顔に化けること。台帳は一冊なのに、照会の窓からは三種類の資料に見える。
 
 ## 見どころ
 

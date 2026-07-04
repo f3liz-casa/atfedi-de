@@ -16,9 +16,9 @@ links:
     href: "https://github.com/fedify-dev/hollo/blob/main/src/oauth.tsx"
 ---
 
-アプリに合鍵(トークン)を切って渡す離れです。ルータは `src/oauth.tsx` 一枚に、/authorizeと/tokenが同居しています。
+アプリに「あなたの代わりに投稿していい」を、安全に渡せます。パスワードは渡さず、合鍵(トークン)だけ。途中で盗み聞きされても悪用できない作法(PKCE)まで込みです。
 
-鍵の作りは几帳面です。PKCEはS256のみで、平文のchallengeは門前払い。合鍵の引き換え(authorization_code交換)では、引換券に SELECT ... FOR UPDATE の行ロックをかけ、challengeを自分で再計算してtimingSafeEqualStringで比べる——同じ券の二度使いも、時間差で覗く盗み見も、造りのほうで塞いであります。
+鍵の作りは几帳面です。合鍵の引き換えには行ロックがかかり、合言葉の影は時間一定の比較で検められる——同じ券の二度使いも、覗き見も、造りのほうで塞いであります。
 
 ## 見どころ
 

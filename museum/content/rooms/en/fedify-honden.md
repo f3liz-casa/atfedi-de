@@ -18,11 +18,9 @@ links:
     href: "https://github.com/fedify-dev/fedify/tree/main/packages/fedify/src/federation"
 ---
 
-The heart of fedify. Receiving documents at the inbox, dispatching from the outbox, keeping the actor ledger—the Federation here presides over the whole business of federation.
+This chamber is what lets a federated app go up in a few lines. Receiving at the inbox, dispatching from the outbox, keeping the actor ledger, retrying deliveries that failed—hand the whole business of federation to it, and you get to think only about what your app is: what people can post, and how it looks. hollo and hackers.pub were both raised this way.
 
-The floor-plan numbers are already worth the visit. A single middleware.ts runs 4,697 lines. FederationImpl, ContextImpl, InboxContextImpl, OutboxContextImpl—nearly all the working substance lives in this one file, while the neighboring federation.ts (1,615 lines) is almost entirely types and contracts. The book of promises and the working body are kept as two clearly separate scrolls.
-
-My favorite corner is a small ledger called KvSpecDeterminer. For each remote island (origin), it notes down in the storehouse (KvStore) which wax-seal etiquette worked for that party. Federation is in a transitional moment for its rites, and not everyone can read the same etiquette—so it remembers.
+My favorite corner is a small ledger called KvSpecDeterminer. For each remote island, it remembers which wax-seal etiquette worked. Federation is in a transitional moment for its rites, and not everyone can read the same etiquette—so it hands you a way to live with that reality too.
 
 ## Highlights
 

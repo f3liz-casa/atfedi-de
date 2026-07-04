@@ -18,11 +18,9 @@ links:
     href: https://www.npmjs.com/package/@fedify/fedify
 ---
 
-npm 판본에서 사경된 fedify가 여기 담겨 있어요. package.json에는 @fedify/\*의 경전이 여덟 권 — fedify 본체, hono 다리, postgres 곳간, vocab, webfinger, debugger, 그리고 markdown-it 오솔길 두 갈래 — 전부 ^2.3.0으로 나란히 서 있어요.
+`npm install` 하나로, 이 관의 외교가 전부 손에 들어왔어요 — 그게 이 탑이에요. package.json에 @fedify/\*의 경전이 여덟 권, 나란히 갖춰져 있어요.
 
-별원과 관의 이음매는 딱 한 줄이에요. `src/index.tsx`의 `app.use(federation(fedi, ...))`. 게다가 pages/oauth/api 라우터보다 앞에 놓여 있어서, `/@handle`이라는 같은 주소가 찾는 방식(Accept 헤더)에 따라 fedify의 얼굴도 사랑방의 얼굴도 돼요. 별원은 눈에 띄지 않는데, 관 현관의 예법은 전부 별원이 정하는 거죠.
-
-그런데 이 관의 문패(package의 name)는 `@fedify/hollo`예요. hollo는 이제 fedify-dev 집안의 한 식구예요. 별원과 총본산이 같은 성을 쓰고 있는 거죠.
+별원과 관의 이음매는 딱 한 줄이에요. `app.use(federation(fedi, ...))`. 게다가 라우터들보다 앞에 서니까, `/@handle`이라는 같은 주소가 찾는 방식에 따라 fedify의 얼굴도 사랑방의 얼굴도 돼요. 그런데 이 관의 문패는 `@fedify/hollo` — 별원과 총본산이 같은 성을 쓰고 있는 거죠.
 
 ## 볼거리
 

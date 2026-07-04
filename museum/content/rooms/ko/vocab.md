@@ -18,9 +18,9 @@ links:
     href: "https://github.com/fedify-dev/fedify/tree/main/packages/vocab"
 ---
 
-Note, Follow, Like…… ActivityStreams의 어휘가 TypeScript 타입으로 담겨 있는 장경각이에요. 그런데 이 경전은 손으로 쓴 게 아니에요. 한 낱말에 한 장씩 YAML(note.yaml, activity.yaml……)이 "경전 원본"으로 있고, 거기서 코드 생성으로 옮겨 써요. 사경이 비유가 아니라 실제 빌드 공정으로 있는 거죠.
+연합의 공통어를 타입으로 말할 수 있어요. Note나 Follow를 평범한 객체로 조립하면 올바른 JSON-LD가 되어 바다를 건너요. 철자를 틀리면 빌드가 알려주고, 에디터의 자동완성이 규격서를 대신해요.
 
-note.yaml의 defaultContext를 들여다보면 이 장경각의 정직함을 알 수 있어요. toot:(Mastodon), misskey:, fedibird:, FEP-044f의 quote — 교과서 어휘뿐 아니라 현실 사투리까지 전부 사전에 적어 뒀거든요. 연합의 말은 살아 있는 말이에요.
+게다가 이 경전은 손으로 쓴 게 아니에요. 한 낱말에 한 장씩 있는 YAML에서 코드 생성으로 옮겨 써요 — 사경이 비유가 아니라 실제 빌드 공정으로 있는 거죠. 사전에는 toot:이나 misskey: 같은 현실 사투리까지 전부 실려 있어요. 연합의 말은 살아 있는 말이에요.
 
 ## 볼거리
 

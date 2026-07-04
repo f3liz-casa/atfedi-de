@@ -18,7 +18,7 @@ links:
     href: "https://github.com/fedify-dev/fedify/tree/main/packages"
 ---
 
-postgres, redis, sqlite, mysql, denokv 곳간과, amqp 파발꾼 오두막. 전부 만듦새가 다른데도 본당에서는 똑같아 보여요 — 곳간 입구가 KvStore(get/set/delete)와 MessageQueue(enqueue/listen) 두 가지 모양으로 정해져 있거든요.
+서버를 다시 켜도 편지가 사라지지 않고, 배달에 실패해도 나중에 도착해요. 게다가 저장하는 곳이 postgres든 redis든 sqlite든 — 코드는 한 줄도 바뀌지 않아요. 곳간 입구가 KvStore와 MessageQueue라는 두 가지 모양으로 정해져 있거든요.
 
 amqp 오두막에는 KvStore가 없어요. RabbitMQ는 전언을 나르는 도구이지 선반이 아니거든요 — 못 하는 일은 맡지 않아요. 이 "없는 건 없다"도 이 구역의 설계 가운데 하나예요.
 

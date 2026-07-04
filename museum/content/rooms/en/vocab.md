@@ -18,9 +18,9 @@ links:
     href: "https://github.com/fedify-dev/fedify/tree/main/packages/vocab"
 ---
 
-Note, Follow, Like… a sutra repository where the ActivityStreams vocabulary is housed as TypeScript types. And this sutra is not handwritten. One YAML sheet per word (note.yaml, activity.yaml…) serves as the source of the sutra, and the code is copied out from there by generation. Here sutra-copying is not a metaphor but a real build step.
+You speak the shared language of federation as types. Build a Note or a Follow as an ordinary object, and it becomes valid JSON-LD that crosses the sea. Misspell something and the build tells you; your editor's autocomplete stands in for the spec.
 
-Peek into defaultContext in note.yaml and you see this repository's honesty. toot: (Mastodon), misskey:, fedibird:, FEP-044f's quote—not just textbook vocabulary, but every real-world dialect written into the dictionary too. The language of federation is a living language.
+And this sutra is not handwritten. From one YAML sheet per word, the code is copied out by generation—sutra-copying exists here as a real build step, not a metaphor. The dictionary carries every real-world dialect too, toot: and misskey: and the rest. The language of federation is a living language.
 
 ## Highlights
 

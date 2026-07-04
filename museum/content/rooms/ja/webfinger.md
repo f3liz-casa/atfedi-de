@@ -14,11 +14,9 @@ links:
     href: "https://github.com/fedify-dev/fedify/tree/main/packages/webfinger"
 ---
 
-島の一の門です。「@handle@host」という名前を、actorの住所(URL)に引く——連合宇宙で誰かを訪ねる旅は、かならずここをくぐるところから始まります。
+宛名ひとつで、宇宙じゅうの誰でも見つけられます。「@friend@mastodon.social」と書けば、相手がどのサーバに住んでいても、あなたのアプリはほんとうの住所(URL)を引けます。自分で作るなら `lookupWebFinger()` を一回呼ぶだけ——電話帳の仕組みそのものは、覚えなくてもだいじょうぶ。
 
-包みとしては小さくて、公開の入口は lookupWebFinger() の一本だけ。返ってくるのはJRD(JSON Resource Descriptor)という札で、subject(名前)、aliases(別名)、links(この人のactor文書はこちら、という道標)が書いてあります。
-
-おもしろいのは、この包みが「訪ねる側」の半分だけだということ。訪ねられたとき /.well-known/webfinger で答える側は、本堂(federation/webfinger.ts)に住んでいます。門は、外へ出ていく人のためのもの。
+この包みは「訪ねる側」の半分だけです。訪ねられたときに /.well-known/webfinger で答える側は、本堂に住んでいます。門は、外へ出ていく人のためのもの。
 
 ## 見どころ
 

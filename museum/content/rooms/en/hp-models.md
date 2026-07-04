@@ -18,7 +18,7 @@ links:
     href: "https://github.com/hackers-pub/hackerspub/tree/main/models"
 ---
 
-The stacks of the domain model. Drizzle ORM's schema.ts holds 54 tables—account, actor, post, following, blocking, poll, reaction, notification, and a full moderation set. The world of a federated social network stands here, laid out as ledgers just as it is.
+You can see how the whole world of a federated social network—posts, follows, blocks, votes, reports—fits into 54 ledgers. For anyone building their own federated app, these stacks are a floor-plan reference.
 
 At the core is a small custom called runInTransaction(). If you're already inside a transaction, you ride along; if outside, it opens a new one. Every wing in the hall leans on this single custom.
 

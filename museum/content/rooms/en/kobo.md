@@ -18,9 +18,9 @@ links:
     href: "https://github.com/fedify-dev/fedify/tree/main/packages/debugger"
 ---
 
-A tool shop for travelers (developers). The fedify CLI (about 6,000 lines) has eight tools hanging on the wall—init, bench, inbox, lookup, nodeinfo, relay, tunnel, webfinger.
+You peek at what federation is doing from right where you sit. `fedify init` stakes out a new island, `fedify lookup` shows you the insides of someone else's actor, and pair `fedify inbox` with `tunnel` and real letters from Mastodon land in the inbox of your own laptop.
 
-inbox is an inbox inside the terminal (TUI); paired with tunnel, it lets real federation wind blow through the inbox of your local dev machine. debugger is the picture frame—createFederationDebugger() wraps a running Federation in a proxy and shows the documents passing back and forth in real time. This frame is what hollo hangs up with FEDIFY_DEBUG=true.
+The debugger is a picture frame. It wraps a running Federation in a proxy and shows you the documents passing back and forth in real time. Just being able to see what arrived and what you sent back makes federated development a lot less frightening.
 
 ## Highlights
 

@@ -12,11 +12,9 @@ links:
     href: "https://codeberg.org/fediverse/fep/src/branch/main/fep/8b32/fep-8b32.md"
 ---
 
-The underfloor workshop of the Ed25519 signature scheme. The seal called an "Object Integrity Proof (FEP-8b32)" up in the [Chamber of Rites](/en/section/fedify/rooms/sig/) is stamped down here.
+Know this workshop and you can answer "why can't a signature be forged?" in your own words. To merely use it, Web Crypto does the work in one line—which is exactly why the underfloor is a pleasure reserved for those who want to look.
 
-The core of the mechanism is "point addition" on a single curve called Curve25519. Add two points on the curve by a set rule, and you get another point on the curve. From the result of repeating this addition hundreds of millions of times, working back to the original number of steps is, in today's mathematics, effectively impossible. The private key is how many times you added; the public key is the resulting point. Because you can't work backward, the seal can't be forged—a beautiful contrivance, and that's all it is.
-
-The engineering upstairs runs fine without knowing this workshop, since the WebCrypto API returns a signature in one line. But put on the lens and come down here, and you can touch the root of why we can say forgery is impossible.
+The core of the mechanism is "point addition" on a curve. From the result of repeating that addition hundreds of millions of times, working back to the original number of steps is, in today's mathematics, effectively impossible. The private key is how many times you added; the public key is the resulting point. Because you can't work backward, the seal can't be forged—a beautiful contrivance, and that's all it is.
 
 ## Highlights
 

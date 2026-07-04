@@ -14,11 +14,9 @@ links:
     href: "https://github.com/fedify-dev/fedify/tree/main/packages/webfinger"
 ---
 
-The island's first gate. It resolves a name like @handle@host into an actor's address (URL)—and every journey to visit someone in the federated universe begins by passing through here.
+One handle finds anyone in the universe. Write @friend@mastodon.social and your app can look up their real address (URL), no matter which server they live on. To do it yourself, you call `lookupWebFinger()` once—you never have to learn how the phone book works underneath.
 
-As packages go, it is tiny: a single public entrance, lookupWebFinger(). What comes back is a small placard called a JRD (JSON Resource Descriptor), bearing the subject (the name), aliases (other names), and links (signposts that say: this person's actor document is over here).
-
-Here is the interesting part: this package is only the visiting half. The side that answers at /.well-known/webfinger when someone visits you lives in the Main Hall (federation/webfinger.ts). This gate is for those heading out.
+This package is only the visiting half. The side that answers at /.well-known/webfinger when someone visits you lives in the Main Hall. This gate is for those heading out.
 
 ## Highlights
 

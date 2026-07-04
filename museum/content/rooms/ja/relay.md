@@ -18,9 +18,9 @@ links:
     href: "https://github.com/fedify-dev/fedify/tree/main/packages/relay"
 ---
 
-一対一で文通する代わりに、灯台がまとめて預かって配って回る——ActivityPubリレーの灯台です。fedify 2.0.0からの新顔。
+小さな島どうしを、まとめてつなげられます。一軒一軒と文通しなくても、灯台を購読すれば海の噂がまとめて届く。過疎の島の連合体験は、リレーがあるかどうかで大きく変わります——そして、これは自分でその灯台を建てるためのキットです。
 
-沖には二つの流儀があります。Mastodon流とLitePub流で、購読の握手が微妙に違う。だからBaseRelayの子としてMastodonRelayとLitePubRelayの二人が住んでいて、createRelay()がどちらを灯すかを選びます。
+沖には二つの流儀(Mastodon流とLitePub流)があって、購読の握手が微妙に違います。だからこの灯台は、二つの顔を両方持っています。
 
 ## 見どころ
 

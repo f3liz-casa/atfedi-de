@@ -16,9 +16,9 @@ links:
     href: "https://github.com/fedify-dev/fedify/tree/main/packages/fedify/src/nodeinfo"
 ---
 
-"이 서버는 누구이고, 사는 사람은 몇 명인지"를 적어 내거는 알림판이에요. 세우는 쪽과 읽는 쪽이 둘 다 살아요 — handleNodeInfo()와 handleNodeInfoJrd()가 알림판을 세우고, getNodeInfo()가 남의 알림판을 읽으러 가요.
+서버의 자기소개를 우주가 읽을 수 있는 모양으로 내걸 수 있어요. 어떤 소프트웨어이고 몇 명이 사는지 — fedi 통계 사이트에 내 섬이 실리는 건 이 알림판 덕분이에요. 세우는 것도 읽는 것도 각각 함수 하나면 돼요.
 
-읽는 쪽의 방식이 이 방의 볼거리예요. 남의 알림판은 자주 망가져 있어서, parseNodeInfo, parseSoftware, parseProtocol…… 이렇게 방어적인 파서가 사슬로 이어져 있고, 망가진 표는 살며시 null로 둬요. 다른 섬의 사정을 탓하지 않고 흘려보내는 만듦새죠.
+읽는 쪽의 방식이 이 방의 볼거리예요. 남의 알림판은 자주 망가져 있어서, 방어적인 파서가 사슬로 이어져 망가진 표를 살며시 null로 둬요. 다른 섬의 사정을 탓하지 않고 흘려보내는 만듦새죠.
 
 ## 볼거리
 

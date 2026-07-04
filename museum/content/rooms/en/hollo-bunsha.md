@@ -18,11 +18,9 @@ links:
     href: https://www.npmjs.com/package/@fedify/fedify
 ---
 
-The fedify copied like a sutra from the npm edition is housed here. package.json holds eight scrolls of @fedify/\*—fedify itself, the hono bridge, the postgres storehouse, vocab, webfinger, debugger, and two small markdown-it paths—all standing together at ^2.3.0.
+One `npm install`, and all of this hall's diplomacy is in hand—that's this tower. package.json holds eight scrolls of the @fedify/\* sutra, all standing together.
 
-The join between branch temple and hall is a single line: `app.use(federation(fedi, ...))` in `src/index.tsx`. And because it's placed before the pages/oauth/api routers, the same address `/@handle` becomes fedify's face or the parlor's face depending on how you visit (the Accept header). The branch temple keeps a low profile, yet it decides every manner of the hall's entrance.
-
-By the way, this hall's nameplate (the package name) is `@fedify/hollo`. hollo is now a member of the fedify-dev household. The branch temple and the head temple share a family name.
+The join between branch temple and hall is a single line: `app.use(federation(fedi, ...))`. And because it stands ahead of the routers, the same address `/@handle` becomes fedify's face or the parlor's face depending on how you visit. By the way, this hall's nameplate is `@fedify/hollo`—the branch temple and the head temple share a family name.
 
 ## Highlights
 

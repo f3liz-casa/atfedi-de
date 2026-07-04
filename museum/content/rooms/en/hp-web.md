@@ -18,11 +18,9 @@ links:
     href: "https://github.com/hackers-pub/hackerspub/tree/main/web"
 ---
 
-The reading room of Fresh 2.0 (alpha). Under routes/ is the corridor's floor plan as is, and along the @[username]/ lane are rooms for the profile, the article list, followers, and each single post.
+Readers can read all of it with no JS. Writers get an island that's pleasant to write in (Composer). When you want fast pages and rich editing at once, this wing is the floor plan to copy.
 
-In this hall, the word "islands" is an architectural term. The JS that runs on the client is only the verandas for interaction—Composer, Editor, PollCard, RemoteFollowModal. Everything else is HTML assembled on the server. In a quiet reading room, small islands float only where they're needed.
-
-And this wing itself is a thin assembly layer. It holds only the wiring for db, drive, email, kv, and federation, and hands the substantive work to the models, graphql, and federation wings.
+In this hall, the word "islands" is an architectural term. The JS that runs on the client is only the veranda for interaction; everything else is HTML assembled on the server. In a quiet reading room, small islands float only where they're needed.
 
 ## Highlights
 

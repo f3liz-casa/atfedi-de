@@ -18,7 +18,7 @@ links:
     href: "https://github.com/fedify-dev/fedify/tree/main/packages"
 ---
 
-The postgres, redis, sqlite, mysql, and denokv storehouses, and the amqp courier hut. All built differently, yet from the Main Hall they look the same—because a storehouse's interface is fixed to two shapes: KvStore (get/set/delete) and MessageQueue (enqueue/listen).
+Restart the server and no letter is lost; a delivery that fails still arrives later. And whether you keep it in postgres, redis, or sqlite, not one line of your code changes—because a storehouse's interface is fixed to two shapes, KvStore and MessageQueue.
 
 The amqp hut has no KvStore. RabbitMQ is a tool for passing messages, not a set of shelves—so it doesn't take on work it can't do. This "what isn't there isn't there" is part of the quarter's design too.
 

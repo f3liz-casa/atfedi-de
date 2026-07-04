@@ -18,7 +18,7 @@ links:
     href: "https://github.com/fedify-dev/fedify/tree/main/packages"
 ---
 
-postgres、redis、sqlite、mysql、denokv の倉と、amqp の飛脚小屋。ぜんぶ違う造りなのに、本堂からは同じに見えます——倉の口が、KvStore(get/set/delete)とMessageQueue(enqueue/listen)という二つの形に決まっているから。
+サーバを再起動しても手紙が消えず、配達に失敗してもあとで届きます。しかも保存先はpostgresでもredisでもsqliteでも——あなたのコードは一行も変わりません。倉の口が、KvStoreとMessageQueueという二つの形に決まっているからです。
 
 amqpの小屋にはKvStoreがありません。RabbitMQは伝言の道具で、棚ではないから——できない仕事は、引き受けない。この「無いものは無い」も、区画の設計のうちです。
 

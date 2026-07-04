@@ -18,9 +18,9 @@ links:
     href: "https://github.com/fedify-dev/fedify/tree/main/packages/debugger"
 ---
 
-나그네(개발자)를 위한 연장 가게예요. fedify CLI(약 6000줄)에는 여덟 가지 연장 — init, bench, inbox, lookup, nodeinfo, relay, tunnel, webfinger — 이 걸려 있어요.
+연합의 모습을 손안에서 들여다볼 수 있어요. `fedify init`으로 새 섬의 터를 닦고, `fedify lookup`으로 남의 actor 속을 들여다보고, `fedify inbox`에 `tunnel`을 짝지으면 진짜 Mastodon이 보낸 편지를 내 노트북으로 받을 수 있어요.
 
-inbox는 터미널 속 받은 편지함(TUI)인데, tunnel과 짝지으면 손안의 개발 기기 inbox에 진짜 연합의 바람을 통하게 할 수 있어요. debugger 쪽은 액자예요 — createFederationDebugger()가 돌아가는 Federation을 proxy로 감싸서, 오가는 문서를 실시간으로 보여줘요. hollo가 FEDIFY_DEBUG=true로 거는 게 바로 이 액자예요.
+debugger는 액자예요. 돌아가는 Federation을 proxy로 감싸서 오가는 문서를 실시간으로 보여줘요. "지금 무엇이 도착했고 무엇을 돌려줬는지"가 보이는 것만으로, 연합 개발은 한결 덜 무서워지거든요.
 
 ## 볼거리
 

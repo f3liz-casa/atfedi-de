@@ -9,11 +9,9 @@ files:
     what: "Where types are born. The spec, copied into types like a sutra"
 ---
 
-A temple where TypeScript's types are enshrined. Each word of the [Vocabulary Sutra Repository](/en/section/fedify/rooms/vocab/)—Note, Follow, Like—is endorsed here.
+Know this temple, and "the type check passes" gains a little depth. A type is a proposition, and a typed value is a small proof—having assembled a value of type `Note` means the proposition "this has the shape of a Note" now has its proof.
 
-There is an idea called the Curry–Howard correspondence: a type is a proposition, and a program that produces a value of that type is a proof of that proposition. Having assembled a value of type `Note` means a small proposition—"this has the shape of a Note"—now has its proof. A type check passing is the temple's review passing.
-
-Types vanish at runtime (type erasure). The temple leaves no building standing on the ground—yet because only documents that pass the review board the ship, accidents across the sea grow fewer. As ways for mathematics to hold up engineering go, this may be the quietest.
+Types vanish at runtime. The temple leaves no building standing on the ground—yet because only documents that pass the review board the ship, accidents across the sea grow fewer. As ways for mathematics to hold up engineering go, this may be the quietest.
 
 ## Highlights
 

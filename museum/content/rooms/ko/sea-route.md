@@ -10,9 +10,9 @@ links:
     href: "https://www.w3.org/TR/activitystreams-vocabulary/"
 ---
 
-이 바다가 페디버스(fediverse) 그 자체예요. 마스토돈 대륙도, 미스키 군도도, 이 박물거리의 세 섬도, 모두 같은 바다에 면해 있고 같은 방식으로 편지를 주고받아요. 그 방식이 ActivityPub — W3C가 2018년에 권고한, 연합 SNS의 공통 의전이에요.
+이 바다가 있어서, 서로 다른 회사의, 서로 다른 개인의, 서로 다른 소프트웨어가 같은 타임라인에서 이어져요. Mastodon에서 hollo에 사는 사람을 팔로우할 수 있는 것도, hackers.pub의 글이 Misskey로 흘러 들어오는 것도, 모두 이 공통 의전 — ActivityPub — 덕분이에요.
 
-배가 나르는 외교 문서는 Activity라고 부르는 JSON-LD 꾸러미예요. "팔로우할게요(Follow)", "이걸 만들었어요(Create)", "좋아요(Like)". 보내는 이의 inbox에서 outbox로, 봉랍에는 HTTP 서명 — 본문이 바뀌지 않았다는 것, 틀림없이 그 섬의 주인이 보냈다는 것을 받는 쪽이 확인할 수 있도록요.
+배가 나르는 외교 문서는 Activity라고 부르는 JSON-LD 꾸러미예요. "팔로우할게요(Follow)", "이걸 만들었어요(Create)". 봉랍에는 HTTP 서명 — 틀림없이 그 섬의 주인이 보냈다는 걸 받는 쪽이 확인할 수 있도록요.
 
 ## 볼거리
 

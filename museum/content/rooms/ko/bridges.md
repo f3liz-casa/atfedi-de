@@ -16,9 +16,9 @@ links:
     href: "https://github.com/fedify-dev/fedify/tree/main/packages"
 ---
 
-hono, express, fastify, koa, h3, elysia, nestjs, next, nuxt, sveltekit, fresh, astro, solidstart, cfworkers. 어느 프레임워크의 기슭에도 같은 모양의 다리가 놓여 있어요.
+지금 쓰는 프레임워크 그대로 연합을 얹을 수 있어요. hono든 Express든 Next든 SvelteKit이든, 다리 하나만 import하면 같은 URL이 브라우저에는 HTML을, fedi 클라이언트에는 JSON-LD를 돌려주게 돼요. 갈아탈 필요가 없죠.
 
-다리의 설계도는 어느 것이나 같아요. federation(fed, contextDataFactory)이 그 프레임워크 방식의 미들웨어를 돌려주고, 그 안에서 federation.fetch()를 불러요. 묘미는 onNotFound/onNotAcceptable이 프레임워크의 next()에 양보하는 대목이에요 — "우리 일이 아니면 그쪽으로 가세요". 이렇게 서로 양보한 덕분에, 같은 URL이 fedi 클라이언트에는 JSON-LD를, 브라우저에는 HTML을 돌려줄 수 있어요.
+다리의 묘미는 서로 양보하는 데 있어요. fedify의 일이 아니면 프레임워크의 next()에 슬쩍 넘겨줘요 — 이 한 수 덕분에 기존 라우팅과 연합이 같은 주소에 함께 살 수 있어요.
 
 ## 볼거리
 

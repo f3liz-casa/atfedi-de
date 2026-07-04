@@ -18,11 +18,9 @@ links:
     href: "https://github.com/fedify-dev/hollo/tree/main/src/federation"
 ---
 
-A room where the fedify branch temple takes up residence and is entrusted with all correspondence with the outer universe. createFederation() is called just once in the whole hall—and with that single call, all of hollo becomes one federation node.
+Even a one-person server can correspond with the whole universe. The real diplomatic work is left to the fedify branch temple, so hollo's diplomacy fits in these few files—here is why "running your own social network" fits within the scale of a single hobby project.
 
-The kitchen keeps things spare. Both the KV and the delivery queue run on @fedify/postgres alone (PostgresKvStore plus a 10-way ParallelMessageQueue); there's no Redis, no separate broker. For a small hall, one storehouse is enough.
-
-There's one more honest posted note. The first manner of the wax seal (firstKnock) is deliberately pinned to the old-style draft-cavage, with a comment reading, "revert to RFC 9421 first once the bonfire issue is fixed." To fit the federation's reality—that the other side can't yet read the newer rite—it changes the order of courtesy.
+The kitchen keeps things spare, too. Both the KV and the delivery queue run on @fedify/postgres alone; there's no Redis, no separate broker. For a small hall, one storehouse is enough.
 
 ## Highlights
 

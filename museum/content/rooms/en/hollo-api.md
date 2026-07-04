@@ -15,9 +15,9 @@ files:
     what: "tokenRequired/scopeRequired—the corridor every write passes through"
 ---
 
-A window your existing Mastodon app can talk to as is. v1 lines up fourteen resource routers (accounts, statuses, timelines, notifications…), and authentication passes through a three-stage corridor—tokenRequired → scopeRequired → withAccountOwner—before reaching each room.
+You can live in your existing Mastodon app as is. IceCubes, Toot!—just point them at hollo. Switch servers and the app your fingers already know stays the same: that's Reception's promise.
 
-What's fun is that Reception is also the translator. When an app says "post this," the handler uses fedify's context (fedCtx) right there to carry out delivery to the outer universe—once to the explicit recipients, once more to followers: sendActivity() twice. Reception and the Diplomacy Office share a corridor.
+Reception is also the translator. When an app says "post this," it goes right on to carry out delivery to the outer universe. Reception and the Diplomacy Office share a corridor.
 
 ## Highlights
 

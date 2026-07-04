@@ -18,9 +18,9 @@ links:
     href: "https://github.com/hackers-pub/hackerspub/tree/main/federation"
 ---
 
-This wing exists only for fedify's wiring. builder.ts makes an empty FederationBuilder, and everyone in the wing—actor, collections, inbox, objects, outbox, webfinger—hangs their own dispatcher on it by side-effect import. The assembled blueprint isn't alive yet. Breathing life into it is the reading room's job (web/federation.ts).
+What hollo does, you can do in Deno too. Keep the diplomatic floor plan as a shared blueprint (the builder), and several wings can reuse the same wiring—a model for where to put federation in an app that grows large.
 
-inbox/mod.ts reads as a route map of verbs. Accept, Follow, Create, Announce, Undo… sixteen kinds of .on(). An ambiguous verb is sorted on the spot by looking inside—when an Undo arrives, it peeks at getObject() to tell whether it's an unfollow, an un-reaction, or an unblock.
+inbox/mod.ts reads as a route map of verbs. Accept, Follow, Undo… an ambiguous verb is sorted by looking inside. The kinds of letters that arrive are all surveyable on a single sheet.
 
 ## Highlights
 

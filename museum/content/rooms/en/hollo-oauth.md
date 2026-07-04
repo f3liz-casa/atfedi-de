@@ -16,9 +16,9 @@ links:
     href: "https://github.com/fedify-dev/hollo/blob/main/src/oauth.tsx"
 ---
 
-An annex that cuts a duplicate key (a token) and hands it to an app. The router is a single `src/oauth.tsx`, where /authorize and /token live together.
+You can safely hand an app "you may post on your behalf." No password changes hands, only a duplicate key (a token)—and the manner that keeps it from being abused even if it's overheard along the way (PKCE) comes built in.
 
-The keywork is meticulous. PKCE is S256 only; a plaintext challenge is turned away at the door. In redeeming the duplicate key (the authorization_code exchange), the ticket is held under a SELECT ... FOR UPDATE row lock, the challenge is recomputed here and compared with timingSafeEqualString—using the same ticket twice, and peeking through a timing gap, are both sealed off by the construction itself.
+The keywork is meticulous. Redeeming the duplicate key takes a row lock, and the shadow of the passphrase is checked with a constant-time comparison—using the same ticket twice, and peeking through a gap, are both sealed off by the construction itself.
 
 ## Highlights
 

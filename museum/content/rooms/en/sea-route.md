@@ -10,9 +10,9 @@ links:
     href: "https://www.w3.org/TR/activitystreams-vocabulary/"
 ---
 
-This sea is the fediverse itself. The Mastodon continent, the Misskey archipelago, and the three islands of this museum town all face the same sea and exchange letters by the same etiquette. That etiquette is ActivityPub—the shared rite of federated social networks, made a W3C Recommendation in 2018.
+This sea is what lets different companies, different individuals, and different software meet in one timeline. Following someone on hollo from Mastodon, a hackers.pub article flowing into Misskey—all of it happens thanks to one shared rite: ActivityPub.
 
-The diplomatic documents the ships carry are JSON-LD parcels called Activities. "I follow you (Follow)," "I made this (Create)," "I like it (Like)." From the sender's inbox to the outbox, sealed with an HTTP signature for a wax seal—so the receiver can verify that the body wasn't tampered with, and that it truly came from that island's keeper.
+The diplomatic documents the ships carry are JSON-LD parcels called Activities. "I follow you (Follow)," "I made this (Create)." The wax seal is an HTTP signature—so the receiver can verify that it truly came from that island's keeper.
 
 ## Highlights
 

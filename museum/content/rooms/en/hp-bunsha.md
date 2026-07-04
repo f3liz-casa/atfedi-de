@@ -20,11 +20,9 @@ links:
     href: "https://jsr.io/@fedify/fedify"
 ---
 
-This branch temple is copied like a sutra from the JSR edition, pinned across the whole workspace at 2.3.1 (fedify itself, vocab, vocab-runtime, postgres, redis).
+Even when the edition is on JSR, the sutra is the same. Whether the runtime is Node or Deno, the same library makes the same federation—this tower is the proof. It's pinned across the whole workspace at 2.3.1.
 
-The blueprint (the federation wing's builder) becomes a living Federation at builder.build() in web/federation.ts—just one place. The choice of storehouse is practical, too: the delivery queue is always Postgres (handlerTimeout extended to 180 seconds), and the KV is Redis if KV_URL is redis:, otherwise Postgres.
-
-And look closely at the posted note. firstKnock pinned to draft-cavage, "revert once the bonfire issue is fixed"—the very same TODO as hollo's Diplomacy Office, down to the letter. Two halls know the same pain and post the same note. Federation interoperability is made of gatherings of small posted notes like these.
+Look closely at the posted note. firstKnock pinned to draft-cavage, "revert once the issue is fixed"—the very same TODO as hollo's Diplomacy Office, down to the letter. Two halls know the same pain and post the same note. Federation interoperability is made of gatherings of small posted notes like these.
 
 ## Highlights
 

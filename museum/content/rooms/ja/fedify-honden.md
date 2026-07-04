@@ -18,11 +18,9 @@ links:
     href: "https://github.com/fedify-dev/fedify/tree/main/packages/fedify/src/federation"
 ---
 
-fedifyの心臓部です。inboxに届いた文書の受付、outboxからの発送、actorの台帳——連合のいとなみのぜんぶを、ここのFederationが采配します。
+この間があるから、「連合するアプリ」が数行で建ちます。inboxの受付、outboxの発送、actorの台帳、失敗した配達のやり直し——連合のいとなみを丸ごと任せて、あなたはアプリの中身(何を投稿できて、どう見せるか)だけを考えられる。holloもhackers.pubも、そうやって建ちました。
 
-間取りの数字が、もう見どころです。middleware.ts一枚で4697行。FederationImpl、ContextImpl、InboxContextImpl、OutboxContextImpl——働く実体はほとんどこの一枚に住んでいて、隣のfederation.ts(1615行)は逆に、ほぼ型と契約だけ。「約束の書」と「働く体」が、はっきり別の巻物になっています。
-
-いちばん好きな一角は、KvSpecDeterminerという小さな帳面です。相手の島(origin)ごとに「この人にはどの封蝋の作法が通じたか」を倉(KvStore)に書き留めておく。連合は儀典の過渡期で、全員が同じ作法を読めるわけではない——だから、覚える。
+いちばん好きな一角は、KvSpecDeterminerという小さな帳面です。相手の島ごとに「どの封蝋の作法が通じたか」を覚えておく。連合は儀典の過渡期で、全員が同じ作法を読めるわけではない——そういう現実との付き合い方まで、任せられます。
 
 ## 見どころ
 

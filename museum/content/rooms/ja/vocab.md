@@ -18,9 +18,9 @@ links:
     href: "https://github.com/fedify-dev/fedify/tree/main/packages/vocab"
 ---
 
-Note、Follow、Like……ActivityStreamsの語彙が、TypeScriptの型として納まっている経蔵です。そしてこの経は、手書きではありません。一語につき一枚のYAML(note.yaml、activity.yaml……)が「経のもと」としてあって、そこからコード生成で書き写される。写経が、比喩ではなくビルド工程として実在します。
+連合の共通語を、型として話せます。NoteやFollowをふつうのオブジェクトとして組み立てれば、正しいJSON-LDになって海を渡る。綴りを間違えればビルドが教えてくれて、エディタの補完が仕様書の代わりになります。
 
-note.yamlのdefaultContextを覗くと、この蔵の正直さがわかります。toot:(Mastodon)、misskey:、fedibird:、FEP-044fのquote——教科書の語彙だけでなく、現実の方言がぜんぶ辞書に書き足してある。連合の言葉は、生きている言葉です。
+そしてこの経は、手書きではありません。一語につき一枚のYAMLから、コード生成で書き写されます——写経が、比喩ではなくビルド工程として実在します。辞書にはtoot:やmisskey:といった現実の方言までぜんぶ載っている。連合の言葉は、生きている言葉です。
 
 ## 見どころ
 

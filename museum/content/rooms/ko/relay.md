@@ -18,9 +18,9 @@ links:
     href: "https://github.com/fedify-dev/fedify/tree/main/packages/relay"
 ---
 
-일대일로 편지를 주고받는 대신, 등대가 한데 맡아서 돌며 배달해 줘요 — ActivityPub 릴레이의 등대예요. fedify 2.0.0부터 나온 새 얼굴이죠.
+작은 섬들을 한데 이어줄 수 있어요. 일일이 편지를 주고받지 않아도, 등대를 구독하면 바다의 소식이 한꺼번에 도착해요. 사람이 드문 섬의 연합 경험은 릴레이가 있느냐 없느냐로 크게 달라지죠 — 그리고 이건 그 등대를 직접 세우기 위한 키트예요.
 
-앞바다에는 두 가지 방식이 있어요. Mastodon 식과 LitePub 식인데, 구독하는 악수가 미묘하게 달라요. 그래서 BaseRelay의 자식으로 MastodonRelay와 LitePubRelay 둘이 살고, createRelay()가 어느 쪽을 밝힐지 골라요.
+앞바다에는 두 가지 방식(Mastodon 식과 LitePub 식)이 있고, 구독하는 악수가 미묘하게 달라요. 그래서 이 등대는 두 얼굴을 다 가지고 있어요.
 
 ## 볼거리
 

@@ -18,9 +18,9 @@ links:
     href: "https://github.com/fedify-dev/hollo/tree/main/src/api"
 ---
 
-手持ちのMastodonアプリが、そのまま話しかけられる窓口です。v1には14本の資源ルータ(accounts、statuses、timelines、notifications……)が並び、認証は tokenRequired → scopeRequired → withAccountOwner という三段の廊下を通ってから各部屋へ。
+手持ちのMastodonアプリで、そのまま暮らせます。IceCubesでもToot!でも、接続先をholloに変えるだけ。サーバを乗り換えても、指が覚えたアプリはそのまま——それがこの受付の約束です。
 
-面白いのは、受付が翻訳係でもあることです。アプリが「投稿して」と言うと、ハンドラの中でそのままfedifyの文脈(fedCtx)を使って、外の宇宙への配達まで済ませてしまう——明示の宛先にひとたび、followersへもうひとたび、sendActivity()を二度。受付と外交室が、廊下続きになっています。
+そして受付は翻訳係でもあります。アプリが「投稿して」と言えば、そのまま外の宇宙への配達まで済ませてしまう。受付と外交室が、廊下続きになっています。
 
 ## 見どころ
 

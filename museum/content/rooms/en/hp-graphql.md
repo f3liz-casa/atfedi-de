@@ -18,9 +18,9 @@ links:
     href: "https://github.com/hackers-pub/hackerspub/tree/main/graphql"
 ---
 
-The GraphQL inquiry window for the next hall (web-next). Pothos, code-first—no hand-written SDL; it emits a schema assembled from code via printSchema(). The plugins stack nine deep (Complexity, Relay, ScopeAuth, Drizzle, Dataloader…).
+A screen can ask for the data it wants, in the shape it wants, all at once. No need to ask the server for a new window every time you build a new screen—whatever shape the next hall (web-next) takes, this inquiry room answers.
 
-The finest sight is that the same postTable transforms, by variant, into three faces—Note, Article, Question. The ledger is one book, yet from the inquiry window it looks like three kinds of record.
+The finest sight is that the same postTable transforms into three faces—Note, Article, Question. The ledger is one book, yet from the inquiry window it looks like three kinds of record.
 
 ## Highlights
 

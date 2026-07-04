@@ -18,9 +18,9 @@ links:
     href: "https://github.com/hackers-pub/hackerspub/tree/main/federation"
 ---
 
-이 동은, fedify 배선만을 위해 있어요. builder.ts가 빈 FederationBuilder를 만들고, actor, collections, inbox, objects, outbox, webfinger — 동의 모두가 부수효과 import로, 자기가 맡은 디스패처를 걸어 나가요. 다 짜인 설계도는, 아직 살아 있지 않아요. 숨을 불어넣는 건 열람실 쪽(web/federation.ts)의 몫이에요.
+hollo와 같은 일을, Deno에서도 할 수 있어요. 외교의 배치를 공유 설계도(builder)로 만들어 두면, 여러 동에서 같은 배선을 돌려쓸 수 있어요 — 커지는 앱의, 연합을 어디에 둘지 보여주는 본보기예요.
 
-inbox/mod.ts는, 동사의 노선도로 읽을 수 있어요. Accept, Follow, Create, Announce, Undo…… 16가지 .on(). 뜻이 여럿인 동사는, 그 자리에서 속을 보고 갈라 보내요 — Undo가 오면 getObject()를 들여다보고, 팔로우 취소인지, 리액션 취소인지, 차단 해제인지 가려내요.
+inbox/mod.ts는, 동사의 노선도로 읽을 수 있어요. Accept, Follow, Undo…… 뜻이 여럿인 동사는 속을 보고 갈라 보내요. 도착하는 편지의 종류를, 한 장으로 훑어볼 수 있어요.
 
 ## 볼거리
 

@@ -18,9 +18,9 @@ links:
     href: "https://github.com/fedify-dev/fedify/tree/main/packages/debugger"
 ---
 
-旅人(開発者)むけの道具屋です。fedify CLI(約6000行)には8つの道具——init、bench、inbox、lookup、nodeinfo、relay、tunnel、webfinger——が掛かっています。
+連合の様子を、手元で覗けます。`fedify init` で新しい島の縄張りが引けて、`fedify lookup` でよそのactorの中身が見られて、`fedify inbox` と `tunnel` を組めば、本物のMastodonからの手紙を自分のノートPCで受け取れます。
 
-inboxは端末の中の受信箱(TUI)で、tunnelと組むと、手元の開発機のinboxに本物の連合の風を通せます。debuggerのほうは額縁——createFederationDebugger()が動いているFederationをproxyで包んで、行き交う文書をリアルタイムで見せてくれる。holloがFEDIFY_DEBUG=trueで掛けるのは、この額縁です。
+debuggerは額縁です。動いているFederationをproxyで包んで、行き交う文書をリアルタイムで見せてくれる。「いま何が届いて、何を返したのか」が見えるだけで、連合の開発はずいぶん怖くなくなります。
 
 ## 見どころ
 
