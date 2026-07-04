@@ -5,6 +5,7 @@
   import { visited, markVisited, resetVisited } from '$lib/visited.svelte.js';
   import { t } from '$lib/i18n.js';
   import LangSwitch from '$lib/components/LangSwitch.svelte';
+  import { ORDER, islandOf } from '$lib/museum.js';
   import { ISLE, GOTO, focusOf } from './data.js';
   import { CAPTIONS as CJA } from './captions.ja.js';
   import { CAPTIONS as CEN } from './captions.en.js';
@@ -23,8 +24,18 @@
   let svgEl;
   let sel = $state(null);          // いま開いている札のid(welcome含む)
   let firstStamp = $state(false);  // この札がはじめての御朱印か
-  const TOTAL = Object.keys(DATA).length - 1; // welcomeは数えない
-  const stamps = $derived(visited.ids.filter((id) => DATA[id] && id !== 'welcome').length);
+  // 順路番号(場所コード): カードの番号と地図の印の番号が同じ符丁
+  const NUM = Object.fromEntries(ORDER.map((id, i) => [id, i + 1]));
+  const TOTAL = ORDER.length;
+  const stamps = $derived(visited.ids.filter((id) => NUM[id]).length);
+  const nextRoom = $derived.by(() => {
+    const start = sel && NUM[sel] ? ORDER.indexOf(sel) : -1;
+    for (let s = 1; s <= ORDER.length; s++) {
+      const id = ORDER[(start + s) % ORDER.length];
+      if (!visited.ids.includes(id)) return id;
+    }
+    return null;
+  });
 
   const selData = $derived(sel ? DATA[sel] : null);
 
@@ -159,9 +170,15 @@
   function addMarker(id, x, y, parent) {
     const g = E('g', { 'data-id': id, class: 'mkr', transform: `translate(${x},${y})` }, parent);
     const s = E('g', { class: 'mk' }, g);
-    E('circle', { class: 'ring', r: 10.5 }, s);
-    E('circle', { class: 'base', r: 5.5 }, s);
-    E('circle', { class: 'core', r: 3 }, s);
+    const n = NUM[id];
+    E('circle', { class: 'ring', r: n ? 12 : 10.5 }, s);
+    E('circle', { class: 'base', r: n ? 7.4 : 5.5 }, s);
+    if (n) { // 順路番号を印に刻む
+      const tx = E('text', { class: 'mknum', 'text-anchor': 'middle', dy: '0.34em', 'font-size': 8.5 }, s);
+      tx.textContent = n;
+    } else {
+      E('circle', { class: 'core', r: 3 }, s);
+    }
     markers[id] = g;
   }
 
@@ -585,10 +602,25 @@
     <button onclick={() => { closePanel(); glideTo(0, 0, W); }}>{T.map.fullView}</button>
   </div>
 
-  <div class="stamp">{T.map.stamps} <b>{stamps}</b> / {TOTAL}
-    {#if stamps > 0}
-      <button class="wipe" onclick={wipe}>{wipeArmed ? T.map.wipeConfirm : T.map.wipe}</button>
-    {/if}
+  <div class="stamp stampmap">
+    <div class="mdots">
+      {#each ORDER as id, i (id)}
+        <button class="mdot" class:done={visited.ids.includes(id)} class:cur={sel === id}
+          style="--c:{islandOf(DATA[id].kind).color}" title={DATA[id].name}
+          onclick={() => open(id)}>{i + 1}</button>
+      {/each}
+    </div>
+    <div class="stampline">
+      <span class="count">{T.map.stamps} <b>{stamps}</b> / {TOTAL}</span>
+      {#if nextRoom}
+        <button class="nextbtn" onclick={() => open(nextRoom)}>{T.stamp.next}: {DATA[nextRoom].name} →</button>
+      {:else}
+        <span>{T.stamp.done}</span>
+      {/if}
+      {#if stamps > 0}
+        <button class="wipe" onclick={wipe}>{wipeArmed ? T.map.wipeConfirm : T.map.wipe}</button>
+      {/if}
+    </div>
   </div>
 
   <aside class="panel" class:open={sel !== null} aria-live="polite">
@@ -618,4 +650,16 @@
 
 <style>
   .langline{margin-top:6px}
+  .stampmap{display:flex; flex-direction:column; gap:7px; max-width:296px}
+  .mdots{display:flex; flex-wrap:wrap; gap:4px}
+  .mdot{width:18px; height:18px; border-radius:50%; border:1.5px solid var(--c);
+    background:var(--wall); color:var(--c); padding:0; cursor:pointer;
+    font:600 9px ui-monospace,"SF Mono",Menlo,monospace;
+    display:flex; align-items:center; justify-content:center}
+  .mdot.done{background:var(--c); color:var(--wall)}
+  .mdot.cur{box-shadow:0 0 0 2px var(--shu)}
+  .stampline{display:flex; gap:10px; flex-wrap:wrap; align-items:baseline; font-size:.72rem}
+  .count b{color:var(--shu); font-family:ui-monospace,"SF Mono",Menlo,monospace}
+  .nextbtn{font:inherit; font-weight:600; background:none; border:none; padding:0;
+    border-bottom:1px solid var(--shu); color:var(--panel-ink); cursor:pointer}
 </style>

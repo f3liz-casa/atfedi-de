@@ -186,9 +186,17 @@ mark.chg,.chg{background:#F6DE6B; color:var(--ink); border-radius:2px; padding:0
 .mkr.done .core{opacity:1}
 .mkr .ring{fill:none; stroke:var(--shu); stroke-width:1.5; opacity:0; transition:opacity .3s}
 .mkr.sel .ring{opacity:.95}
+/* 順路番号つきの印: 捺すと朱に塗られ、番号が白抜きになる */
+.mknum{font-family:ui-monospace,"SF Mono",Menlo,monospace; font-weight:600;
+  fill:var(--shu); pointer-events:none}
+.mkr.done .base{fill:var(--shu)}
+.mkr.done .mknum{fill:var(--wall)}
 #gMath .mkr .base{stroke:var(--gold); fill:#161C2E}
 #gMath .mkr .core{fill:var(--gold)}
 #gMath .mkr .ring{stroke:var(--gold)}
+#gMath .mknum{fill:var(--gold)}
+#gMath .mkr.done .base{fill:var(--gold)}
+#gMath .mkr.done .mknum{fill:#161C2E}
 .map-root #map .sel:not(.mkr){filter:drop-shadow(0 0 2px rgba(198,71,46,.8)) drop-shadow(0 0 7px rgba(198,71,46,.5))}
 .map-root.lens #map .sel:not(.mkr){filter:drop-shadow(0 0 2px rgba(232,193,104,.9)) drop-shadow(0 0 8px rgba(232,193,104,.5))}
 /* 滑空中とドラッグ中は灯を休ませる(毎フレームのフィルタ再計算が滑空をかくつかせる) */
