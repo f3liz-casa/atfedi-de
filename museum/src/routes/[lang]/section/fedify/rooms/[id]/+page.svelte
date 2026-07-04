@@ -38,8 +38,6 @@
     <div class="langline"><LangSwitch {lang} /></div>
   </header>
 
-  <StampCard route={data.route} current={room.id} {lang} />
-
   {#if room.plain}
     <div class="plain"><span class="plabel">{T.room.ifNew}</span>{room.plain}</div>
   {/if}
@@ -79,6 +77,8 @@
       {/each}
     </div>
   {/if}
+
+  <StampCard route={data.route} current={room.id} {lang} />
 
   <nav class="route">
     <span>

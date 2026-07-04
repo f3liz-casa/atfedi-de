@@ -41,7 +41,7 @@
 
 <style>
   .stampcard{background:var(--card); border:1px solid rgba(59,55,46,.4);
-    border-radius:3px; padding:10px 14px; margin-bottom:26px;
+    border-radius:3px; padding:10px 14px; margin-top:40px;
     display:flex; flex-direction:column; gap:8px}
   .dots{display:flex; flex-wrap:wrap; gap:5px}
   .dot{width:11px; height:11px; border-radius:50%;
