@@ -4,8 +4,8 @@ const GH_H = 'https://github.com/fedify-dev/hollo/tree/main/';
 const GH_P = 'https://github.com/hackers-pub/hackerspub/tree/main/';
 
 export const CAPTIONS = {
-  welcome: { kind: '안내', name: '페디 박물거리에 오신 걸 환영해요',
-    body: 'fedify · hollo · hackers.pub, 이 세 가지 오픈소스를 걸어서 둘러보는 박물거리로 꾸민 페이지예요. 지도는 손가락으로 집어서 움직이고, 표시를 누르면 가까이 다가가요. 하얀 작은 동그라미는 아직 안 본 전시예요. 한 번 보면 붉은 도장으로 바뀌어요. 처음 오신 분은 문 옆의 "안내소"에서 시작하면 돼요. 밤이 되는 렌즈는 맨 마지막 즐거움으로 남겨 두세요.',
+  welcome: { kind: '안내', name: '페디 박물관 거리에 오신 걸 환영해요',
+    body: 'fedify · hollo · hackers.pub, 이 세 가지 오픈소스를 걸어서 둘러보는 박물관 거리로 꾸민 페이지예요. 지도는 손가락으로 집어서 움직이고, 표시를 누르면 가까이 다가가요. 하얀 작은 동그라미는 아직 안 본 전시예요. 한 번 보면 붉은 도장으로 바뀌어요. 처음 오신 분은 문 옆의 "안내소"에서 시작하면 돼요. 밤이 되는 렌즈는 맨 마지막 즐거움으로 남겨 두세요.',
     links: [['처음 만나는 ActivityPub(안내소)', '/section/fedify/rooms/guide/'], ['낱말 갈피', '/section/fedify/rooms/kotoba/']] },
   guide: { kind: '안내', name: '안내소',
     body: 'ActivityPub가 처음이신 분은 여기에서 시작하세요. 편지 한 통이 바다를 건너기까지를, 일곱 개의 방을 따라 안내해요. 낱말이 헷갈릴 때 펴 보는 갈피도 놓여 있어요.',

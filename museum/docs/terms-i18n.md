@@ -8,8 +8,8 @@ ko は 번역체回避(atfedi-de docs/translation-ko.md)の流儀で。
 
 | ja | en | ko |
 |---|---|---|
-| 博物街 | Museum Town | 박물거리 |
-| フェディの博物街 | The Fedi Museum Town | 페디 박물거리 |
+| 博物街 | Museum Town | 박물관 거리 |
+| フェディの博物街 | The Fedi Museum Town | 페디 박물관 거리 |
 | フェディの街区 | The Fedi District | 페디 구역 |
 | 街区 | district | 구역 |
 | 玄関(サイトの) | The Entrance | 현관 |

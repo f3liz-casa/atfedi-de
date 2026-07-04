@@ -334,12 +334,12 @@ const en = {
 
 const ko = {
   site: {
-    title: '박물거리',
-    fediTitle: '페디 박물거리',
-    description: 'fedify·hollo·hackers.pub — 오픈소스 셋을 걸어서 둘러보는 박물거리로 만든 지도예요. 전시실마다 움직이는 장난감이 있고, 렌즈를 쓰면 수학의 숨은 거리가 보여요.',
+    title: '박물관 거리',
+    fediTitle: '페디 박물관 거리',
+    description: 'fedify·hollo·hackers.pub — 오픈소스 셋을 걸어서 둘러보는 박물관 거리로 만든 지도예요. 전시실마다 움직이는 장난감이 있고, 렌즈를 쓰면 수학의 숨은 거리가 보여요.',
   },
   lobby: {
-    h1: '박물거리',
+    h1: '박물관 거리',
     kind: 'museum.atfedi.de',
     intro: '걸어서 둘러보는 작은 전시의 거리예요. 구역마다 하나의 세계를 걸을 수 있어요.',
     open: '열려 있는 구역',
@@ -348,13 +348,13 @@ const ko = {
     comingDesc: '지금 조용히 준비하고 있어요.',
     fedi: {
       kind: '페디 구역',
-      title: '페디 박물거리',
+      title: '페디 박물관 거리',
       desc: 'fedify·hollo·hackers.pub — 오픈소스 셋을 걸어서 둘러보는 거리로 만들었어요. 전시실 26개, 직접 만지는 장난감, 그리고 밤이 되는 렌즈——쓰면 바다 밑 수학의 숨은 거리가 보여요.',
       note: '지도에서 시작하세요. 처음이라면 문 옆 안내소로.',
     },
   },
   map: {
-    plaqueTitle: '페디 박물거리',
+    plaqueTitle: '페디 박물관 거리',
     plaqueSub: 'fedify·hollo·hackers.pub을 걷는 지도예요. 표지를 누르면 가까이 가요.',
     lensOn: '렌즈 <b>쓰기</b>',
     lensOff: '렌즈 <b>벗기</b>',
@@ -410,7 +410,7 @@ const ko = {
   },
   door: {
     mapName: '지도', mapKind: '페디 구역',
-    lobbyName: '박물거리 현관', lobbyKind: 'museum.atfedi.de',
+    lobbyName: '박물관 거리 현관', lobbyKind: 'museum.atfedi.de',
     guideName: '안내소', kotobaName: '낱말 갈피', annaiKind: '안내',
   },
   toys: {
