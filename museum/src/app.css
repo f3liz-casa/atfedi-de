@@ -203,6 +203,11 @@ mark.chg,.chg{background:#F6DE6B; color:var(--ink); border-radius:2px; padding:0
   transition:background .9s,border-color .9s,color .9s}
 .map-root .plaque h1{font-size:1.25rem; letter-spacing:.22em; margin-top:0}
 .map-root .plaque p{font-size:.72rem; color:var(--ink-soft); margin-top:3px; letter-spacing:.06em}
+.map-root .plaque .guide-callout{display:block; margin-top:10px; padding:7px 11px;
+  border:1.5px solid var(--shu); border-radius:3px; font-size:.78rem; font-weight:600;
+  color:var(--panel-ink); text-decoration:none; letter-spacing:.04em;
+  background:var(--wall)}
+.map-root .plaque .guide-callout:hover{background:var(--panel-bg)}
 .map-root.lens .plaque,.map-root.lens .ctrl button,.map-root.lens .panel,.map-root.lens .stamp{
   background:#232B44; border-color:#4A557A; color:#C9CEDF; --panel-ink:#C9CEDF}
 .map-root .ctrl{position:absolute; right:14px; bottom:14px; z-index:5; display:flex;

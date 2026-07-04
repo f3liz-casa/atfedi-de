@@ -39,6 +39,7 @@ const ja = {
     stamped: '御朱印を捺しました',
     stampedAlready: '御朱印済み',
     close: 'とじる',
+    guideCallout: 'はじめてのActivityPub? → 案内所へ',
     labels: {
       honden: '連合の間', sig: '儀典の間', vocab: '語彙の経蔵', kobo: '工房',
       annai: '案内所', kura: '倉の区画', webfinger: 'webfinger の門',
@@ -69,6 +70,11 @@ const ja = {
     floorPlan: '間取り', neighbors: 'となりの部屋', outLinks: 'そとへのリンク',
     backToHere: '← 地図のこの場所にもどる',
     map: '地図', words: 'ことば',
+  },
+  stamp: {
+    progress: (n, total) => `御朱印 ${n} / ${total}`,
+    next: 'つぎはこれ',
+    done: 'ぜんぶ捺しました。おつかれさま',
   },
   guide: {
     title: 'はじめてのActivityPub', kind: 'ごあんない・案内所',
@@ -203,6 +209,7 @@ const en = {
     stamped: 'Stamp collected',
     stampedAlready: 'Already stamped',
     close: 'Close',
+    guideCallout: 'New to ActivityPub? → Visitor Center',
     labels: {
       honden: 'Federation', sig: 'Rites', vocab: 'Sutras', kobo: 'Workshop',
       annai: 'Info', kura: 'Storehouses', webfinger: 'The Webfinger Gate',
@@ -233,6 +240,11 @@ const en = {
     floorPlan: 'Floor plan', neighbors: 'Neighboring rooms', outLinks: 'Outside links',
     backToHere: '← Back to this spot on the map',
     map: 'Map', words: 'Words',
+  },
+  stamp: {
+    progress: (n, total) => `Stamps ${n} / ${total}`,
+    next: 'Next up',
+    done: 'All stamped — well walked',
   },
   guide: {
     title: 'ActivityPub, from zero', kind: 'Information · Visitor Center',
@@ -367,6 +379,7 @@ const ko = {
     stamped: '도장을 찍었어요',
     stampedAlready: '이미 찍었어요',
     close: '닫기',
+    guideCallout: '처음 만나는 ActivityPub? → 안내소로',
     labels: {
       honden: '연합의 방', sig: '의전의 방', vocab: '장경각', kobo: '공방',
       annai: '안내소', kura: '곳간 구역', webfinger: 'webfinger의 문',
@@ -397,6 +410,11 @@ const ko = {
     floorPlan: '배치도', neighbors: '옆방', outLinks: '바깥 링크',
     backToHere: '← 지도의 이 자리로',
     map: '지도', words: '낱말',
+  },
+  stamp: {
+    progress: (n, total) => `순례 도장 ${n} / ${total}`,
+    next: '다음은 여기',
+    done: '전부 찍었어요. 수고 많았어요',
   },
   guide: {
     title: '처음 만나는 ActivityPub', kind: '안내 · 안내소',

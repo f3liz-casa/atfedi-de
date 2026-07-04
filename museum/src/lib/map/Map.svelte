@@ -573,6 +573,9 @@
     <h1>{T.map.plaqueTitle}</h1>
     <p>{T.map.plaqueSub}</p>
     <div class="langline"><LangSwitch {lang} /></div>
+    {#if !visited.ids.includes('guide')}
+      <a class="guide-callout" href="{SEC}/rooms/guide/">{T.map.guideCallout}</a>
+    {/if}
   </header>
 
   <div class="ctrl">
@@ -600,7 +603,7 @@
         {/if}
         {#each selData.links as [label, href]}
           {#if href.startsWith('/')}
-            <a href="/{lang}{href}">{label}</a>
+            <a href="/{lang}{href}" class={href.includes('/rooms/guide/') ? 'roomlink' : ''}>{label}</a>
           {:else}
             <a class="ext" {href} target="_blank" rel="noopener">{label}</a>
           {/if}

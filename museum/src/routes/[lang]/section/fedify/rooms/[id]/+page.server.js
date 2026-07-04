@@ -25,5 +25,7 @@ export async function load({ params }) {
     prev: seek(-1),
     next: seek(1),
     related: (room.related || []).filter((r) => avail.has(r)).map((r) => roomMeta(lang, r)),
+    // 御朱印の順路カード用: 順路ぜんぶの名札
+    route: ORDER.filter((r) => avail.has(r)).map((r) => roomMeta(lang, r)),
   };
 }

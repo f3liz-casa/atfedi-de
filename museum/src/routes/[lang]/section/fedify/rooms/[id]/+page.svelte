@@ -1,6 +1,7 @@
 <script>
   import Render from '$lib/components/Render.svelte';
   import LangSwitch from '$lib/components/LangSwitch.svelte';
+  import StampCard from '$lib/components/StampCard.svelte';
   import { islandOf, GH } from '$lib/museum.js';
   import { t } from '$lib/i18n.js';
   import { visited, markVisited } from '$lib/visited.svelte.js';
@@ -36,6 +37,8 @@
     <h1>{room.name}</h1>
     <div class="langline"><LangSwitch {lang} /></div>
   </header>
+
+  <StampCard route={data.route} current={room.id} {lang} />
 
   {#if room.plain}
     <div class="plain"><span class="plabel">{T.room.ifNew}</span>{room.plain}</div>
