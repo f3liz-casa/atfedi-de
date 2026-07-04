@@ -3,9 +3,19 @@
   import { replaceState } from '$app/navigation';
   import { ui } from '$lib/ui.svelte.js';
   import { visited, markVisited, resetVisited } from '$lib/visited.svelte.js';
-  import { DATA, ISLE, GOTO, focusOf } from './data.js';
+  import { t } from '$lib/i18n.js';
+  import LangSwitch from '$lib/components/LangSwitch.svelte';
+  import { ISLE, GOTO, focusOf } from './data.js';
+  import { CAPTIONS as CJA } from './captions.ja.js';
+  import { CAPTIONS as CEN } from './captions.en.js';
+  import { CAPTIONS as CKO } from './captions.ko.js';
 
-  let { available = [] } = $props();
+  let { available = [], lang = 'ja' } = $props();
+
+  const DATA = { ja: CJA, en: CEN, ko: CKO }[lang] ?? CJA;
+  const T = t(lang);
+  const L = T.map.labels;
+  const SEC = `/${lang}/section/fedify`;
 
   const NS = 'http://www.w3.org/2000/svg';
   const W = 2400, H = 1600;
@@ -17,6 +27,10 @@
   const stamps = $derived(visited.ids.filter((id) => DATA[id] && id !== 'welcome').length);
 
   const selData = $derived(sel ? DATA[sel] : null);
+
+  // 板の幅の見積り(CJKは幅広、ラテンは細め)
+  const est = (s) =>
+    [...s].reduce((a, ch) => a + (ch.codePointAt(0) > 0xff ? 11.5 : 6.8), 0);
 
   let reduced = false;
   let markers = {};
@@ -72,8 +86,8 @@
     E('path', { d: `M${x - 5},${y + rh} L${x + w / 2},${y} L${x + w + 5},${y + rh} Z`,
       fill: `var(${roof})`, stroke: 'var(--ink)', 'stroke-width': 1.5, class: 'sw' }, g);
     if (!opt.noDoor) E('rect', { x: x + w / 2 - 5, y: y + h - 16, width: 10, height: 16, class: 'f-ink sw', rx: 1 }, g);
-    if (opt.plate) {
-      const pw = opt.plate * 11.5 + 10;
+    if (opt.plateTxt) {
+      const pw = est(opt.plateTxt) + 12;
       E('rect', { x: x + w / 2 - pw / 2, y: y + rh + 7, width: pw, height: 16,
         fill: 'var(--wall)', stroke: 'var(--ink)', 'stroke-width': 1, class: 'sw' }, g);
       txt(x + w / 2, y + rh + 19.5, opt.plateTxt, 'lbl sw', 11, g);
@@ -134,7 +148,7 @@
   }
   function signpost(x, y, label, dest) {
     const g = E('g', { 'data-goto': dest, class: 'signpost' }, gSign);
-    const pw = label.length * 11 + 16;
+    const pw = est(label) + 18;
     E('ellipse', { cx: x, cy: y + 2, rx: 14, ry: 4, class: 'f-shadow' }, g);
     E('rect', { x: x - 2.5, y: y - 26, width: 5, height: 26, fill: '#8A7B5C',
       stroke: 'var(--ink)', 'stroke-width': 1.2, class: 'sw' }, g);
@@ -177,10 +191,10 @@
     road('M600,900 C700,900 780,910 830,930');
     road('M600,860 C640,760 680,660 700,640');
     grove(300, 1050, 5, 3, 150); grove(880, 700, 4, 5, 120); grove(520, 1150, 3, 8, 100); grove(430, 560, 3, 11, 90);
-    house(520, 700, 160, 120, '--roof-fedify', 'fedify-honden', { plate: 4, plateTxt: '連合の間' });
-    house(330, 860, 120, 95, '--roof-fedify', 'sig', { plate: 4, plateTxt: '儀典の間' });
-    house(770, 860, 120, 95, '--roof-fedify', 'vocab', { plate: 5, plateTxt: '語彙の経蔵' });
-    house(650, 560, 100, 80, '--roof-fedify', 'kobo', { plate: 3, plateTxt: '工房' });
+    house(520, 700, 160, 120, '--roof-fedify', 'fedify-honden', { plateTxt: L.honden });
+    house(330, 860, 120, 95, '--roof-fedify', 'sig', { plateTxt: L.sig });
+    house(770, 860, 120, 95, '--roof-fedify', 'vocab', { plateTxt: L.vocab });
+    house(650, 560, 100, 80, '--roof-fedify', 'kobo', { plateTxt: L.kobo });
     { const names = ['postgres', 'redis', 'sqlite', 'mysql', 'denokv', 'amqp'];
       const g = E('g', { 'data-id': 'kura' }, gBuild);
       names.forEach((n, i) => {
@@ -191,22 +205,22 @@
           fill: 'var(--roof-fedify)', stroke: 'var(--ink)', 'stroke-width': 1.3, class: 'sw' }, g);
         txt(x + 30, y + 40, n, 'mono lbl-soft sm sw', 9.5, g);
       });
-      txt(430, 700, '倉の区画', 'lbl sm sw', 14, gLbl); }
-    house(455, 1055, 64, 52, '--roof-fedify', 'guide', { plate: 3, plateTxt: '案内所' });
+      txt(430, 700, L.kura, 'lbl sm sw', 14, gLbl); }
+    house(455, 1055, 64, 52, '--roof-fedify', 'guide', { plateTxt: L.annai });
     { const g = E('g', { 'data-id': 'webfinger' }, gBuild), x = 620, y = 1130;
       shadow(x, y + 62, 44);
       E('rect', { x: x - 34, y, width: 9, height: 62, fill: '#8A7B5C', stroke: 'var(--ink)', 'stroke-width': 1.2, class: 'sw' }, g);
       E('rect', { x: x + 25, y, width: 9, height: 62, fill: '#8A7B5C', stroke: 'var(--ink)', 'stroke-width': 1.2, class: 'sw' }, g);
       E('path', { d: `M${x - 46},${y + 4} Q${x},${y - 14} ${x + 46},${y + 4} l0,10 Q${x},${y - 4} ${x - 46},${y + 14} Z`,
         fill: '#8A7B5C', stroke: 'var(--ink)', 'stroke-width': 1.2, class: 'sw' }, g);
-      txt(x, y + 92, 'webfinger の門', 'lbl sm sw', 13, gLbl); }
+      txt(x, y + 92, L.webfinger, 'lbl sm sw', 13, gLbl); }
     { const g = E('g', { 'data-id': 'nodeinfo' }, gBuild), x = 810, y = 1040;
       shadow(x, y + 54, 30);
       E('rect', { x: x - 3, y: y + 14, width: 6, height: 40, fill: '#8A7B5C', class: 'sw' }, g);
       E('rect', { x: x - 26, y: y - 14, width: 52, height: 32, class: 'f-wall sw' }, g);
       E('path', { d: `M${x - 32},${y - 14} L${x},${y - 28} L${x + 32},${y - 14} Z`,
         fill: 'var(--roof-fedify)', stroke: 'var(--ink)', 'stroke-width': 1.2, class: 'sw' }, g);
-      txt(x, y + 74, 'nodeinfo 高札場', 'lbl sm sw', 12, gLbl); }
+      txt(x, y + 74, L.nodeinfo, 'lbl sm sw', 12, gLbl); }
     { const g = E('g', { 'data-id': 'bridges' }, gBuild);
       const names = ['hono', 'express', 'fastify', 'koa', 'h3', 'elysia', 'nestjs', 'next',
         'nuxt', 'sveltekit', 'fresh', 'astro', 'solidstart', 'cfworkers'];
@@ -217,7 +231,7 @@
         E('circle', { cx: x, cy: y, r: 10, class: 'f-land sw' }, g);
         txt(x + 16, y + 4, n, 'mono lbl-soft sm sw', 10.5, g, 'start');
       });
-      txt(1150, 486, '十四の橋', 'lbl sw', 15, gLbl); }
+      txt(1150, 486, L.bridges, 'lbl sw', 15, gLbl); }
     { const g = E('g', { 'data-id': 'relay' }, gBuild), x = 1062, y = 290;
       shadow(x, y + 72, 26);
       E('path', { d: `M${x - 13},${y + 72} L${x - 8},${y + 8} L${x + 8},${y + 8} L${x + 13},${y + 72} Z`, class: 'f-wall sw' }, g);
@@ -225,35 +239,35 @@
       E('circle', { cx: x, cy: y + 1, r: 4, fill: 'var(--gold)', class: 'sw' }, g);
       E('path', { d: `M${x - 16},${y - 6} L${x},${y - 16} L${x + 16},${y - 6} Z`,
         fill: 'var(--roof-fedify)', stroke: 'var(--ink)', 'stroke-width': 1.3, class: 'sw' }, g);
-      txt(x, y + 100, 'relay 灯台', 'lbl sm sw', 12, gLbl); }
-    txt(600, 470, 'fedify 本島', 'name sw', 34, gLbl);
-    txt(600, 502, '総本山 — @fedify/fedify', 'mono lbl-soft sw', 13, gLbl);
+      txt(x, y + 100, L.relay, 'lbl sm sw', 12, gLbl); }
+    txt(600, 470, L.fedifyIsle, 'name sw', 34, gLbl);
+    txt(600, 502, L.fedifySub, 'mono lbl-soft sw', 13, gLbl);
 
     // hollo 島
-    hall(1570, 1040, 240, 150, '--roof-hollo', 'hollo 館', [
-      { id: 'hollo-pages', label: '客間', code: 'src/pages' },
-      { id: 'hollo-api', label: '受付 Mastodon API', code: 'src/api' },
-      { id: 'hollo-fed', label: '外交室', code: 'src/federation' },
+    hall(1570, 1040, 240, 150, '--roof-hollo', L.holloHall, [
+      { id: 'hollo-pages', label: L.parlor, code: 'src/pages' },
+      { id: 'hollo-api', label: L.reception, code: 'src/api' },
+      { id: 'hollo-fed', label: L.diplomacy, code: 'src/federation' },
     ]);
-    house(1620, 1230, 80, 64, '--roof-hollo', 'hollo-oauth', { plate: 3, plateTxt: '鍵の間' });
+    house(1620, 1230, 80, 64, '--roof-hollo', 'hollo-oauth', { plateTxt: L.keys });
     pagoda(1890, 1075, 75, 'hollo-bunsha');
-    txt(1890, 1190, 'fedify 別院', 'lbl sm sw', 13, gLbl);
-    txt(1890, 1208, 'npm蔵版 ^2.3.0', 'mono lbl-soft sm sw', 10.5, gLbl);
+    txt(1890, 1190, L.bunsha, 'lbl sm sw', 13, gLbl);
+    txt(1890, 1208, L.npmEd, 'mono lbl-soft sm sw', 10.5, gLbl);
     grove(1560, 1260, 3, 17, 90);
     road('M1690,1200 C1750,1230 1820,1230 1880,1180');
     E('path', { d: 'M1960,1220 l90,26', stroke: '#8A7B5C', 'stroke-width': 8, class: 'sw' }, gDeco);
 
     // hackers.pub 島
-    hall(1620, 330, 300, 170, '--roof-hp', 'hackers.pub 館', [
-      { id: 'hp-web', label: '閲覧室', code: 'web/' },
-      { id: 'hp-graphql', label: '照会室', code: 'graphql/' },
-      { id: 'hp-models', label: '書庫', code: 'models/' },
-      { id: 'hp-fed', label: '外交室', code: 'federation/' },
+    hall(1620, 330, 300, 170, '--roof-hp', L.hpHall, [
+      { id: 'hp-web', label: L.reading, code: 'web/' },
+      { id: 'hp-graphql', label: L.inquiry, code: 'graphql/' },
+      { id: 'hp-models', label: L.stacks, code: 'models/' },
+      { id: 'hp-fed', label: L.diplomacy, code: 'federation/' },
     ]);
-    house(1600, 540, 86, 66, '--roof-hp', 'hp-ai', { plate: 3, plateTxt: '新館 ai' });
+    house(1600, 540, 86, 66, '--roof-hp', 'hp-ai', { plateTxt: L.newWing });
     pagoda(1985, 385, 75, 'hp-bunsha');
-    txt(1985, 500, 'fedify 別院', 'lbl sm sw', 13, gLbl);
-    txt(1985, 518, 'JSR蔵版 2.3.1', 'mono lbl-soft sm sw', 10.5, gLbl);
+    txt(1985, 500, L.bunsha, 'lbl sm sw', 13, gLbl);
+    txt(1985, 518, L.jsrEd, 'mono lbl-soft sm sw', 10.5, gLbl);
     grove(1650, 600, 3, 23, 90);
     road('M1770,520 C1850,540 1930,510 1975,470');
 
@@ -269,19 +283,19 @@
         if (reduced) g.setAttribute('transform', 'translate(' + (2100 + i * 60) + ',' + (1230 - i * 380) + ')');
         else E('animateMotion', { dur: 46 + i * 14 + 's', repeatCount: 'indefinite', path: d }, g);
       });
-      txt(2265, 1064, 'マストドン大陸へ →', 'lbl-soft sw', 15, gLbl);
-      txt(2250, 186, 'ミスキー群島へ →', 'lbl-soft sw', 15, gLbl);
-      txt(2258, 600, 'ピクセルフェド礁へ →', 'lbl-soft sw', 15, gLbl);
-      txt(1520, 760, '外 交 の 海', 'name sw', 30, gLbl).setAttribute('opacity', '.6');
-      txt(1520, 792, 'ActivityPub — 共通の儀典', 'lbl-soft sw', 13, gLbl).setAttribute('opacity', '.75'); }
+      txt(2265, 1064, L.toMastodon, 'lbl-soft sw', 15, gLbl);
+      txt(2250, 186, L.toMisskey, 'lbl-soft sw', 15, gLbl);
+      txt(2258, 600, L.toPixelfed, 'lbl-soft sw', 15, gLbl);
+      txt(1520, 760, L.seaName, 'name sw', 30, gLbl).setAttribute('opacity', '.6');
+      txt(1520, 792, L.seaSub, 'lbl-soft sw', 13, gLbl).setAttribute('opacity', '.75'); }
 
     // 道しるべ
-    signpost(850, 1190, '→ hollo 館', 'hollo-isle');
-    signpost(800, 520, '↗ hackers.pub 館', 'hp-isle');
-    signpost(1495, 1305, '← fedify 本島', 'fedify-isle');
-    signpost(1935, 975, '↑ hackers.pub 館', 'hp-isle');
-    signpost(1540, 615, '← fedify 本島', 'fedify-isle');
-    signpost(1855, 640, '↓ hollo 館', 'hollo-isle');
+    signpost(850, 1190, L.signHollo, 'hollo-isle');
+    signpost(800, 520, L.signHpNE, 'hp-isle');
+    signpost(1495, 1305, L.signFedifyW, 'fedify-isle');
+    signpost(1935, 975, L.signHpN, 'hp-isle');
+    signpost(1540, 615, L.signFedifySW, 'fedify-isle');
+    signpost(1855, 640, L.signHolloS, 'hollo-isle');
 
     // 数学の隠れ街(レンズの下)
     { const g = gMath;
@@ -293,15 +307,15 @@
         txt(x + w / 2, y + h + 20, label, 'm-text lbl sm', 13, m);
         return m;
       };
-      { const m = mhouse(1120, 690, 90, 62, 'math-ec', '楕円曲線の工房');
+      { const m = mhouse(1120, 690, 90, 62, 'math-ec', L.mathEc);
         E('path', { d: 'M1136,738 C1150,690 1180,752 1196,706', class: 'm-line' }, m); }
       { const m = E('g', { 'data-id': 'math-prime' }, g);
         E('circle', { cx: 1268, cy: 930, r: 26, class: 'm-glow' }, m);
         E('circle', { cx: 1268, cy: 930, r: 13, fill: '#161C2E', stroke: 'var(--gold)', 'stroke-width': 1.4 }, m);
-        txt(1268, 986, '素数の井戸', 'm-text lbl sm', 13, m); }
-      { const m = mhouse(1400, 660, 54, 84, 'math-hash', '一方通行の扉');
+        txt(1268, 986, L.mathPrime, 'm-text lbl sm', 13, m); }
+      { const m = mhouse(1400, 660, 54, 84, 'math-hash', L.mathHash);
         E('path', { d: 'M1408,702 h30 m-10,-9 l10,9 l-10,9', class: 'm-line' }, m); }
-      { const m = mhouse(1400, 850, 96, 66, 'math-graph', 'グラフの書庫');
+      { const m = mhouse(1400, 850, 96, 66, 'math-graph', L.mathGraph);
         const pts = [[1420, 900], [1448, 868], [1476, 898], [1448, 908]];
         E('path', { d: 'M1420,900 L1448,868 L1476,898 L1448,908 Z M1448,868 L1448,908',
           class: 'm-line', 'stroke-width': 1.4 }, m);
@@ -310,9 +324,9 @@
         E('path', { d: 'M1180,560 L1225,532 L1270,560 Z', class: 'm-glow' }, m);
         for (let i = 0; i < 3; i++) E('rect', { x: 1192 + i * 24, y: 564, width: 9, height: 44, class: 'm-glow' }, m);
         E('rect', { x: 1184, y: 608, width: 82, height: 8, class: 'm-glow' }, m);
-        txt(1225, 644, '論理の神殿', 'm-text lbl sm', 13, m); }
-      txt(1300, 1052, '数学の隠れ街', 'name m-text', 26, g);
-      txt(1300, 1080, '知るほど、見えるものが増える', 'm-text lbl-soft sm', 12.5, g).setAttribute('opacity', '.8');
+        txt(1225, 644, L.mathLogic, 'm-text lbl sm', 13, m); }
+      txt(1300, 1052, L.mathTown, 'name m-text', 26, g);
+      txt(1300, 1080, L.mathSub, 'm-text lbl-soft sm', 12.5, g).setAttribute('opacity', '.8');
 
       const threads = [
         'M395,905 C700,1050 980,900 1165,740',
@@ -549,51 +563,56 @@
 
 <svelte:window onkeydown={onKey} />
 
-<svelte:head><title>フェディの博物街</title></svelte:head>
+<svelte:head><title>{T.map.plaqueTitle} — {T.site.title}</title></svelte:head>
 
 <div class="map-root" class:lens={ui.lens}>
   <svg id="map" bind:this={svgEl} preserveAspectRatio="xMidYMid meet"
-    aria-label="fedify・hollo・hackers.pub の博物街の地図"></svg>
+    aria-label={T.map.plaqueSub}></svg>
 
   <header class="plaque">
-    <h1>フェディの博物街</h1>
-    <p>fedify・hollo・hackers.pub をあるく地図。目印を押すと近づきます。</p>
+    <h1>{T.map.plaqueTitle}</h1>
+    <p>{T.map.plaqueSub}</p>
+    <div class="langline"><LangSwitch {lang} /></div>
   </header>
 
   <div class="ctrl">
     <button onclick={toggleLens}>
-      {#if ui.lens}レンズを<b>はずす</b>{:else}レンズを<b>かける</b>{/if}
+      {#if ui.lens}{@html T.map.lensOff}{:else}{@html T.map.lensOn}{/if}
     </button>
-    <button onclick={() => { closePanel(); glideTo(0, 0, W); }}>全景にもどる</button>
+    <button onclick={() => { closePanel(); glideTo(0, 0, W); }}>{T.map.fullView}</button>
   </div>
 
-  <div class="stamp">御朱印 <b>{stamps}</b> / {TOTAL}
+  <div class="stamp">{T.map.stamps} <b>{stamps}</b> / {TOTAL}
     {#if stamps > 0}
-      <button class="wipe" onclick={wipe}>{wipeArmed ? 'ほんとうに?' : '白紙に'}</button>
+      <button class="wipe" onclick={wipe}>{wipeArmed ? T.map.wipeConfirm : T.map.wipe}</button>
     {/if}
   </div>
 
   <aside class="panel" class:open={sel !== null} aria-live="polite">
     {#if selData}
-      <button class="pclose" onclick={closePanel} aria-label="とじる">✕</button>
+      <button class="pclose" onclick={closePanel} aria-label={T.map.close}>✕</button>
       <div class="kind">{selData.kind}</div>
       <h2>{selData.name}</h2>
       <p>{selData.body}</p>
       <div class="plinks">
         {#if sel !== 'welcome' && available.includes(sel)}
-          <a class="roomlink" href="/section/fedify/rooms/{sel}/">{sel === 'guide' ? '案内所に入る' : '展示室に入る'}</a>
+          <a class="roomlink" href="{SEC}/rooms/{sel}/">{sel === 'guide' ? T.map.enterGuide : T.map.enterRoom}</a>
         {/if}
         {#each selData.links as [label, href]}
           {#if href.startsWith('/')}
-            <a {href}>{label}</a>
+            <a href="/{lang}{href}">{label}</a>
           {:else}
             <a class="ext" {href} target="_blank" rel="noopener">{label}</a>
           {/if}
         {/each}
       </div>
       {#if sel !== 'welcome'}
-        <div class="visitedline">{firstStamp ? '御朱印を捺しました' : '御朱印済み'}</div>
+        <div class="visitedline">{firstStamp ? T.map.stamped : T.map.stampedAlready}</div>
       {/if}
     {/if}
   </aside>
 </div>
+
+<style>
+  .langline{margin-top:6px}
+</style>

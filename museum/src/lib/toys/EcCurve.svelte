@@ -1,5 +1,8 @@
 <script>
-  import { onMount } from 'svelte';
+  import { onMount, getContext } from 'svelte';
+  import { t } from '$lib/i18n.js';
+  const T = t(getContext('museum:lang')()).toys.eccurve;
+
   // 楕円曲線の散歩: 「Gをたす」で一歩ずつ跳ぶ。なぞの公開鍵を歩いて探す
   const A = -2, B = 2;
   const f = (x) => x * x * x + A * x + B;
@@ -9,19 +12,11 @@
   const sy = (y) => VH - ((y - ymin) / (ymax - ymin)) * VH;
   const G = { x: -1.7, y: Math.sqrt(f(-1.7)) };
   const INK = '#3B372E', SHU = '#C6472E', GOLD = '#B8860B', PAPER = '#F7F2E3';
-  const SCALE =
-    '実物の秘密の回数は 2^256 通り——数字で書くと78桁です。78桁がどれくらいかというと、' +
-    '観測できる宇宙の原子をぜんぶ数えて、やっと80桁。宇宙の始まり(138億年前)から' +
-    '毎秒10億回「Gをたす」を押し続けたとしても、まだ27桁回——78桁への道のりの、爪の先にも届きません。';
-  const HINT =
-    '「G をたす」を押すたび、いまの点とGを結ぶ直線が曲線と三つ目に出会い、x軸で折り返した先へ跳びます' +
-    '——それが足し算一回。k回分の到達点「kG」が公開鍵です。足あと(2G、3G……)は曲線の上に残ります。' +
-    'ときどき画面のそとまで跳びますが、それも曲線の上です。';
 
   let cv;
   let ctx;
   let status = $state('');
-  let hint = $state(HINT);
+  let hint = $state(T.hint);
   let P, k, trail, lastLine;
   let secretK = null, secretP = null, revealed = false, found = false;
   let hasSecret = $state(false);
@@ -70,9 +65,9 @@
         ctx.setLineDash([]);
       }
     }
-    for (const t of trail) {
-      if (t.k === k || t.k === 1) continue; // 1GはGの札が兼ねる
-      if (visible(t)) dot(t.x, t.y, 3, 'rgba(59,55,46,.25)', t.k + 'G');
+    for (const tr of trail) {
+      if (tr.k === k || tr.k === 1) continue; // 1GはGの札が兼ねる
+      if (visible(tr)) dot(tr.x, tr.y, 3, 'rgba(59,55,46,.25)', tr.k + 'G');
     }
     if (k !== 1) dot(G.x, G.y, 5, PAPER, 'G');
     if (secretP && visible(secretP)) {
@@ -81,17 +76,17 @@
       ctx.fillStyle = GOLD; ctx.font = '11px ui-monospace,monospace';
       ctx.fillText(revealed || found ? secretK + 'G' : '?G', sx(secretP.x) + 11, sy(secretP.y) + 4);
     }
-    if (visible(P)) dot(P.x, P.y, 5.5, SHU, k === 1 ? 'G(いまここ。ここから歩く)' : k + 'G(いまここ)');
+    if (visible(P)) dot(P.x, P.y, 5.5, SHU, k === 1 ? T.hereStart : T.here(k));
     else {
       const cx = Math.max(xmin + 0.2, Math.min(xmax - 2.2, P.x));
       const cy = Math.max(ymin + 0.4, Math.min(ymax - 0.4, P.y));
       ctx.fillStyle = SHU; ctx.font = '11px ui-monospace,monospace';
-      ctx.fillText(k + 'G は地平線のむこう →', sx(cx), sy(cy));
+      ctx.fillText(T.horizon(k), sx(cx), sy(cy));
     }
   }
   function setStatus(extra) {
-    let s = 'いま: ' + k + 'G' + (k === 1 ? '(Gから出発)' : '');
-    if (!visible(P)) s += ' — 画面のそと(それでも曲線の上)';
+    let s = T.now(k) + (k === 1 ? T.fromG : '');
+    if (!visible(P)) s += T.offscreen;
     status = extra || s;
   }
   function reset() {
@@ -102,15 +97,15 @@
   }
   function step() {
     const R = add(P, G);
-    if (!R) { setStatus('ゼロ(無限遠点)に着きました。はじめに戻ります。'); reset(); return; }
+    if (!R) { setStatus(T.zero); reset(); return; }
     lastLine = { m: R.m, c: R.c };
     P = { x: R.x, y: R.y }; k++;
     trail.push({ k, x: P.x, y: P.y });
     draw();
     if (secretK && k === secretK && !found) {
       found = true;
-      setStatus(`なぞの点に、ぴったり重なりました。秘密の回数は ${k} 回——いまあなたがしたのが「総当たり」です。「なぞの公開鍵を出す」をもう一度押すと、別のだれかの鍵が出ますよ。`);
-      hint = SCALE;
+      setStatus(T.found(k));
+      hint = T.scale;
     } else setStatus('');
   }
   function mystery() {
@@ -122,13 +117,13 @@
     const pick = cand[Math.floor(Math.random() * cand.length)];
     secretK = pick.k; secretP = pick; revealed = false; found = false; hasSecret = true;
     reset();
-    setStatus('金の輪が、だれかの公開鍵(秘密の回数だけGを足した到達点)。何回で着くか、歩いて確かめてみてください。');
+    setStatus(T.mysteryMsg);
   }
   function reveal() {
     if (!secretK) return;
     revealed = true; draw();
-    setStatus(`秘密の回数は ${secretK} 回でした。座標(公開鍵)を見ても、回数は読めない——歩くしかない。それが離散対数問題です。別の鍵でもう一回、あそべます。`);
-    hint = SCALE;
+    setStatus(T.revealMsg(secretK));
+    hint = T.scale;
   }
 
   onMount(() => {
@@ -143,10 +138,10 @@
 
 <canvas bind:this={cv}></canvas>
 <div class="row">
-  <button onclick={step}>G をたす</button>
-  <button onclick={reset}>はじめから</button>
-  <button onclick={mystery}>なぞの公開鍵を出す</button>
-  {#if hasSecret}<button onclick={reveal}>答えを見る</button>{/if}
+  <button onclick={step}>{T.addG}</button>
+  <button onclick={reset}>{T.reset}</button>
+  <button onclick={mystery}>{T.mystery}</button>
+  {#if hasSecret}<button onclick={reveal}>{T.reveal}</button>{/if}
 </div>
 <div class="mono">{status}</div>
 <div class="hint">{hint}</div>

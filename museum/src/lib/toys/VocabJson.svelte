@@ -1,6 +1,10 @@
 <script>
   // あなたの一言が海を渡るときの実寸(Create+Note)。変わった行は蛍光ペンで
-  let text = $state('今日はいい天気');
+  import { getContext } from 'svelte';
+  import { t } from '$lib/i18n.js';
+  const T = t(getContext('museum:lang')()).toys.vocabjson;
+
+  let text = $state(T.sample);
   let vis = $state('public');
   let html = $state('');
   const published = new Date().toISOString().slice(0, 19) + 'Z'; // 打つたび光らないよう固定
@@ -40,8 +44,8 @@
 
 <input type="text" bind:value={text} />
 <div class="row">
-  <label><input type="radio" bind:group={vis} value="public" /> 公開</label>
-  <label><input type="radio" bind:group={vis} value="followers" /> フォロワーのみ</label>
+  <label><input type="radio" bind:group={vis} value="public" /> {T.pub}</label>
+  <label><input type="radio" bind:group={vis} value="followers" /> {T.followers}</label>
 </div>
 <pre class="light">{@html html}</pre>
-<div class="hint">あなたの一言が海を渡るときの、実際の形(Create + Note)です。黄色く光るのが、いま変わったところ。</div>
+<div class="hint">{T.hint}</div>

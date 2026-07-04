@@ -1,10 +1,14 @@
 <script>
   // 署名して、改ざんして、検めるおもちゃ(Web CryptoのEd25519)
-  let msg = $state('こんにちは、フェディバース。');
+  import { getContext } from 'svelte';
+  import { t } from '$lib/i18n.js';
+  const T = t(getContext('museum:lang')()).toys.ed25519;
+
+  let msg = $state(T.sample);
   let tamper = $state(false);
   let keyLine = $state('');
   let sigLine = $state('');
-  let result = $state(null); // {ok, delivered} | {unsupported:true}
+  let result = $state(null);
   let pair = null;
 
   const hex = (buf) =>
@@ -19,10 +23,10 @@
     }
     const enc = new TextEncoder();
     const sig = await crypto.subtle.sign('Ed25519', pair.privateKey, enc.encode(msg));
-    keyLine = '公開鍵(32バイト): ' + hex(await crypto.subtle.exportKey('raw', pair.publicKey));
-    sigLine = '署名(64バイト): ' + hex(sig).slice(0, 48) + '…';
+    keyLine = T.pub(hex(await crypto.subtle.exportKey('raw', pair.publicKey)));
+    sigLine = T.sig(hex(sig).slice(0, 48));
     let delivered = msg;
-    if (tamper && msg.length > 0) delivered = (msg[0] === 'あ' ? 'い' : 'あ') + msg.slice(1);
+    if (tamper && msg.length > 0) delivered = (msg[0] === 'a' ? 'b' : 'a') + msg.slice(1);
     const ok = await crypto.subtle.verify('Ed25519', pair.publicKey, sig, enc.encode(delivered));
     result = { ok, delivered };
   }
@@ -30,20 +34,20 @@
 
 <textarea bind:value={msg}></textarea>
 <div class="row">
-  <button onclick={run}>署名して、検める</button>
-  <label><input type="checkbox" bind:checked={tamper} /> 途中で一文字書き換える(改ざん)</label>
+  <button onclick={run}>{T.run}</button>
+  <label><input type="checkbox" bind:checked={tamper} /> {T.tamper}</label>
 </div>
 {#if keyLine}<div class="mono">{keyLine}</div>{/if}
 {#if sigLine}<div class="mono">{sigLine}</div>{/if}
 {#if result?.unsupported}
-  <div><span class="bad">このブラウザは、まだEd25519の筆を持っていないようです。</span></div>
+  <div><span class="bad">{T.unsupported}</span></div>
 {:else if result}
   <div>
     {#if result.ok}
-      <span class="ok">検印: 一致——本人の手紙です</span>
+      <span class="ok">{T.ok}</span>
     {:else}
-      <span class="bad">検印: 不一致——途中でだれかが触りました</span>
-      <span class="hint">(届いた文: {result.delivered.slice(0, 20)}…)</span>
+      <span class="bad">{T.bad}</span>
+      <span class="hint">{T.delivered(result.delivered.slice(0, 20))}</span>
     {/if}
   </div>
 {/if}

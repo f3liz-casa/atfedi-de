@@ -1,42 +1,44 @@
 <script>
-  import { onMount } from 'svelte';
-  // 倉の区画: 手紙を積んで、飛脚が運ぶ。留守なら倉に戻して再送
+  import { onMount, getContext } from 'svelte';
+  import { t } from '$lib/i18n.js';
+  const T = t(getContext('museum:lang')()).toys.queue;
+
   let queue = $state([]);
   let delivered = $state(0);
   let away = $state(false);
-  let log = $state('倉は空です。');
+  let log = $state(T.empty);
   let n = 0;
 
   function add() {
     queue.push({ id: ++n, tries: 0 });
-    log = '倉に預けました。飛脚が順に運びます。';
+    log = T.queued;
   }
 
   onMount(() => {
-    const t = setInterval(() => {
+    const timer = setInterval(() => {
       if (!queue.length) return;
       const m = queue.shift();
       if (away) {
         m.tries++;
         queue.push(m);
-        log = `文${m.id} は届きませんでした。倉に戻して、あとで再送します(実物は間隔をだんだん延ばします)。`;
+        log = T.failed(m.id);
       } else {
         delivered++;
-        log = `文${m.id} が届きました。`;
+        log = T.delivered(m.id);
       }
     }, 900);
-    return () => clearInterval(t);
+    return () => clearInterval(timer);
   });
 </script>
 
 <div class="row">
-  <button onclick={add}>手紙を積む</button>
-  <label><input type="checkbox" bind:checked={away} /> 相手の島が留守</label>
+  <button onclick={add}>{T.add}</button>
+  <label><input type="checkbox" bind:checked={away} /> {T.away}</label>
 </div>
 <div class="qrow">
   {#each queue as m (m.id)}
-    <span class="env" class:retry={m.tries > 0}>文{m.id}{m.tries > 0 ? ` 再送${m.tries}` : ''}</span>
+    <span class="env" class:retry={m.tries > 0}>{T.env(m.id)}{m.tries > 0 ? T.retry(m.tries) : ''}</span>
   {/each}
 </div>
 <div class="hint">{log}</div>
-<div class="mono">届いた: {delivered}</div>
+<div class="mono">{T.count(delivered)}</div>

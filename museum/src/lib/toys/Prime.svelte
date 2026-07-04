@@ -1,5 +1,9 @@
 <script>
-  import { onDestroy } from 'svelte';
+  import { onDestroy, getContext } from 'svelte';
+  import { t } from '$lib/i18n.js';
+  const lang = getContext('museum:lang')();
+  const T = t(lang).toys.prime;
+
   // 素数の井戸: 掛けるのは一瞬、割り戻す(登る)のは総当たり
   const PRIMES = {
     8: ['94999951', '94999907'], 9: ['949999993', '949999961'],
@@ -16,17 +20,18 @@
   let climbing = $state(false);
   let stopped = false;
 
-  const fmt = (x) => x.toLocaleString('ja-JP');
+  const fmt = (x) => x.toLocaleString(lang === 'ja' ? 'ja-JP' : lang === 'ko' ? 'ko-KR' : 'en-US');
   function fmtDur(s) {
-    if (s < 1) return '1秒未満';
-    if (s < 60) return Math.round(s) + ' 秒';
-    if (s < 3600) return Math.round(s / 60) + ' 分';
-    if (s < 86400) return Math.round(s / 3600) + ' 時間';
-    if (s < 31557600) return Math.round(s / 86400) + ' 日';
+    const d = T.dur;
+    if (s < 1) return d.under1;
+    if (s < 60) return `${Math.round(s)} ${d.sec}`;
+    if (s < 3600) return `${Math.round(s / 60)} ${d.min}`;
+    if (s < 86400) return `${Math.round(s / 3600)} ${d.hour}`;
+    if (s < 31557600) return `${Math.round(s / 86400)} ${d.day}`;
     const y = s / 31557600;
-    if (y < 10000) return fmt(Math.round(y)) + ' 年';
-    if (y < 1e8) return fmt(Math.round(y / 1e4)) + ' 万年';
-    return (y / 1e8).toPrecision(2) + ' 億年';
+    if (y < 10000) return `${fmt(Math.round(y))} ${d.year}`;
+    if (y < 1e8) return `${fmt(Math.round(y / 1e4))} ${d.manYear}`;
+    return `${(y / 1e8).toPrecision(2)} ${d.okuYear}`;
   }
   function setDigits(dg) {
     digits = dg; stopped = true;
@@ -38,7 +43,7 @@
   function multiply() {
     const t0 = performance.now();
     const n = nBig();
-    out = `積 = ${fmt(n)}(${String(n).length}桁)\n(${(performance.now() - t0).toFixed(3)} ミリ秒で落ちました)`;
+    out = T.product(fmt(n), String(n).length, (performance.now() - t0).toFixed(3));
     tick = est = '';
   }
 
@@ -51,30 +56,30 @@
     const small = n <= 9007199254740991n;
     const nn = small ? Number(n) : null;
     let dN = 3, dB = 3n;
-    out = '3, 5, 7, … と順に試します' + (small ? '' : '(この井戸は深い——BigIntの綱で登ります)');
+    out = T.start + (small ? '' : T.deep);
     const finish = (msg) => { climbing = false; if (msg) out = msg; };
     const report = (dcur) => {
       const sec = (performance.now() - t0) / 1000, rate = tried / Math.max(sec, 0.001);
-      out = `登っています… ${fmt(tried)} 回目(${fmt(Math.round(rate))} 回/秒)`;
-      tick = `いま試している数: …${fmt(dcur)} ✗ …`;
-      est = `登りきる保証ライン(√n)まで、この速さだと あと ${fmtDur((lim - Number(dcur)) / 2 / rate)}`;
+      out = T.climbing(fmt(tried), fmt(Math.round(rate)));
+      tick = T.trying(fmt(dcur));
+      est = T.eta(fmtDur((lim - Number(dcur)) / 2 / rate));
     };
-    const found = (d, other) => {
-      finish(`見つけました: ${fmt(d)} × ${fmt(other)}\n${fmt(tried)} 回ためして、${((performance.now() - t0) / 1000).toFixed(2)} 秒かけて登りました`);
-      tick = '(落ちるのは一瞬、登るのはこれだけ。桁がふえるたび、登りは百倍ずつ育ちます)';
+    const found = (a, b) => {
+      finish(T.found(fmt(a), fmt(b), fmt(tried), ((performance.now() - t0) / 1000).toFixed(2)));
+      tick = T.foundNote;
       est = '';
     };
     function chunk() {
       if (stopped) {
         const sec = (performance.now() - t0) / 1000, rate = tried / Math.max(sec, 0.001);
-        finish(`あきらめました。${fmt(tried)} 回(${fmtDur(sec)}ぶん)登ったところで引き返しました。`);
-        est = `そのまま登りつづけていたら、保証ラインまで あと ${fmtDur((lim - (small ? dN : Number(dB))) / 2 / rate)} でした。`;
+        finish(T.gaveUp(fmt(tried), fmtDur(sec)));
+        est = T.gaveUpEta(fmtDur((lim - (small ? dN : Number(dB))) / 2 / rate));
         return;
       }
       if (small) {
         const end = Math.min(dN + 1000000, lim + 1);
         for (; dN <= end; dN += 2) { tried++; if (nn % dN === 0) { found(dN, nn / dN); return; } }
-        if (dN > lim) { finish('割れませんでした(素数?)'); return; }
+        if (dN > lim) { finish(T.noFactor); return; }
         report(dN);
       } else {
         for (let i = 0; i < 150000; i++) {
@@ -82,7 +87,7 @@
           if (n % dB === 0n) { found(dB, n / dB); return; }
           dB += 2n;
         }
-        if (Number(dB) > lim) { finish('割れませんでした(素数?)'); return; }
+        if (Number(dB) > lim) { finish(T.noFactor); return; }
         report(dB);
       }
       setTimeout(chunk, 0);
@@ -94,17 +99,17 @@
 </script>
 
 <div class="row">
-  <button onclick={() => digits > 8 && setDigits(digits - 1)} disabled={digits <= 8}>− 桁をへらす</button>
-  <span class="mono" style="text-align:center">{digits}桁 × {digits}桁</span>
-  <button onclick={() => digits < 15 && setDigits(digits + 1)} disabled={digits >= 15}>+ 桁をふやす</button>
+  <button onclick={() => digits > 8 && setDigits(digits - 1)} disabled={digits <= 8}>{T.less}</button>
+  <span class="mono" style="text-align:center">{T.digits(digits)}</span>
+  <button onclick={() => digits < 15 && setDigits(digits + 1)} disabled={digits >= 15}>{T.more}</button>
 </div>
 <div class="row"><input type="text" bind:value={p} /><input type="text" bind:value={q} /></div>
 <div class="row">
-  <button onclick={multiply}>掛ける(井戸を落ちる)</button>
-  <button onclick={climb}>積から割り戻す(登る)</button>
-  {#if climbing}<button onclick={() => (stopped = true)}>あきらめる</button>{/if}
+  <button onclick={multiply}>{T.multiply}</button>
+  <button onclick={climb}>{T.climb}</button>
+  {#if climbing}<button onclick={() => (stopped = true)}>{T.giveUp}</button>{/if}
 </div>
 {#if out}<div class="mono" style="white-space:pre-wrap">{out}</div>{/if}
 {#if tick}<div class="mono hint">{tick}</div>{/if}
 {#if est}<div class="mono hint">{est}</div>{/if}
-<div class="hint">登りは総当たりです。桁をふやすと、掛けるのは一瞬のまま、登りだけが育ちます。実物のRSAは300桁以上あります。</div>
+<div class="hint">{T.hint}</div>

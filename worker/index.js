@@ -96,9 +96,20 @@ export default {
       return serveAsset(env, url, `/danro${path}`, request);
     }
 
-    // --- museum.atfedi.de: 博物街(SvelteKit static) ---
+    // --- museum.atfedi.de: 博物街(SvelteKit static、パス先頭が言語) ---
     if (host === 'museum.atfedi.de') {
       let path = url.pathname;
+      const isRootFile =
+        path === '/sitemap.xml' || path === '/robots.txt' ||
+        path === '/favicon.svg' || path.startsWith('/_app/');
+      // 言語なしで来たら、ブラウザの言語の入り口へ(古い /section/... も拾う)
+      if (!isRootFile && !/^\/(en|ja|ko)(\/|$)/.test(path)) {
+        const locale = pickLocale(request.headers.get('accept-language'));
+        return Response.redirect(
+          `https://museum.atfedi.de/${locale}${path === '/' ? '/' : path}${url.search}`,
+          302,
+        );
+      }
       if (!path.endsWith('/') && !/\.[^/]+$/.test(path)) path += '/';
       return serveAsset(env, url, `/museum${path}`, request);
     }

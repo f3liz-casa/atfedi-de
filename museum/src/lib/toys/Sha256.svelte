@@ -1,7 +1,11 @@
 <script>
   // 一方通行の扉: 打つそばから影が出て、変わった桁だけ蛍光ペンで光る
-  let value = $state('こんにちは');
-  let chars = $state([]); // {ch, changed}
+  import { getContext } from 'svelte';
+  import { t } from '$lib/i18n.js';
+  const T = t(getContext('museum:lang')()).toys.sha256;
+
+  let value = $state(T.sample);
+  let chars = $state([]);
   let prevInfo = $state('');
   let last = null;
 
@@ -15,7 +19,7 @@
       if (changed) diff++;
       return { ch, changed };
     });
-    if (last !== null) prevInfo = `ひとつ前の影: ${last.slice(0, 24)}… (64桁中 ${diff} 桁が変わりました)`;
+    if (last !== null) prevInfo = T.prev(last.slice(0, 24), diff);
     last = h;
   }
 
@@ -23,8 +27,6 @@
 </script>
 
 <input type="text" bind:value />
-<div class="mono">影:
-  {#each chars as c}{#if c.changed}<mark class="chg">{c.ch}</mark>{:else}{c.ch}{/if}{/each}
-</div>
+<div class="mono">{T.shadow}{#each chars as c}{#if c.changed}<mark class="chg">{c.ch}</mark>{:else}{c.ch}{/if}{/each}</div>
 {#if prevInfo}<div class="mono hint">{prevInfo}</div>{/if}
-<div class="hint">一文字だけ変えてみてください。影がどれだけ別物になるか。</div>
+<div class="hint">{T.hint}</div>

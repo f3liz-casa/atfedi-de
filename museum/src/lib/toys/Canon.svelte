@@ -1,8 +1,12 @@
 <script>
   // グラフの書庫: 書き方だけ違う二つの文書を、並べ直して影を比べる
-  const docA = '{"type":"Note","content":"こんにちは","to":["as:Public"]}';
-  const docB = '{"to":["as:Public"],"content":"こんにちは","type":"Note"}';
-  let result = $state(null); // {ra,rb,ha,hb}
+  import { getContext } from 'svelte';
+  import { t } from '$lib/i18n.js';
+  const T = t(getContext('museum:lang')()).toys.canon;
+
+  const docA = '{"type":"Note","content":"hello","to":["as:Public"]}';
+  const docB = '{"to":["as:Public"],"content":"hello","type":"Note"}';
+  let result = $state(null);
 
   function canon(v) {
     if (Array.isArray(v)) return '[' + v.map(canon).join(',') + ']';
@@ -24,12 +28,12 @@
 
 <pre>{docA}</pre>
 <pre>{docB}</pre>
-<button onclick={compare}>並べ直して、影を比べる</button>
+<button onclick={compare}>{T.compare}</button>
 {#if result}
   <div class="mono">
-    生のまま:&nbsp;&nbsp; {result.ra} / {result.rb} → <span class="bad">別の影</span><br />
-    並べ直して: {result.ha} / {result.hb} → <span class="ok">同じ影</span>
+    {T.raw}&nbsp;&nbsp; {result.ra} / {result.rb} → <span class="bad">{T.diff}</span><br />
+    {T.canon} {result.ha} / {result.hb} → <span class="ok">{T.same}</span>
   </div>
 {:else}
-  <div class="mono">同じ意味の文書がふたつ。書き方(鍵の順番)だけ違います。</div>
+  <div class="mono">{T.initial}</div>
 {/if}
