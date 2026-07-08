@@ -9,12 +9,15 @@
 // accountable person, not by the AI author. Only these handles may publish.
 
 import { getAllPosts } from './content.js';
+import { getFederation } from './index.js';
+import { articleUri } from './article.js';
 import {
   getOAuthApp,
   putOAuthApp,
   putSession,
   getSession,
   deleteSession,
+  publishedObjectIds,
 } from './store.js';
 
 const REDIRECT_URI = 'https://blog.atfedi.de/ap/callback';
@@ -192,6 +195,15 @@ export async function handleStudio(request, env) {
     return new Response(null, { status: 302, headers: { location: '/ap/login' } });
   }
   const posts = await getAllPosts(env);
+  // Mark what's already out. "Published" is read from the outbox in D1 — the
+  // persistent record — so the desk offers Update (never a second Create) for a
+  // slug that's federated, and keeps doing so across redeploys. The article id
+  // is derived from author + slug, so it's the same id publish.js recorded.
+  const published = await publishedObjectIds(env.FEDI_DB);
+  const fedCtx = getFederation(env).createContext(request, { env });
+  for (const p of posts) {
+    p.published = published.has(articleUri(fedCtx, p.author, p.slug).href);
+  }
   return new Response(studioHtml(publisher, posts), {
     status: 200,
     headers: { 'content-type': 'text/html; charset=utf-8' },
@@ -220,11 +232,14 @@ function studioHtml(publisher, posts) {
         <div>
           <span class="lang">${esc(p.langs.slice().sort().join(' '))}</span>
           <span class="title">${esc(p.title)}</span>
-          <time>${esc(p.author)} · ${esc(String(p.date).slice(0, 10))}</time>
+          <time>${esc(p.author)} · ${esc(String(p.date).slice(0, 10))}${p.published ? ' · <span class="pub">published</span>' : ''}</time>
         </div>
         <span class="acts">
-          <button data-lang="${esc(p.lang)}" data-slug="${esc(p.slug)}">Publish</button>
-          <button data-lang="${esc(p.lang)}" data-slug="${esc(p.slug)}" data-action="update">Update</button>
+          ${
+            p.published
+              ? `<button data-lang="${esc(p.lang)}" data-slug="${esc(p.slug)}" data-action="update">Update</button>`
+              : `<button data-lang="${esc(p.lang)}" data-slug="${esc(p.slug)}">Publish</button>`
+          }
         </span>
       </li>`,
     )
@@ -251,6 +266,7 @@ function studioHtml(publisher, posts) {
   time { display: block; font-size: 0.8rem; opacity: 0.55; }
   button { font: inherit; padding: 0.35rem 0.9rem; cursor: pointer; }
   button[disabled] { opacity: 0.5; cursor: default; }
+  .pub { color: #2a7; }
   .msg { font-size: 0.85rem; margin-left: 0.5rem; }
   .ok { color: #2a7; } .err { color: #c33; }
   footer { margin-top: 2rem; font-size: 0.85rem; opacity: 0.7; }

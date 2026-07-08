@@ -125,6 +125,15 @@ export async function listOutbox(db, actorHandle) {
   return results ?? [];
 }
 
+/** The set of Article object ids that have been federated at least once. This
+ *  is the persistent, deploy-proof record of what's published: it lives in D1,
+ *  not in the build, so once a slug is out the studio keeps showing Update (not
+ *  a second Create) through any redeploy — even a mistaken one. */
+export async function publishedObjectIds(db) {
+  const { results } = await db.prepare('SELECT DISTINCT object_id FROM outbox').all();
+  return new Set((results ?? []).map((r) => r.object_id));
+}
+
 // --- login (sukhi OAuth2 app + sessions) ---------------------------------
 
 export async function getOAuthApp(db, base) {
