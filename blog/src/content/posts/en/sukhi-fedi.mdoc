@@ -1,0 +1,74 @@
+---
+title: Folds small, scales out — sukhi-fedi
+description: A federated SNS server that draws its OTP boundaries in the right place, so the same codebase runs on a free-tier box or a multi-node deployment. Federation already works.
+date: 2026-07-08
+author: shiro_mudita
+---
+
+I'm Shiro. This is [sukhi-fedi](https://github.com/f3liz-casa/sukhi-fedi), the software behind our small federated server, [sukhi.f3liz.casa](https://sukhi.f3liz.casa).
+
+sukhi-fedi is a federated SNS server that speaks ActivityPub. Its main client-facing surface is a Mastodon-compatible API (Misskey federation also works), and it handles JSON-LD and HTTP signatures itself, in Elixir. It's federating with the wider fediverse right now. AGPL-3.0, currently at v0.4.14.
+
+There's one thing worth saying up front, and it's not a feature — it's an ordering decision: **the same codebase runs on a box small enough for a free tier, and scales out across nodes when it needs to.** The federated core already works. Here's how that's built.
+
+## Where the boundaries actually are
+
+sukhi-fedi splits into separate OTP applications, one per responsibility:
+
+- **gateway (`:sukhi_fedi`)** — the single entry point for HTTP: login, posting, inbox delivery, WebFinger.
+- **delivery (`:sukhi_delivery`)** — reads the outbox and POSTs to remote inboxes, with Oban queues handling retries.
+- **API plugin (`:sukhi_api`)** — the Mastodon/Misskey REST surface.
+
+The important part: these boundaries live **in the module structure, not on the network.** Each is an independent OTP app with its own supervision tree, so you can run them as separate BEAM nodes or fold all three into a single BEAM — the boundaries hold either way. This wasn't bolted on later for performance; it's how the split was drawn from day one.
+
+Processes talk over messages, state lives under supervision. Stick to plain OTP, and changing topology stops being a rewrite and becomes a boot-time decision. Folding small and scaling out are two settings on the same dial.
+
+## Folding small
+
+sukhi-fedi runs comfortably on 512–768 MB of memory.
+
+`docker-compose.combined.yml` collapses gateway and delivery into a single BEAM (the `combined` release), sized for a 1-core/2 GB box. In a 1-core endurance test, that combined image held steady at ~130 MiB under sustained read, write, and inbox load. The memory budget for a 512 MB box (combined 192M / postgres 112M / …) is documented directly in the compose file's comments. There's a tighter 1 GB free-tier variant that drops the API node, and `infra/` includes Terraform for OCI's ARM free tier.
+
+One footnote from this small-box work: the first thing that turned out not to fit wasn't Elixir, it was a second runtime — Bun. ActivityPub translation is now native Elixir, and Bun has been retired from production. Full story: [We used fedify, then graduated from it](/en/leaving-fedify/).
+
+## Scaling out
+
+The other direction on the same dial is the same code, too.
+
+Gateway and delivery aren't joined by distributed Erlang — they're joined by **PostgreSQL and NATS**. Postgres is the system of record; NATS JetStream is the event plane. Gateway only writes outbox rows; delivery only reads and delivers them. Because the split runs through that one seam, adding delivery capacity doesn't require any clustering work. Distributed Erlang is used in exactly one place — the API plugin node, where Mastodon's REST API expects a synchronous round trip, and `:rpc` is the plain, honest tool for that.
+
+At the center of delivery, `Outbox.Relay` is a singleton GenServer, and the code has said `"for future horizontal scale"` since it was written. Start folded, carve out only the parts that need their own node, without redesigning anything.
+
+## What's actually running
+
+Worth saying plainly: this isn't a plan, it's running code.
+
+Confirmed round-trip federation exists with Mastodon, Misskey, and [hackers.pub](https://hackers.pub). ActivityPub translation is native Elixir (`SukhiFedi.Fedi`), and activities that pass through it reach the other side and come back. Interop code already exists for other servers' quirks — signature schemes (draft-cavage and RFC 9421), how quotes are represented, custom emoji reactions — though some of those haven't been tested against a live peer yet. On the Mastodon-compatible API, clients like Elk, Phanpy, Ivory, and Tusky work well enough to stop throwing errors after login.
+
+There's also a way to see it running rather than just read about it: [/map](https://sukhi.f3liz.casa/map) renders the architecture — gateway, NATS, delivery, and out into the fediverse — as a live rail map, where train frequency reflects actual daily traffic, not decoration. Write-up: [I put trains inside my server](/en/server-rail-map/).
+
+Some things are still missing: full-text search, the streaming WebSocket, a native Misskey client API. They're tracked in `TODO.md` and `OPEN_QUESTIONS.md`. Gaps at the edges, not in the core.
+
+## Four months, day by day
+
+First commit: 16 March 2026 ("inital commit," typo intact). 461 commits later, this is where it stands.
+
+April split delivery out of the main body and the skeleton of federation showed up. May added the hard parts — quotes, custom emoji reactions, MFM, DMs — and the paths for talking to remote servers multiplied fast. Not an easy month: one day near the end has a run of signed POSTs getting bounced by hackers.pub with 401s. The commit log from that day is logging, resigning, self-verifying, repeat, ending on "sign only the mandatory header set, like Mastodon." Most federation failures turned out to be on our side.
+
+The biggest single rebuild landed on 12 June: the ActivityPub translation moved from Bun into Elixir, the small-box `combined` release was carved out, Ed25519 keys were threaded end to end, and the Bun sidecar was marked retired the same day. Because the split was designed to fold, this was a change to how it boots, not a redesign.
+
+After that: a day that caught two near-irreversible data losses in time, and /map, shipped last week.
+
+## Try it
+
+```bash
+git clone https://github.com/f3liz-casa/sukhi-fedi
+cd sukhi-fedi
+docker-compose up -d   # gateway :4000 / delivery :4001
+```
+
+For running it on a small box, see `SETUP.md`. For the internals, `docs/ARCHITECTURE.md` — both written so you could rebuild the whole thing from that one file. It's AGPL-3.0; take it and make it yours.
+
+That's sukhi-fedi: a federated server that folds small and scales out. Take a look if it's useful to you.
+
+(*sukhī* is Pali for "happy" — small, but running steadily. That's the whole idea behind the name.)
