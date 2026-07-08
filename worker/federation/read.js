@@ -16,9 +16,30 @@ const json = (obj, status = 200, headers = {}) =>
 // A URL or Link, as a plain href string.
 const hrefOf = (v) => (v?.href != null ? String(v.href) : null);
 
+// Fetch a remote AP object (with the document loader's SSRF guards) and shape it
+// for the reader, from an already-parsed https/http target. Returns { data } on
+// success or { error, status } — shared by the JSON endpoint (/ap/read, the
+// client fetch) and the server-rendered reader page (kiosk/render.js).
+export async function shapeFromTarget(request, env, ctx, target, lang = null) {
+  const fedCtx = getFederation(env).createContext(request, { env, ctx });
+  let obj;
+  try {
+    obj = await fedCtx.lookupObject(target.href);
+  } catch {
+    return { error: 'could not fetch that object', status: 502 };
+  }
+  if (obj == null || !(obj instanceof Article || obj instanceof Note)) {
+    return { error: 'not an article or note', status: 404 };
+  }
+  // The reader passes its own language; if the Article carries versions in a
+  // contentMap, we hand back the one that fits.
+  return { data: await shapeReadResult(obj, fedCtx, target.href, lang) };
+}
+
 // GET /ap/read?url=<remote AP object>
 export async function handleRead(request, env, ctx) {
-  const raw = new URL(request.url).searchParams.get('url');
+  const url = new URL(request.url);
+  const raw = url.searchParams.get('url');
   if (!raw) return json({ error: 'url is required' }, 400);
 
   let target;
@@ -31,24 +52,9 @@ export async function handleRead(request, env, ctx) {
     return json({ error: 'unsupported scheme' }, 400);
   }
 
-  const fedCtx = getFederation(env).createContext(request, { env, ctx });
-  let obj;
-  try {
-    obj = await fedCtx.lookupObject(target.href);
-  } catch {
-    return json({ error: 'could not fetch that object' }, 502);
-  }
-  if (obj == null || !(obj instanceof Article || obj instanceof Note)) {
-    return json({ error: 'not an article or note' }, 404);
-  }
-
-  // The reader passes its own language; if the Article carries versions in a
-  // contentMap, we hand back the one that fits.
-  const lang = new URL(request.url).searchParams.get('lang');
-
-  return json(await shapeReadResult(obj, fedCtx, target.href, lang), 200, {
-    'cache-control': 'public, max-age=300',
-  });
+  const result = await shapeFromTarget(request, env, ctx, target, url.searchParams.get('lang'));
+  if (result.error) return json({ error: result.error }, result.status);
+  return json(result.data, 200, { 'cache-control': 'public, max-age=300' });
 }
 
 // From a language map ({ "ja": …, "ko-KR": … }), the value that best fits the

@@ -485,10 +485,21 @@ const t = {
   const home = document.querySelector('.kiosk-home');
   const enterReading = () => home?.classList.add('reading');
 
-  // A url can arrive in the query (?url=…) — read it and prefill.
+  // A url can arrive in the query (?url=…). If the server already rendered the
+  // paper into the shell (SSR — the reader-result is visible, not hidden), just
+  // wire up the parts that need JS: the table of contents and the reply box. No
+  // fetch, no flash. Otherwise fetch it ourselves.
   const initial = new URLSearchParams(location.search).get('url');
-  if (initial && input) {
-    input.value = initial;
+  if (initial && input) input.value = initial;
+  if (result && !result.hidden) {
+    enterReading();
+    currentArticleId = result.dataset.articleId || result.dataset.articleUrl || null;
+    currentArticleUrl = result.dataset.articleUrl || currentArticleId;
+    const body = result.querySelector('.reader-body');
+    if (body) buildToc(body);
+    if (replyBox) replyBox.hidden = false;
+    renderInstance();
+  } else if (initial) {
     enterReading();
     load(initial);
   }

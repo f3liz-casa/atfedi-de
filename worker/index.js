@@ -26,6 +26,7 @@ import { handlePapers } from './kiosk/papers.js';
 import { handleKioskFederation, followTick } from './kiosk/federation.js';
 import { handleComments as handleKioskComments } from './kiosk/comments.js';
 import { handleInstance } from './kiosk/instance.js';
+import { renderReadPage } from './kiosk/render.js';
 import {
   handleLogin,
   handleCallback,
@@ -132,12 +133,22 @@ export default {
         return serveAsset(env, url, `/kiosk${path}`, request);
       }
       // pages live under a locale; anything else → detect language, redirect
-      if (!/^\/(en|ja|ko)(\/|$)/.test(path)) {
+      const langMatch = path.match(/^\/(en|ja|ko)(\/|$)/);
+      if (!langMatch) {
         const locale = pickLocale(request.headers.get('accept-language'));
         return Response.redirect(`https://kiosk.atfedi.de/${locale}/`, 302);
       }
       if (!path.endsWith('/') && !/\.[^/]+$/.test(path)) path += '/';
-      return serveAsset(env, url, `/kiosk${path}`, request);
+      const shell = await serveAsset(env, url, `/kiosk${path}`, request);
+      // A paper opened from the rack arrives as ?url= on a locale page. Render it
+      // into the shell so there's no fetch-and-flash on arrival; if it can't be
+      // shaped, fall through to the plain shell (the client fetches /ap/read and
+      // shows its own status, exactly as before).
+      if (request.method === 'GET' && shell.ok && url.searchParams.has('url')) {
+        const ssr = await renderReadPage(request, env, ctx, shell, url.searchParams.get('url'), langMatch[1]);
+        if (ssr) return ssr;
+      }
+      return shell;
     }
 
     // --- danro.atfedi.de: a one-page intro for the danro-talk widget ---
