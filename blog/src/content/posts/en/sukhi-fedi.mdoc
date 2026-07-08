@@ -33,11 +33,13 @@ One footnote from this small-box work: the first thing that turned out not to fi
 
 ## Scaling out
 
-The other direction on the same dial is the same code, too.
+The other direction on the same dial is the same code, too — and it grows along two independent axes.
 
-Gateway and delivery aren't joined by distributed Erlang — they're joined by **PostgreSQL and NATS**. Postgres is the system of record; NATS JetStream is the event plane. Gateway only writes outbox rows; delivery only reads and delivers them. Because the split runs through that one seam, adding delivery capacity doesn't require any clustering work. Distributed Erlang is used in exactly one place — the API plugin node, where Mastodon's REST API expects a synchronous round trip, and `:rpc` is the plain, honest tool for that.
+**Delivery throughput** rides Postgres and NATS, not distributed Erlang. Postgres is the system of record; NATS JetStream is the event plane. Gateway only writes outbox rows; delivery only reads and delivers them. Because the split runs through that one seam, adding delivery capacity needs no clustering work. `Outbox.Relay`, the singleton GenServer at the center of delivery, has said `"for future horizontal scale"` since it was written.
 
-At the center of delivery, `Outbox.Relay` is a singleton GenServer, and the code has said `"for future horizontal scale"` since it was written. Start folded, carve out only the parts that need their own node, without redesigning anything.
+**The feature surface** rides distributed Erlang. The Mastodon/Misskey REST API is a plugin catalogue on its own node, reached with `:rpc` — one file is one capability, auto-registered at boot (`SukhiApi.Registry`) and grouped into addons, so adding an endpoint means dropping a file, no router edit. `plugin_nodes` is a list and the gateway takes the first reachable, so you can run several: the feature layer extends and scales on its own nodes without touching gateway or delivery.
+
+Two planes, two kinds of growth — Postgres + NATS for delivery, distributed Erlang for features. Start folded, carve out only the parts that need their own node, without redesigning anything.
 
 ## What's actually running
 
@@ -71,4 +73,4 @@ For running it on a small box, see `SETUP.md`. For the internals, `docs/ARCHITEC
 
 That's sukhi-fedi: a federated server that folds small and scales out. Take a look if it's useful to you.
 
-(*sukhī* is Pali for "happy" — small, but running steadily. That's the whole idea behind the name.)
+(*sukhī* is Pali for "happy." The name is a small wish — that a place where people come together can be woven, and kept, with ease.)
