@@ -11,12 +11,33 @@
     "binding": "ASSETS",
     "run_worker_first": true
   },
+  // Federation state (blog.atfedi.de). D1 is the whole store — actors,
+  // followers, comments, the outbox, and fedify's own KvStore scratch space
+  // (see federation/kv.js). Fill the id after `wrangler d1 create`.
+  "d1_databases": [
+    {
+      "binding": "FEDI_DB",
+      "database_name": "atfedi-fedi",
+      "database_id": "cc7aa6fb-dfa0-4461-88fd-358f07d75b05"
+    }
+  ],
+  // Where publishing verifies a writer's identity (sukhi's Mastodon-compatible
+  // OAuth2). Public, not a secret.
+  "vars": {
+    "SUKHI_BASE_URL": "https://sukhi.f3liz.casa"
+  },
+  // kiosk's newsstand sweep — a gentle tick that gathers a few hackers.pub
+  // outboxes each time (see kiosk/sweep.js). Kind to a small source instance.
+  "triggers": {
+    "crons": ["*/2 * * * *"]
+  },
   "routes": [
     { "pattern": "atfedi.de", "custom_domain": true },
     { "pattern": "en.atfedi.de", "custom_domain": true },
     { "pattern": "ja.atfedi.de", "custom_domain": true },
     { "pattern": "ko.atfedi.de", "custom_domain": true },
     { "pattern": "blog.atfedi.de", "custom_domain": true },
+    { "pattern": "kiosk.atfedi.de", "custom_domain": true },
     { "pattern": "danro.atfedi.de", "custom_domain": true },
     { "pattern": "museum.atfedi.de", "custom_domain": true }
   ]

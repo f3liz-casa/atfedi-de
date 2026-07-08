@@ -58,6 +58,38 @@ const aiNotice: Record<string, string> = {
 const aiMore: Record<string, string> = { en: 'More', ja: 'くわしく', ko: '자세히' };
 const aiOk: Record<string, string> = { en: 'Got it', ja: 'わかった', ko: '알겠어요' };
 const aiBadge: Record<string, string> = { en: 'Shiro · AI', ja: 'シロ · AI', ko: '시로 · AI' };
+
+// Comments come from the fediverse: a reply to this post's Article shows up
+// here. The static page fetches them on the client; the id below is the
+// Article's AP id, the same one a reply's inReplyTo points at.
+const slug = Astro.params.slug as string;
+// One Article per slug (all languages together), so the id has no language.
+const articleApId = `https://blog.atfedi.de/ap/actors/${authorId}/articles/${slug}`;
+const commentsLabel: Record<string, string> = { en: 'Comments', ja: 'コメント', ko: '댓글' };
+// Reply-from-your-own-instance picker (ported from kiosk).
+const replyPrompt: Record<string, string> = {
+  en: 'Reply from your own instance',
+  ja: '自分のインスタンスで返信',
+  ko: '내 인스턴스에서 답글',
+};
+const replyOn: Record<string, string> = { en: 'Reply on', ja: 'で返信', ko: '에서 답글' };
+const setBtn: Record<string, string> = { en: 'Set', ja: '登録', ko: '등록' };
+const changeBtn: Record<string, string> = { en: 'change', ja: '変更', ko: '변경' };
+const instancePlaceholder: Record<string, string> = {
+  en: 'your.instance',
+  ja: 'あなたのインスタンス',
+  ko: '내 인스턴스',
+};
+const commentsEmpty: Record<string, string> = {
+  en: 'No comments yet.',
+  ja: 'まだコメントはありません。',
+  ko: '아직 댓글이 없어요.',
+};
+const commentsHint: Record<string, string> = {
+  en: 'This post is on the fediverse — reply to it from your account and it appears here.',
+  ja: 'この記事は fediverse に流れています。あなたのアカウントから返信すると、ここに並びます。',
+  ko: '이 글은 페디버스에 올라가 있어요. 여러분의 계정에서 답글을 달면 여기에 보여요.',
+};
 ---
 
 <Base
@@ -96,6 +128,46 @@ const aiBadge: Record<string, string> = { en: 'Shiro · AI', ja: 'シロ · AI',
         {byLabel[lang] ?? byLabel.en}{' '}
         <a href={`/${lang}/by/${authorId}/`}>{author.data.handle}</a>
       </footer>
+      <section
+        class="comments"
+        data-article={articleApId}
+        aria-label={commentsLabel[lang] ?? commentsLabel.en}
+      >
+        <h2>{commentsLabel[lang] ?? commentsLabel.en}</h2>
+        <p class="comment-hint">{commentsHint[lang] ?? commentsHint.en}</p>
+
+        <div class="reply-box" data-article={articleApId} data-lang={lang} data-reply-on={replyOn[lang] ?? replyOn.en}>
+          <form class="instance-form">
+            <label class="reply-prompt" for="instance-url">{replyPrompt[lang] ?? replyPrompt.en}</label>
+            <div class="instance-row">
+              <span class="scheme-field">
+                <span class="scheme-hint" aria-hidden="true" hidden>https://</span>
+                <input
+                  id="instance-url"
+                  class="scheme-input"
+                  type="text"
+                  inputmode="url"
+                  placeholder={instancePlaceholder[lang] ?? instancePlaceholder.en}
+                  autocomplete="off"
+                  spellcheck="false"
+                />
+              </span>
+              <button type="submit">{setBtn[lang] ?? setBtn.en}</button>
+            </div>
+          </form>
+          <div class="instance-set" hidden>
+            <a class="instance-chip" rel="noopener" title="">
+              <img class="instance-icon" alt="" width="20" height="20" />
+              <span class="instance-name"></span>
+            </a>
+            <a class="reply-link" rel="noopener" hidden></a>
+            <button type="button" class="instance-clear">{changeBtn[lang] ?? changeBtn.en}</button>
+          </div>
+        </div>
+
+        <ol class="comment-list"></ol>
+        <p class="comment-empty" hidden>{commentsEmpty[lang] ?? commentsEmpty.en}</p>
+      </section>
     </article>
     {
       toc.length > 1 && (
@@ -174,3 +246,295 @@ const aiBadge: Record<string, string> = { en: 'Shiro · AI', ja: 'シロ · AI',
     update();
   }
 </script>
+
+<script>
+  // Comments live on the Worker (D1), not in the static build — fetch them and
+  // render. The HTML is sanitized server-side (js-xss) before it's sent, so
+  // .innerHTML here is the one trusted-because-already-cleaned assignment.
+  const box = document.querySelector<HTMLElement>('.comments');
+  if (box !== null) {
+    const article = box.dataset.article ?? '';
+    const list = box.querySelector<HTMLOListElement>('.comment-list');
+    const empty = box.querySelector<HTMLElement>('.comment-empty');
+
+    fetch(`/ap/comments?article=${encodeURIComponent(article)}`)
+      .then((r) => (r.ok ? r.json() : { comments: [] }))
+      .then(({ comments }) => {
+        if (list === null) return;
+        if (!Array.isArray(comments) || comments.length === 0) {
+          if (empty !== null) empty.hidden = false;
+          return;
+        }
+        for (const c of comments) {
+          const li = document.createElement('li');
+          li.className = 'comment';
+
+          const who = document.createElement('a');
+          who.className = 'comment-author';
+          who.href = c.author?.uri ?? '#';
+          who.rel = 'nofollow noopener';
+          who.textContent = c.author?.name || c.author?.handle || 'someone';
+          li.append(who);
+
+          if (typeof c.published === 'string') {
+            const time = document.createElement('time');
+            time.dateTime = c.published;
+            time.textContent = c.published.slice(0, 10);
+            li.append(time);
+          }
+
+          const body = document.createElement('div');
+          body.className = 'comment-body';
+          body.innerHTML = c.html ?? ''; // server-sanitized; see comment above
+          li.append(body);
+
+          list.append(li);
+        }
+      })
+      .catch(() => {
+        /* offline or the endpoint is down — leave the section quiet */
+      });
+  }
+</script>
+
+<script>
+  // Reply from your own instance — kiosk's picker, ported. The blog only reads
+  // replies; to write one, we send you to your home instance's interaction page
+  // for this article (discovered via its WebFinger subscribe template), falling
+  // back to that instance's search where it only follows through the template.
+  const rbox = document.querySelector<HTMLElement>('.reply-box');
+  if (rbox !== null) {
+    const article = rbox.dataset.article ?? '';
+    const lang = rbox.dataset.lang ?? 'en';
+    const replyOnText = rbox.dataset.replyOn ?? 'Reply on';
+    const KEY = 'atfedi-instance';
+
+    const form = rbox.querySelector<HTMLFormElement>('.instance-form');
+    const input = rbox.querySelector<HTMLInputElement>('#instance-url');
+    const setView = rbox.querySelector<HTMLElement>('.instance-set');
+    const chip = rbox.querySelector<HTMLAnchorElement>('.instance-chip');
+    const icon = rbox.querySelector<HTMLImageElement>('.instance-icon');
+    const nameEl = rbox.querySelector<HTMLElement>('.instance-name');
+    const replyLink = rbox.querySelector<HTMLAnchorElement>('.reply-link');
+    const clearBtn = rbox.querySelector<HTMLButtonElement>('.instance-clear');
+    const schemeHint = rbox.querySelector<HTMLElement>('.scheme-hint');
+
+    const SEARCH_SOFTWARE = ['hackerspub', 'misskey', 'firefish', 'iceshrimp', 'sharkey', 'catodon', 'cherrypick', 'meisskey'];
+    const load = (): any => {
+      try {
+        return JSON.parse(localStorage.getItem(KEY) || 'null');
+      } catch {
+        return null;
+      }
+    };
+
+    const replyHref = (inst: any) =>
+      inst.subscribe && !SEARCH_SOFTWARE.includes(inst.software)
+        ? inst.subscribe.replace('{uri}', encodeURIComponent(article))
+        : `${inst.url}/search?q=${encodeURIComponent(article)}`;
+
+    const syncHint = () => {
+      if (schemeHint === null || input === null) return;
+      const v = input.value;
+      schemeHint.hidden = v === '' || /^https?:\/\//i.test(v);
+    };
+
+    function render() {
+      const inst = load();
+      const set = !!(inst && inst.url);
+      if (form !== null) form.hidden = set;
+      if (setView !== null) setView.hidden = !set;
+      if (!set) {
+        syncHint();
+        return;
+      }
+      if (inst.subscribe === undefined) {
+        fetch(`/ap/instance?url=${encodeURIComponent(inst.url)}`)
+          .then((r) => r.json())
+          .then((d) => {
+            if (d && d.url) {
+              localStorage.setItem(KEY, JSON.stringify(d));
+              render();
+            }
+          })
+          .catch(() => {});
+      }
+      if (chip !== null) {
+        chip.href = inst.url;
+        chip.title = inst.host || inst.url;
+      }
+      if (icon !== null) {
+        if (inst.icon) {
+          icon.src = inst.icon;
+          icon.hidden = false;
+        } else {
+          icon.hidden = true;
+        }
+      }
+      if (nameEl !== null) nameEl.textContent = inst.name || inst.host || inst.url;
+      if (replyLink !== null && article) {
+        replyLink.href = replyHref(inst);
+        const nm = inst.name || inst.host || inst.url;
+        replyLink.textContent = lang === 'en' ? `${replyOnText} ${nm}` : `${nm} ${replyOnText}`;
+        replyLink.hidden = false;
+      }
+    }
+
+    input?.addEventListener('input', syncHint);
+    form?.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const v = input?.value.trim();
+      if (!v) return;
+      try {
+        const res = await fetch(`/ap/instance?url=${encodeURIComponent(v)}`);
+        const data = await res.json();
+        if (data && data.url) {
+          localStorage.setItem(KEY, JSON.stringify(data));
+          render();
+        }
+      } catch {
+        /* leave the form up to try again */
+      }
+    });
+    clearBtn?.addEventListener('click', () => {
+      try {
+        localStorage.removeItem(KEY);
+      } catch {
+        /* fine */
+      }
+      render();
+    });
+    render();
+  }
+</script>
+
+<style>
+  .comments {
+    margin-top: 3rem;
+    padding-top: 1.5rem;
+    border-top: 1px solid color-mix(in srgb, currentColor 15%, transparent);
+  }
+  .comment-hint {
+    font-size: 0.9em;
+    opacity: 0.7;
+  }
+  /* Reply-from-your-own-instance picker (ported from kiosk). */
+  .reply-box {
+    margin: 1.25rem 0;
+  }
+  .reply-prompt {
+    display: block;
+    font-size: 0.9em;
+    opacity: 0.7;
+    margin-bottom: 0.4rem;
+  }
+  .instance-row {
+    display: flex;
+    gap: 0.5rem;
+  }
+  .scheme-field {
+    flex: 1;
+    min-width: 0;
+    display: flex;
+    align-items: center;
+    border: 1px solid color-mix(in srgb, currentColor 25%, transparent);
+    border-radius: 0.4rem;
+    padding: 0 0.6rem;
+  }
+  .scheme-field:focus-within {
+    border-color: currentColor;
+  }
+  .scheme-hint {
+    opacity: 0.55;
+    white-space: nowrap;
+  }
+  .scheme-hint[hidden] {
+    display: none;
+  }
+  .scheme-input {
+    flex: 1;
+    min-width: 0;
+    padding: 0.5rem 0;
+    border: none;
+    background: transparent;
+    color: inherit;
+    font: inherit;
+    outline: none;
+  }
+  .instance-row button {
+    font: inherit;
+    padding: 0.5rem 1rem;
+    cursor: pointer;
+  }
+  .instance-set {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 1rem;
+  }
+  .instance-set[hidden] {
+    display: none;
+  }
+  .instance-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    text-decoration: none;
+    color: inherit;
+    opacity: 0.75;
+    font-size: 0.9em;
+  }
+  .instance-icon {
+    border-radius: 0.3rem;
+    object-fit: cover;
+  }
+  .reply-link {
+    padding: 0.35rem 0.9rem;
+    border: 1px solid color-mix(in srgb, currentColor 25%, transparent);
+    border-radius: 0.4rem;
+    text-decoration: none;
+    color: inherit;
+    font-size: 0.9em;
+  }
+  .reply-link[hidden] {
+    display: none;
+  }
+  .reply-link:hover {
+    border-color: currentColor;
+  }
+  .instance-clear {
+    padding: 0;
+    border: none;
+    background: none;
+    color: inherit;
+    opacity: 0.6;
+    font: inherit;
+    font-size: 0.9em;
+    cursor: pointer;
+    text-decoration: underline;
+  }
+  .comment-list {
+    list-style: none;
+    padding: 0;
+    margin: 1.5rem 0 0;
+  }
+  .comment {
+    margin: 1.25rem 0;
+    padding-left: 0.9rem;
+    border-left: 2px solid color-mix(in srgb, currentColor 12%, transparent);
+  }
+  .comment-author {
+    font-weight: 600;
+  }
+  .comment time {
+    margin-left: 0.6rem;
+    font-size: 0.85em;
+    opacity: 0.6;
+  }
+  .comment-body {
+    margin-top: 0.35rem;
+  }
+  .comment-body :is(p):first-child {
+    margin-top: 0;
+  }
+</style>

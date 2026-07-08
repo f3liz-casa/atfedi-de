@@ -17,6 +17,21 @@
 // at build time, so the served preview page finds them like any blog page.
 
 import previewSSR from '../dist/preview/server/entry.mjs';
+import { handleFederation } from './federation/index.js';
+import { handlePublish } from './federation/publish.js';
+import { handleComments } from './federation/comments.js';
+import { handleRead } from './federation/read.js';
+import { sweepTick, backfillMeta, freshenTick } from './kiosk/sweep.js';
+import { handlePapers } from './kiosk/papers.js';
+import { handleKioskFederation, followTick } from './kiosk/federation.js';
+import { handleComments as handleKioskComments } from './kiosk/comments.js';
+import { handleInstance } from './kiosk/instance.js';
+import {
+  handleLogin,
+  handleCallback,
+  handleLogout,
+  handleStudio,
+} from './federation/auth.js';
 
 const LOCALES = ['en', 'ja', 'ko'];
 const DEFAULT_LOCALE = 'en';
@@ -57,6 +72,17 @@ export default {
 
     // --- apex: atfedi.de ---
     if (host === 'atfedi.de') {
+      // @kiosk@atfedi.de lives here — the newsstand's actor. WebFinger and its
+      // ActivityPub paths are served from the apex so the handle domain and the
+      // actor's home match. fedify owns these.
+      if (
+        url.pathname.startsWith('/ap/') ||
+        url.pathname === '/.well-known/webfinger' ||
+        url.pathname === '/.well-known/nodeinfo' ||
+        url.pathname === '/.well-known/host-meta'
+      ) {
+        return handleKioskFederation(request, env, ctx);
+      }
       // old path-based URLs (atfedi.de/ja/...) → 301 to the subdomain
       const old = url.pathname.match(/^\/(en|ja|ko)(\/.*)?$/);
       if (old) {
@@ -89,6 +115,31 @@ export default {
       return serveAsset(env, url, path, request);
     }
 
+    // --- kiosk.atfedi.de: the newsstand — read a paper from elsewhere ---
+    // Same shape as the blog: path-based locales, the shell shared from blog/.
+    if (host === 'kiosk.atfedi.de') {
+      let path = url.pathname;
+      // Fetch + sanitize a remote AP object for the reader page (client fetch).
+      if (path === '/ap/read') return handleRead(request, env, ctx);
+      // The rack — the gathered Articles, newest first.
+      if (path === '/papers') return handlePapers(request, env);
+      // Comments (replies) on a paper — fetched from its origin, sanitized.
+      if (path === '/ap/comments') return handleKioskComments(request, env, ctx);
+      // Look up a reader's home instance (name + icon) for the reply picker.
+      if (path === '/ap/instance') return handleInstance(request, env);
+      // shared build assets pass straight through
+      if (path.startsWith('/_astro/') || path === '/favicon.svg') {
+        return serveAsset(env, url, `/kiosk${path}`, request);
+      }
+      // pages live under a locale; anything else → detect language, redirect
+      if (!/^\/(en|ja|ko)(\/|$)/.test(path)) {
+        const locale = pickLocale(request.headers.get('accept-language'));
+        return Response.redirect(`https://kiosk.atfedi.de/${locale}/`, 302);
+      }
+      if (!path.endsWith('/') && !/\.[^/]+$/.test(path)) path += '/';
+      return serveAsset(env, url, `/kiosk${path}`, request);
+    }
+
     // --- danro.atfedi.de: a one-page intro for the danro-talk widget ---
     if (host === 'danro.atfedi.de') {
       let path = url.pathname;
@@ -117,6 +168,31 @@ export default {
     // --- blog.atfedi.de: serve the blog (path-based locales) ---
     if (host === 'blog.atfedi.de') {
       let path = url.pathname;
+      // The publishing desk — sukhi OAuth2 login, then a studio to publish from.
+      if (path === '/ap/login') return handleLogin(request, env);
+      if (path === '/ap/callback') return handleCallback(request, env);
+      if (path === '/ap/logout') return handleLogout(request, env);
+      if (path === '/ap/studio') return handleStudio(request, env);
+      // Publishing an Article — the one authorized action (sukhi OAuth2).
+      if (path === '/ap/publish' && request.method === 'POST') {
+        return handlePublish(request, env, ctx);
+      }
+      // Comments for a post — read by the (static) article page on the client.
+      if (path === '/ap/comments') {
+        return handleComments(request, env);
+      }
+      // Look up a reader's home instance for the "reply on your instance" picker.
+      if (path === '/ap/instance') return handleInstance(request, env);
+      // ActivityPub: the actor documents, WebFinger, inbox, outbox. fedify
+      // owns these paths; everything else on the blog stays static.
+      if (
+        path.startsWith('/ap/') ||
+        path === '/.well-known/webfinger' ||
+        path === '/.well-known/nodeinfo' ||
+        path === '/.well-known/host-meta'
+      ) {
+        return handleFederation(request, env, ctx);
+      }
       // /v/ is the live preview, and nothing else — the preview is an
       // SSR route, so hand it to the preview project's Astro worker
       if (path.startsWith('/v/preview/')) {
@@ -147,5 +223,19 @@ export default {
     }
 
     return new Response('Not found', { status: 404 });
+  },
+
+  // The cron tick — kiosk gathers a little each time: walk a few outboxes for
+  // the back-catalogue (sweep.js), and follow a few new writers so their fresh
+  // Articles push into the inbox (federation.js). Gentle, over many ticks.
+  async scheduled(event, env, ctx) {
+    ctx.waitUntil(
+      (async () => {
+        await sweepTick(env, ctx);
+        await followTick(env, ctx);
+        await backfillMeta(env, ctx);
+        await freshenTick(env, ctx);
+      })(),
+    );
   },
 };

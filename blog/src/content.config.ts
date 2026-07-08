@@ -10,11 +10,22 @@ const posts = defineCollection({
   loader: glob({ pattern: '**/*.mdoc', base: './src/content/posts' }),
   schema: z.object({
     title: z.string(),
+    // The URL-facing blurb — the HTML <meta description> and og:description
+    // (search results, link unfurls).
     description: z.string(),
+    // The fediverse-facing blurb — the AP Article's `summary`, which servers
+    // like hackers.pub show as the "Read full article" preview card. Absent
+    // falls back to `description` (see pages/ap/manifest.json.ts).
+    summary: z.string().optional(),
     date: z.coerce.date(),
     // The author id — a folder name under content/authors/ (e.g. nyanrus).
     // The displayed name comes from that author's entry; see below.
     author: z.string(),
+    // The post's original language, as a BCP-47 tag. When a post exists in
+    // several languages, this is the one that becomes the AP Article's default
+    // (no-language) face — what servers show when they don't localize. Only set
+    // it when the original isn't Japanese; absent means ja.
+    lang: z.string().optional(),
   }),
 });
 

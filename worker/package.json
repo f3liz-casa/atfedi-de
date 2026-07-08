@@ -5,6 +5,11 @@
   "scripts": {
     "deploy": "wrangler deploy"
   },
+  "dependencies": {
+    "@fedify/fedify": "^2.3.0",
+    "@js-temporal/polyfill": "^0.5.1",
+    "xss": "^1.0.15"
+  },
   "devDependencies": {
     "wrangler": "^4.93.1"
   }

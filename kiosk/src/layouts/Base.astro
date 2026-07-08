@@ -1,0 +1,94 @@
+---
+// kiosk.atfedi.de — the same shell as the blog, worn by the newsstand.
+//
+// The heavy shared pieces — the reading stylesheet and the locale list — are
+// imported straight from blog/ through the @blog/* alias (see tsconfig), so
+// there is one source, not a copy that drifts. Only the chrome differs: kiosk
+// carries its own brand, always sits noindex (it shows other people's writing
+// on request), and drops the blog's support link.
+import '@atfedi/shared/styles/tokens.css';
+import '@atfedi/shared/styles/base.css';
+import '@atfedi/shared/styles/components.css';
+import '@blog/styles/blog.css';
+
+// Same fonts as the blog — Latin first, the CJK subsets load by unicode-range
+// only when a fetched paper actually has kana·kanji / hangul.
+import '@fontsource-variable/source-sans-3';
+import '@fontsource/biz-udpgothic/japanese-400.css';
+import '@fontsource/biz-udpgothic/japanese-700.css';
+import '@fontsource/nanum-gothic/korean-400.css';
+import '@fontsource/nanum-gothic/korean-700.css';
+
+import { locales, localeNames } from '@blog/locales';
+
+interface Props {
+  lang: string;
+  title: string;
+  description?: string;
+}
+
+const { lang, title, description } = Astro.props;
+
+// The same path under another language — for the switcher.
+const rest = Astro.url.pathname.replace(/^\/(en|ja|ko)/, '') || '/';
+// The brand reads the same in every language — it's a name, not a word to translate.
+const brand = 'atfedi.de kiosk';
+---
+
+<!doctype html>
+<html lang={lang}>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+    <title>{title}</title>
+    {description && <meta name="description" content={description} />}
+    <!-- kiosk renders other people's writing on request — it isn't ours to index. -->
+    <meta name="robots" content="noindex, nofollow" />
+  </head>
+  <body>
+    <header class="site-header">
+      <a class="site-brand" href={`/${lang}/`}>
+        <svg class="brand-mark" viewBox="0 0 32 32" aria-hidden="true">
+          <rect width="32" height="32" rx="7" fill="var(--color-text)" />
+          <g
+            transform="translate(4 4)"
+            fill="none"
+            stroke="var(--color-bg)"
+            stroke-width="2.5"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+          >
+            <!-- the family @ mark (catalog/danro) — kiosk is a reading annex, not the blog -->
+            <circle cx="12" cy="12" r="4" />
+            <path d="M16 8v5a3 3 0 0 0 6 0v-1a10 10 0 1 0-3.92 7.94" />
+          </g>
+        </svg>
+        {brand}
+      </a>
+      <nav class="site-nav" aria-label="Sections">
+        <a href="https://blog.atfedi.de/">blog ↗</a>
+      </nav>
+      <nav class="lang-switch" aria-label="Language">
+        {
+          locales.map((l) => (
+            <a href={`/${l}${rest}`} aria-current={l === lang ? 'true' : undefined}>
+              {localeNames[l]}
+            </a>
+          ))
+        }
+      </nav>
+    </header>
+    <main>
+      <slot />
+    </main>
+    <footer class="site-footer">
+      <div class="footer-inner">
+        <p>atfedi.de — a newsstand for the fediverse.</p>
+        <div class="footer-links">
+          <a href="https://github.com/f3liz-casa/atfedi-de">GitHub</a>
+        </div>
+      </div>
+    </footer>
+  </body>
+</html>

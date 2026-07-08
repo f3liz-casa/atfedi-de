@@ -1,0 +1,751 @@
+---
+import { locales, type Locale } from '@blog/locales';
+import Base from '../../layouts/Base.astro';
+
+// The newsstand. Papers gathered from the fediverse are laid out on the rack
+// (fetched from /papers); pick one to read, or paste any fediverse address to
+// read that. The reading itself is the blog's own skin — a fetched paper looks
+// like a post here. One page per language, like the blog. Nothing is stored on
+// the reader side.
+export function getStaticPaths() {
+  return locales.map((lang) => ({ params: { lang } }));
+}
+
+const lang = Astro.params.lang as Locale;
+
+const t = {
+  en: {
+    title: 'kiosk — read the fediverse',
+    description: 'A newsstand for Articles from across the fediverse.',
+    heading: 'The newsstand',
+    lede: 'Papers gathered from across the fediverse. Pick one — or paste any address to read it here.',
+    rack: 'On the rack',
+    rackEmpty: 'The rack is filling. Come back soon.',
+    older: 'Older papers',
+    anyPrompt: 'Or read any address',
+    go: 'Read',
+    loading: 'Fetching…',
+    failed: "Couldn't read that one.",
+    original: 'Original',
+    by: 'by',
+    toc: 'On this page',
+    replyPrompt: 'Reply from your own instance',
+    replyOn: 'Reply on',
+    setBtn: 'Set',
+    change: 'change',
+    instancePlaceholder: 'your.instance',
+  },
+  ja: {
+    title: 'kiosk — fediverse を読む',
+    description: 'fediverse のあちこちの記事が並ぶ、新聞の置き場。',
+    heading: '新聞の置き場',
+    lede: 'fediverse から集めた新聞です。一つ選ぶか、どの住所でも貼ればここで読めます。',
+    rack: '並んでいる新聞',
+    rackEmpty: '棚はいま埋まっていくところ。またのぞいてください。',
+    older: '古い新聞',
+    anyPrompt: 'または、どの住所でも読む',
+    go: '読む',
+    loading: '取ってきています…',
+    failed: 'それは読めませんでした。',
+    original: '元の記事',
+    by: '文',
+    toc: '目次',
+    replyPrompt: '自分のインスタンスで返信',
+    replyOn: 'で返信',
+    setBtn: '登録',
+    change: '変更',
+    instancePlaceholder: 'あなたのインスタンス',
+  },
+  ko: {
+    title: 'kiosk — 페디버스 읽기',
+    description: '페디버스 곳곳의 글이 놓이는 신문 가판대.',
+    heading: '신문 가판대',
+    lede: '페디버스에서 모은 신문이에요. 하나 고르거나, 어떤 주소든 붙여넣으면 여기서 읽을 수 있어요.',
+    rack: '놓여 있는 신문',
+    rackEmpty: '가판대가 채워지는 중이에요. 곧 다시 들러 주세요.',
+    older: '오래된 신문',
+    anyPrompt: '또는, 어떤 주소든 읽기',
+    go: '읽기',
+    loading: '가져오는 중…',
+    failed: '그건 읽지 못했어요.',
+    original: '원문',
+    by: '글',
+    toc: '목차',
+    replyPrompt: '내 인스턴스에서 답글',
+    replyOn: '에서 답글',
+    setBtn: '등록',
+    change: '변경',
+    instancePlaceholder: '내 인스턴스',
+  },
+}[lang];
+---
+
+<Base lang={lang} title={t.title} description={t.description}>
+  <div class="wrap post-page">
+    <article class="post kiosk-home">
+      <header class="post-head">
+        <h1>{t.heading}</h1>
+        <p class="post-meta">{t.lede}</p>
+      </header>
+
+      <!-- A read result (a paper opened from the rack, or an address pasted) -->
+      <article class="reader-result post" hidden>
+        <header class="post-head">
+          <h2 class="reader-title"></h2>
+          <p class="post-meta">
+            <a class="reader-author" rel="nofollow noopener"></a>
+            <time class="reader-time"></time>
+            <span class="reader-langs"></span>
+          </p>
+        </header>
+        <div class="reader-body"></div>
+        <footer class="post-by">
+          <a class="reader-original" rel="nofollow noopener">{t.original}</a>
+        </footer>
+      </article>
+
+      <!-- Reply from your own instance — kiosk only reads, so it sends you home -->
+      <section class="reply-box" hidden>
+        <form class="instance-form">
+          <label class="reader-prompt" for="instance-url">{t.replyPrompt}</label>
+          <div class="reader-row">
+            <span class="scheme-field">
+              <span class="scheme-hint" aria-hidden="true" hidden>https://</span>
+              <input
+                id="instance-url"
+                class="scheme-input"
+                type="text"
+                inputmode="url"
+                placeholder={t.instancePlaceholder}
+                autocomplete="off"
+                spellcheck="false"
+              />
+            </span>
+            <button type="submit">{t.setBtn}</button>
+          </div>
+        </form>
+        <div class="instance-set" hidden>
+          <a class="instance-chip" rel="noopener" title="">
+            <img class="instance-icon" alt="" width="20" height="20" />
+            <span class="instance-name"></span>
+          </a>
+          <a class="reply-link" rel="noopener" hidden></a>
+          <button type="button" class="instance-clear">{t.change}</button>
+        </div>
+      </section>
+
+      <p class="reader-status" hidden></p>
+
+      <!-- The rack: papers gathered from the fediverse -->
+      <section class="rack" aria-label={t.rack}>
+        <h2 class="rack-label">{t.rack}</h2>
+        <p class="rack-empty" hidden>{t.rackEmpty}</p>
+        <ul class="rack-list"></ul>
+        <button type="button" class="rack-more" hidden>{t.older} →</button>
+      </section>
+
+      <!-- Read any address -->
+      <form class="reader-form" role="search">
+        <label class="reader-prompt" for="reader-url">{t.anyPrompt}</label>
+        <div class="reader-row">
+          <input
+            id="reader-url"
+            name="url"
+            type="url"
+            inputmode="url"
+            placeholder="https://hackers.pub/@fedify/…"
+            autocomplete="off"
+            spellcheck="false"
+          />
+          <button type="submit">{t.go}</button>
+        </div>
+      </form>
+    </article>
+  </div>
+</Base>
+
+<script define:vars={{ lang, loadingText: t.loading, failedText: t.failed, byText: t.by, tocLabel: t.toc, replyOnText: t.replyOn }}>
+  // All client-side. The rack is filled from /papers; opening a paper (or
+  // pasting an address) fetches /ap/read — the Worker does the fetch + sanitize,
+  // so .innerHTML below is the one trusted-because-already-cleaned assignment.
+  const form = document.querySelector('.reader-form');
+  const input = document.querySelector('#reader-url');
+  const status = document.querySelector('.reader-status');
+  const result = document.querySelector('.reader-result');
+  const rackList = document.querySelector('.rack-list');
+  const rackEmpty = document.querySelector('.rack-empty');
+  const rackMore = document.querySelector('.rack-more');
+  const replyBox = document.querySelector('.reply-box');
+  const instanceForm = document.querySelector('.instance-form');
+  const instanceInput = document.querySelector('#instance-url');
+  const instanceSet = document.querySelector('.instance-set');
+  const instanceChip = document.querySelector('.instance-chip');
+  const instanceIcon = document.querySelector('.instance-icon');
+  const instanceName = document.querySelector('.instance-name');
+  const replyLink = document.querySelector('.reply-link');
+  const instanceClear = document.querySelector('.instance-clear');
+  const INSTANCE_KEY = 'kiosk-instance';
+  let currentArticleUrl = null; // the paper's human page
+  let currentArticleId = null; // the paper's canonical ActivityPub id
+
+  const setStatus = (msg) => {
+    if (!status) return;
+    status.textContent = msg ?? '';
+    status.hidden = !msg;
+  };
+
+  // --- the rack -------------------------------------------------------
+  // Shows the recent papers; "older papers" fetches the next, older page (a
+  // cursor on the oldest one shown). A full page back means there's likely more.
+  const dateOf = (s) => (typeof s === 'string' ? s.slice(0, 10) : '');
+  const RACK_PAGE = 12;
+  let oldestShown = null;
+  let loadingMore = false;
+
+  function renderPaper(p) {
+    const li = document.createElement('li');
+    li.className = 'rack-item';
+    const a = document.createElement('a');
+    a.className = 'rack-link';
+    a.href = `?url=${encodeURIComponent(p.iri)}`;
+    // Show the title in the reader's language when the paper has one, so the
+    // rack and the opened article read the same.
+    a.textContent = (p.titleMap && p.titleMap[lang]) || p.title || p.url || p.iri;
+    const meta = document.createElement('p');
+    meta.className = 'rack-meta';
+    const bits = [];
+    const who = p.author_name || p.author;
+    if (who) bits.push(`${byText} ${who}`);
+    if (p.published) bits.push(dateOf(p.published));
+    if (p.langs && p.langs.length) bits.push(p.langs.map((l) => l.toUpperCase()).join(' '));
+    meta.textContent = bits.join(' · ');
+    li.append(a, meta);
+    rackList.append(li);
+    if (p.published) oldestShown = p.published;
+  }
+
+  async function fillRack(before) {
+    if (!rackList || loadingMore) return;
+    loadingMore = true;
+    try {
+      const q = new URLSearchParams({ limit: String(RACK_PAGE) });
+      if (before) q.set('before', before);
+      const res = await fetch(`/papers?${q}`);
+      if (!res.ok) throw new Error('bad status');
+      const { papers } = await res.json();
+      if (!before && (!papers || papers.length === 0)) {
+        if (rackEmpty) rackEmpty.hidden = false;
+        return;
+      }
+      for (const p of papers) renderPaper(p);
+      // A full page probably means there are older papers still to fetch.
+      if (rackMore) rackMore.hidden = papers.length < RACK_PAGE;
+    } catch {
+      if (!before && rackEmpty) rackEmpty.hidden = false;
+    } finally {
+      loadingMore = false;
+    }
+  }
+
+  rackMore?.addEventListener('click', () => fillRack(oldestShown));
+
+  // --- reading one paper ---------------------------------------------
+  async function load(url) {
+    if (!url) return;
+    if (result) result.hidden = true;
+    setStatus(loadingText);
+    try {
+      const res = await fetch(`/ap/read?url=${encodeURIComponent(url)}&lang=${lang}`);
+      if (!res.ok) throw new Error('bad status');
+      render(await res.json());
+      setStatus(null);
+    } catch {
+      setStatus(failedText);
+    }
+  }
+
+  function render(data) {
+    if (!result) return;
+    const title = result.querySelector('.reader-title');
+    const author = result.querySelector('.reader-author');
+    const time = result.querySelector('.reader-time');
+    const langs = result.querySelector('.reader-langs');
+    const body = result.querySelector('.reader-body');
+    const orig = result.querySelector('.reader-original');
+
+    if (title) title.textContent = data.title || '';
+    if (author) {
+      if (data.author && (data.author.name || data.author.handle)) {
+        author.textContent = data.author.name || data.author.handle;
+        author.href = data.author.url || data.author.uri || '#';
+        author.hidden = false;
+      } else {
+        author.hidden = true;
+      }
+    }
+    if (time) {
+      if (typeof data.published === 'string') {
+        time.dateTime = data.published;
+        time.textContent = data.published.slice(0, 10);
+      } else {
+        time.textContent = '';
+      }
+    }
+    if (langs) {
+      langs.textContent = Array.isArray(data.langs) ? data.langs.map((l) => l.toUpperCase()).join(' ') : '';
+    }
+    if (body) {
+      body.innerHTML = data.html || ''; // server-sanitized; see above
+      buildToc(body);
+    }
+    if (orig) orig.href = data.url || data.id || '#';
+    result.hidden = false;
+
+    // The reply box points at the paper we're reading, on your own instance.
+    currentArticleId = data.id || data.url || null;
+    currentArticleUrl = data.url || data.id || null;
+    if (replyBox) replyBox.hidden = false;
+    renderInstance();
+  }
+
+  // The right-rail index, same as the blog's. The article body is sanitized —
+  // heading ids don't survive — so we mint slugs and build the list from the
+  // rendered h2/h3, then keep the current section marked as you scroll.
+  let tocSpy = null;
+  function buildToc(body) {
+    const postPage = document.querySelector('.post-page');
+    postPage?.querySelector('.toc')?.remove();
+    if (tocSpy) {
+      document.removeEventListener('scroll', tocSpy);
+      tocSpy = null;
+    }
+    if (!postPage) return;
+
+    const heads = [...body.querySelectorAll('h2, h3')];
+    if (heads.length < 2) return;
+
+    const nav = document.createElement('nav');
+    nav.className = 'toc';
+    nav.setAttribute('aria-label', tocLabel);
+    const ul = document.createElement('ul');
+
+    heads.forEach((h, i) => {
+      // The article's own permalink anchor isn't part of the heading's text.
+      const clone = h.cloneNode(true);
+      clone.querySelectorAll('.header-anchor').forEach((a) => a.remove());
+      const text = clone.textContent.trim();
+      const slug = (text.toLowerCase().replace(/[^\p{L}\p{N}]+/gu, '-').replace(/^-+|-+$/g, '') || 'section') + '-' + i;
+      h.id = slug;
+
+      const li = document.createElement('li');
+      if (h.tagName === 'H3') li.className = 'toc-sub';
+      const a = document.createElement('a');
+      a.href = '#' + slug;
+      a.textContent = text;
+      li.append(a);
+      ul.append(li);
+    });
+
+    nav.append(ul);
+    postPage.append(nav);
+
+    const links = [...nav.querySelectorAll('a')];
+    tocSpy = () => {
+      let active = 0;
+      heads.forEach((h, i) => {
+        if (h.getBoundingClientRect().top <= 140) active = i;
+      });
+      links.forEach((a, i) => a.toggleAttribute('aria-current', i === active));
+    };
+    document.addEventListener('scroll', tocSpy, { passive: true });
+    tocSpy();
+  }
+
+  // --- reply from your own instance ----------------------------------
+  // kiosk only reads; to reply, we send you to your own instance's interaction
+  // page for this paper. The instance is remembered per browser.
+  const loadInstance = () => {
+    try {
+      return JSON.parse(localStorage.getItem(INSTANCE_KEY) || 'null');
+    } catch {
+      return null;
+    }
+  };
+
+  // Misskey and hackers.pub only *follow* through the interaction template, so
+  // for them we open the instance's search on the post's id (which resolves it,
+  // and you reply from the result). Mastodon-family instances interact with a
+  // post URI directly via the WebFinger-advertised subscribe template.
+  const SEARCH_SOFTWARE = ['hackerspub', 'misskey', 'firefish', 'iceshrimp', 'sharkey', 'catodon', 'cherrypick', 'meisskey'];
+  function replyHref(inst) {
+    let articleHost = null;
+    try {
+      articleHost = new URL(currentArticleUrl || currentArticleId).host;
+    } catch {
+      /* leave null */
+    }
+    // Same instance as the paper → just open it there and reply, no remote hop.
+    if (articleHost && inst.host && articleHost === inst.host) {
+      return currentArticleUrl || currentArticleId;
+    }
+    if (inst.subscribe && !SEARCH_SOFTWARE.includes(inst.software)) {
+      return inst.subscribe.replace('{uri}', encodeURIComponent(currentArticleId));
+    }
+    return `${inst.url}/search?q=${encodeURIComponent(currentArticleId)}`;
+  }
+
+  function updateReplyLink(inst) {
+    if (!replyLink) return;
+    if (inst && inst.url && currentArticleId) {
+      replyLink.href = replyHref(inst);
+      const nm = inst.name || inst.host || inst.url;
+      replyLink.textContent = lang === 'en' ? `${replyOnText} ${nm}` : `${nm} ${replyOnText}`;
+      replyLink.hidden = false;
+    } else {
+      replyLink.hidden = true;
+    }
+  }
+
+  function renderInstance() {
+    const inst = loadInstance();
+    const set = !!(inst && inst.url);
+    if (instanceForm) instanceForm.hidden = set;
+    if (instanceSet) instanceSet.hidden = !set;
+    if (!set) {
+      syncSchemeHint();
+      return;
+    }
+    // Stored before we captured the interaction template? Refresh it once.
+    if (inst.subscribe === undefined) {
+      fetch(`/ap/instance?url=${encodeURIComponent(inst.url)}`)
+        .then((r) => r.json())
+        .then((d) => {
+          if (d && d.url) {
+            localStorage.setItem(INSTANCE_KEY, JSON.stringify(d));
+            renderInstance();
+          }
+        })
+        .catch(() => {});
+    }
+    if (instanceChip) {
+      instanceChip.href = inst.url;
+      instanceChip.title = inst.host || inst.url;
+    }
+    if (instanceIcon) {
+      if (inst.icon) {
+        instanceIcon.src = inst.icon;
+        instanceIcon.hidden = false;
+      } else {
+        instanceIcon.hidden = true;
+      }
+    }
+    if (instanceName) instanceName.textContent = inst.name || inst.host || inst.url;
+    updateReplyLink(inst);
+  }
+
+  instanceForm?.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const v = instanceInput?.value.trim();
+    if (!v) return;
+    try {
+      const res = await fetch(`/ap/instance?url=${encodeURIComponent(v)}`);
+      const data = await res.json();
+      if (data && data.url) {
+        localStorage.setItem(INSTANCE_KEY, JSON.stringify(data));
+        renderInstance();
+      }
+    } catch {
+      /* leave the form up to try again */
+    }
+  });
+
+  // The gray https:// hint shows only while typing a bare host — hidden when the
+  // field is empty, or once the reader has typed their own scheme.
+  const schemeHint = document.querySelector('.scheme-hint');
+  const syncSchemeHint = () => {
+    if (!schemeHint || !instanceInput) return;
+    const v = instanceInput.value;
+    schemeHint.hidden = v === '' || /^https?:\/\//i.test(v);
+  };
+  instanceInput?.addEventListener('input', syncSchemeHint);
+
+  instanceClear?.addEventListener('click', () => {
+    try {
+      localStorage.removeItem(INSTANCE_KEY);
+    } catch {
+      /* fine */
+    }
+    renderInstance();
+  });
+
+  renderInstance();
+
+  // Reading one paper is a focused view: tuck away the newsstand heading and the
+  // rack so the article stands alone (the brand up top links back to the rack).
+  const home = document.querySelector('.kiosk-home');
+  const enterReading = () => home?.classList.add('reading');
+
+  // A url can arrive in the query (?url=…) — read it and prefill.
+  const initial = new URLSearchParams(location.search).get('url');
+  if (initial && input) {
+    input.value = initial;
+    enterReading();
+    load(initial);
+  }
+
+  form?.addEventListener('submit', (e) => {
+    e.preventDefault();
+    const url = input?.value.trim();
+    if (!url) return;
+    const next = new URL(location.href);
+    next.searchParams.set('url', url);
+    history.replaceState(null, '', next);
+    enterReading();
+    load(url);
+  });
+
+  fillRack();
+</script>
+
+<!-- Global: the rack rows are created client-side (from /papers), so scoped
+     styles — which Astro binds to a data attribute the JS elements lack — would
+     miss them. These class names are kiosk-only, so global is safe. -->
+<style is:global>
+  /* The reading skin comes from blog.css; these are the newsstand's own bits. */
+  .rack {
+    margin: var(--space-8) 0;
+  }
+  .rack-label {
+    font-size: var(--text-sm);
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--color-text-muted);
+    margin: 0 0 var(--space-4);
+  }
+  .rack-empty {
+    color: var(--color-text-muted);
+  }
+  /* The rack lives inside .post, so blog.css's prose rules (.post ul / .post li
+     / .post p) would win on specificity and reset our spacing and add an indent.
+     Prefixing with .kiosk-home lifts these above them; we also reset the
+     inherited list margins explicitly. */
+  .kiosk-home .rack-list {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+  }
+  .kiosk-home .rack-item {
+    margin: 0;
+    padding: var(--space-6) 0;
+    border-top: 1px solid var(--color-border);
+  }
+  .kiosk-home .rack-item:first-child {
+    border-top: none;
+    padding-top: 0;
+  }
+  /* Quiet list: underline only what the pointer is on. */
+  .kiosk-home .rack-link {
+    display: block;
+    font-size: var(--text-lg);
+    font-weight: 600;
+    line-height: 1.3;
+    letter-spacing: -0.01em;
+    text-decoration: none;
+    color: var(--color-text);
+    text-wrap: balance;
+  }
+  .kiosk-home .rack-link:hover {
+    text-decoration: underline;
+    text-underline-offset: 2px;
+  }
+  .kiosk-home .rack-meta {
+    margin: var(--space-1) 0 0;
+    font-size: var(--text-sm);
+    color: var(--color-text-muted);
+  }
+  .kiosk-home .rack-more {
+    margin-top: var(--space-6);
+    padding: 0;
+    font: inherit;
+    font-size: var(--text-sm);
+    color: var(--color-text-muted);
+    background: none;
+    border: none;
+    cursor: pointer;
+  }
+  .kiosk-home .rack-more:hover {
+    color: var(--color-text);
+    text-decoration: underline;
+  }
+
+  .reader-form {
+    margin: var(--space-8) 0 0;
+    padding-top: var(--space-6);
+    border-top: 1px solid var(--color-border);
+  }
+  .reader-prompt {
+    display: block;
+    font-size: var(--text-sm);
+    color: var(--color-text-muted);
+    margin-bottom: var(--space-2);
+  }
+  .reader-row {
+    display: flex;
+    gap: var(--space-3);
+  }
+  .reader-row input {
+    flex: 1;
+    min-width: 0;
+    padding: 0.6rem 0.7rem;
+    font: inherit;
+    color: inherit;
+    background: transparent;
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-sm);
+  }
+  .reader-row button {
+    padding: 0.6rem 1.25rem;
+    font: inherit;
+    cursor: pointer;
+    color: inherit;
+    background: transparent;
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-sm);
+  }
+  .reader-row button:hover {
+    border-color: var(--color-text);
+  }
+  /* Instance field with a gray https:// hint shown until the user types a scheme. */
+  .scheme-field {
+    flex: 1;
+    min-width: 0;
+    display: flex;
+    align-items: center;
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-sm);
+    padding: 0 0.7rem;
+  }
+  .scheme-field:focus-within {
+    border-color: var(--color-text);
+  }
+  .scheme-hint {
+    color: var(--color-text-muted);
+    white-space: nowrap;
+  }
+  .scheme-hint[hidden] {
+    display: none;
+  }
+  .reader-row .scheme-input {
+    flex: 1;
+    min-width: 0;
+    padding: 0.6rem 0;
+    border: none;
+    background: transparent;
+    color: inherit;
+    font: inherit;
+    outline: none;
+  }
+  .reader-status {
+    color: var(--color-text-muted);
+  }
+  /* Focused reading: the article stands alone — tuck away the heading, the rack,
+     and the "read any address" box (the reply box stays). */
+  .kiosk-home.reading > .post-head,
+  .kiosk-home.reading .rack,
+  .kiosk-home.reading .reader-form {
+    display: none;
+  }
+  /* A long index shouldn't outrun the viewport — the sticky rail scrolls on its
+     own so every entry stays reachable. */
+  .post-page .toc ul {
+    max-height: calc(100vh - var(--space-16));
+    overflow-y: auto;
+  }
+  .reader-result {
+    margin-bottom: var(--space-8);
+    padding-bottom: var(--space-8);
+    border-bottom: 1px solid var(--color-border);
+  }
+  /* Reading a single paper, there's no rack below — drop the separating rule. */
+  .kiosk-home.reading .reader-result {
+    margin-bottom: 0;
+    padding-bottom: 0;
+    border-bottom: none;
+  }
+  /* The opened article's title is an <h2>, which blog.css gives a big section
+     margin-top — unwanted when it's the top of the reading view. */
+  .reader-result .reader-title {
+    margin-top: 0;
+  }
+  .reader-result .post-meta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-3);
+    align-items: baseline;
+  }
+  .reader-langs {
+    color: var(--color-text-muted);
+    letter-spacing: 0.04em;
+    font-size: var(--text-sm);
+  }
+  /* Reply-from-your-instance box */
+  .reply-box {
+    margin-top: var(--space-8);
+    padding-top: var(--space-6);
+    border-top: 1px solid var(--color-border);
+  }
+  .instance-set {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: var(--space-4);
+  }
+  /* An explicit display: would otherwise override the `hidden` attribute. */
+  .instance-set[hidden],
+  .reply-link[hidden] {
+    display: none;
+  }
+  .instance-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--space-2);
+    text-decoration: none;
+    color: var(--color-text-muted);
+    font-size: var(--text-sm);
+  }
+  .instance-icon {
+    border-radius: var(--radius-sm);
+    object-fit: cover;
+  }
+  .reply-link {
+    padding: 0.4rem 0.9rem;
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-sm);
+    text-decoration: none;
+    color: var(--color-text);
+    font-size: var(--text-sm);
+  }
+  .reply-link:hover {
+    border-color: var(--color-text);
+  }
+  .instance-clear {
+    padding: 0;
+    border: none;
+    background: none;
+    color: var(--color-text-muted);
+    font: inherit;
+    font-size: var(--text-sm);
+    cursor: pointer;
+    text-decoration: underline;
+  }
+  .reader-body {
+    margin-top: var(--space-6);
+  }
+  .reader-body :is(img) {
+    max-width: 100%;
+    height: auto;
+  }
+  .reader-body :is(pre) {
+    overflow-x: auto;
+  }
+</style>
