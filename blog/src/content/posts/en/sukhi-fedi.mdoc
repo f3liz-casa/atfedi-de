@@ -25,7 +25,7 @@ Processes talk over messages, state lives under supervision. Stick to plain OTP,
 
 ## Folding small
 
-sukhi-fedi runs comfortably on 512–768 MB of memory.
+sukhi-fedi runs comfortably on a 1 GB box, and is built to go as low as 512–768 MB.
 
 `docker-compose.combined.yml` collapses gateway and delivery into a single BEAM (the `combined` release), sized for a 1-core/2 GB box. In a 1-core endurance test, that combined image held steady at ~130 MiB under sustained read, write, and inbox load. The memory budget for a 512 MB box (combined 192M / postgres 112M / …) is documented directly in the compose file's comments. There's a tighter 1 GB free-tier variant that drops the API node, and `infra/` includes Terraform for OCI's ARM free tier.
 
