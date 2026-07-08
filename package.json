@@ -8,6 +8,12 @@
     "build": "npm run build --workspace catalog && npm run build --workspace blog && npm run build --workspace kiosk && npm run build --workspace danro && npm run build --workspace preview && npm run build --workspace museum && npm run postbuild",
     "postbuild": "printf 'preview\\n' > dist/.assetsignore && cp -Rn dist/preview/client/_astro/* dist/blog/_astro/ || true",
     "check": "npm run check --workspaces --if-present",
-    "deploy": "npm run build && npm run deploy --workspace worker"
+    "deploy": "npm run build && npm run deploy --workspace worker",
+    "//deploy": "One Worker, one ../dist bundle. wrangler diffs assets by hash, so a per-site deploy rebuilds only that site and uploads only its changed files; the sibling sites' dist is left as-is and stays live. The Worker script (index.js) is shared and redeploys every time. postbuild guarantees dist/.assetsignore. First deploy after a clean checkout must be the full `deploy` (the Worker imports dist/preview/server).",
+    "deploy:worker": "npm run deploy --workspace worker",
+    "deploy:catalog": "npm run build --workspace catalog && npm run postbuild && npm run deploy --workspace worker",
+    "deploy:blog": "npm run build --workspace blog && npm run build --workspace preview && npm run postbuild && npm run deploy --workspace worker",
+    "deploy:kiosk": "npm run build --workspace kiosk && npm run postbuild && npm run deploy --workspace worker",
+    "deploy:museum": "npm run build --workspace museum && npm run postbuild && npm run deploy --workspace worker"
   }
 }
