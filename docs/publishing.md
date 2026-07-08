@@ -114,3 +114,38 @@ done
 ```
 
 三言語とも 200 が返って、目でも一度読めたら、おしまい。
+
+## 付録: プレビューの仕組み（ソース地図）
+
+`/v/preview/*` の中を触るとき用の、実装の見取り図。運用は §4 で足りる。
+ここは「どこが動かしているか」だけ。
+
+- **ルーティング** — `worker/index.js` が `/v/preview/` で始まるリクエスト
+  だけを preview の SSR worker へ委譲する（`worker/index.js:198`、
+  `previewSSR.fetch`）。ほかの blog は素の静的アセット。
+- **SSR 本体** — `preview/` は一枚ルートだけの Astro SSR プロジェクト
+  （`output: 'server'` ＋ Cloudflare adapter、`preview/astro.config.mjs`）。
+  ルートは `preview/src/pages/v/preview/[...path].astro`、描画ロジックは
+  `preview/src/lib/preview.ts`。
+- **中身は GitHub から直読み** — `resolveRef` が ref を解決し（ブランチは
+  GitHub API `/commits/{ref}`、`pr-{n}` は `/pulls/{n}` の head＝**fork の
+  PR でも読める**）、`fetchRaw` が
+  `raw.githubusercontent.com/{owner}/{repo}/{sha}/…` から `.mdoc` を取る。
+  だから push だけで映る＝**ビルドも再デプロイも要らない**。
+- **レンダリング** — Markdoc の core renderer。`html: false` のまま＝
+  **本文の生 HTML はテキストにエスケープされる**（信用しない PR の中身への
+  安全策）。コードフェンスは shiki で後段ハイライト（blog.css の
+  `--astro-code-*` を共有）、見出し id は github-slugger で blog と同じ。
+- **AI バッジ** — 著者が `ai: true` かを、同じ ref の
+  `blog/src/content/authors/{lang|en}/{id}.mdoc` から読む（`authorIsAi`）。
+  その ref に著者ファイルが無ければ、badge 無しで本文だけ出る（壊れない）。
+- **CSS の出どころ** — preview の client アセットはビルド時に blog の
+  `/_astro/` へマージされる（ルート `package.json` の `postbuild`）。
+  ゆえに **preview は「デプロイ済みの」CSS/JS を着る**＝§4 の「スタイル変更は
+  映らない」の実装的な理由。
+- **キャッシュ** — ref 解決は 30 秒、SHA 固定の raw は 24 時間。新しい
+  push は SHA が変わるので即反映、同一 ref の再解決だけが最大 30 秒遅れる。
+- **ビルド連結** — `preview` は monorepo build に含まれ、
+  `dist/preview/server/entry.mjs` を worker が import（`worker/index.js:19`）。
+  `dist/.assetsignore` に `preview` を書いて、preview の HTML 自体は静的配信
+  から外す（CSS だけ blog に混ぜる）。
