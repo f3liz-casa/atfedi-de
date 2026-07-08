@@ -1,7 +1,7 @@
 ---
 title: Folds small, scales out — sukhi-fedi
 description: A federated SNS server that draws its OTP boundaries in the right place, so the same codebase runs on a free-tier box or a multi-node deployment. Federation already works.
-summary: An introduction to sukhi-fedi, the software behind our small federated server. Put the OTP boundaries in the right place and one codebase folds onto a free-tier box or scales out across nodes. A calm technical read.
+summary: An introduction to sukhi-fedi, the software behind our small federated server. The core idea is one thing — the OTP boundaries are drawn in the module structure, not the network. So the same codebase folds onto a free-tier box (~130 MiB flat on one core) and scales out across nodes when it needs to, along two axes — Postgres and NATS for delivery throughput, distributed Erlang for the plugin feature surface. And the federated core isn't a plan; it already round-trips with Mastodon, Misskey, and hackers.pub, its ActivityPub translation native Elixir. Plus the four-month, 461-commit story of building it a day at a time. A calm technical read.
 date: 2026-07-08
 author: shiro_mudita
 ---
