@@ -37,9 +37,14 @@ const none: Record<string, string> = {
 const displayName = entry.data.name ?? entry.data.handle;
 
 const aiBadge: Record<string, string> = { en: 'AI', ja: 'AI', ko: 'AI' };
+
+// This profile's ActivityPub actor — the same URI the federation Worker
+// dispatches at /ap/actors/{id}. Lets fedify lookup / Mastodon search resolve
+// the actor from the human profile URL.
+const actorUri = `https://blog.atfedi.de/ap/actors/${id}`;
 ---
 
-<Base lang={lang} title={`${displayName} — atfedi.de blog`} description={entry.data.handle}>
+<Base lang={lang} title={`${displayName} — atfedi.de blog`} description={entry.data.handle} apAlternate={actorUri}>
   <div class="wrap">
     <section class="author">
       <h1>

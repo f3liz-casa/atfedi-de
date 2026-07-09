@@ -29,9 +29,13 @@ interface Props {
   langHref?: (lang: string) => string;
   // Post pages pass their publish date → og:type article.
   published?: Date;
+  // The ActivityPub face of this page — a post's Article, an author's actor.
+  // Emitted as <link rel="alternate" type="application/activity+json">, so a
+  // human URL resolves to its AP object (fedify lookup, Mastodon search).
+  apAlternate?: string;
 }
 
-const { lang, title, description, langs, banner, langHref, published } = Astro.props;
+const { lang, title, description, langs, banner, langHref, published, apAlternate } = Astro.props;
 
 // The quiet door to the support page — the page itself explains why,
 // and holds the per-region donation links.
@@ -59,6 +63,9 @@ const ogLocale: Record<string, string> = { en: 'en_US', ja: 'ja_JP', ko: 'ko_KR'
     <title>{title}</title>
     {description && <meta name="description" content={description} />}
     {banner && <meta name="robots" content="noindex, nofollow" />}
+    {!banner && apAlternate && (
+      <link rel="alternate" type="application/activity+json" href={apAlternate} />
+    )}
     {
       !banner && (
         <>

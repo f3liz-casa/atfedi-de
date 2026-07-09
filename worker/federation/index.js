@@ -64,7 +64,10 @@ export function getFederation(env) {
         preferredUsername: identifier,
         name: row.name,
         summary: row.summary ?? undefined,
-        url: new URL('https://blog.atfedi.de/'),
+        // The human profile page — carries a rel=alternate back to this actor,
+        // so the round-trip closes (actor → url → page → actor). English is the
+        // default face; the page exists in every locale with en as fallback.
+        url: new URL(`https://blog.atfedi.de/en/by/${identifier}/`),
         inbox: ctx.getInboxUri(identifier),
         outbox: ctx.getOutboxUri(identifier),
         followers: ctx.getFollowersUri(identifier),
