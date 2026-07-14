@@ -1,0 +1,74 @@
+---
+title: I built a freezer inside my server
+description: sukhi-fedi now keeps every raw ActivityPub byte it sends and receives, frozen and untouched. Opening it back up already brought a third of our lost remote posts back from the dead.
+date: 2026-07-14
+author: shiro_mudita
+---
+
+sukhi reads every incoming ActivityPub activity once, turns it into a database row, and forgets it. A `Create` becomes a note row, a `Follow` becomes a follow row, and the raw bytes are gone the moment the row is written. That's fine — until the code that does the reading has a bug. Then it stops being fine, because the sender isn't going to mail you the exact same bytes twice. ActivityPub has no resend button.
+
+So we built a freezer. Two of them, actually — one for everything that arrives, one for everything we send out — and they already paid for themselves: replaying the inbound archive brought back roughly **a third of our remote posts** that a past database accident had quietly erased.
+
+## What we'd been throwing away
+
+The freezer exists because of three small, separate bugs, each fixed only for the future. We were dropping content warnings until v0.2.4. We were substituting fetch time for the real publish date until v0.2.2. We were ignoring image and video attachments entirely until v0.2.22. Every one of those fixes only helped posts that hadn't arrived yet — everything that landed before the fix kept its missing warning, its wrong timestamp, its absent images, forever. There was no way to ask the sender to resend, and no protocol mechanism to ask for one either.
+
+Then a worse accident surfaced: a cascade delete, sometime in the past, had silently wiped roughly a third of our remote notes clean out of the database. A missing field is an annoyance you patch later. A missing row is a different order of problem — there's nothing left to patch.
+
+Different bugs, same root cause: **we never kept the exact bytes the remote server signed.** The database only ever held what that day's code understood those bytes to mean. When the understanding was wrong, there was no ground truth left to correct it against.
+
+## What's in the freezer
+
+So now, the instant a signed activity passes verification, we freeze the raw bytes exactly as received into an `inbound` object-storage bucket — rustfs, our own S3-compatible store — zstd-compressed, keyed by `inbound/<yyyy>/<mm>/<dd>/<sha256>.json.zst`. Content-addressing means a same-day resend collapses into the same object for free; the date prefix just makes the freezer easy to search later.
+
+Where to freeze it was easy. When was harder. Block the inbox response until the write lands, and you're guaranteed never to lose an original — at the cost of making every remote server wait on our object store's PUT latency. Fire-and-forget it, and it's instant — until a crash mid-write loses exactly the one activity you needed. We split the difference: the write goes in as an Oban job (Elixir's durable job queue), and the inbox returns its 202 immediately. The job survives a crash because it's already in the database, and it retries on its own if rustfs happens to be down for a moment. Nobody waits, and almost nothing is lost.
+
+A thin `inbound_events` table indexes it all — received time, sender, activity type, object key, body hash — a ledger with no payload of its own, just enough to walk the archive in order without touching rustfs for every row.
+
+## A twin, wired differently
+
+Outbound gets the same treatment: an `outbound` bucket holding the exact bytes we actually delivered to each remote inbox, same zstd, same content-addressing. But the node that does the delivering — `delivery` — carries none of the S3 or zstd dependencies on purpose; it's built to do one thing, deliver, and nothing else.
+
+So once a delivery lands, `delivery` drops an Oban job into the `oban_jobs` table it shares with `gateway`, naming the worker that should run it — and only `gateway`, which actually has the S3 client and the compressor, ever picks that job up. Sharing one job queue across two separate nodes felt strange the first time we reached for it. It's what falls out naturally once you commit to keeping heavy dependencies on exactly one side.
+
+Outbound gets one trick inbound doesn't need: the same post fans out to every follower's inbox, byte-identical except for the signature headers, which we don't store. Content-addressing folds that entire fan-out into a single object in rustfs — the index still gets one row per `(activity, inbox)` pair, but the bytes are written once.
+
+## Opening it back up
+
+A freezer nobody opens is just a warehouse. The point was to actually use it.
+
+`RebuildFromArchive` walks every archived `Create`, and where the database has no matching row and no matching `Delete` either, it recreates the note. If a `Delete` exists, the absence was intentional and stays that way. Reading the archive told us not just what was missing, but which of the missing was supposed to be missing — that's the part we didn't expect to get for free.
+
+Recreating a note runs through the exact same ingest path a live `Create` would — no separate code path to maintain, no risk of the rebuilt note drifting from what a fresh one would look like. One thing had to change: live ingest fires a mention notification, and firing "you were just mentioned" for a post from months ago would be its own small disaster. So we added a single switch, `notify?: false`, and exposed it as `reingest_for_rebuild` — the write path stays exactly as it is; only the notification gets peeled off. That one line was the most surgical change in the whole project.
+
+From there, a second pass reread every archived `Create`/`Update` through the now-fixed logic and backfilled only the content warning, the publish date, and attachments where the archive disagreed with the row — nothing else, since the content itself had always been captured correctly. Polls needed their own pass: a poll gets a fresh `Update` on every vote, so we take only the newest snapshot per note and ignore the rest.
+
+Every pass runs `dry_run` first, reporting exactly how many rows it would touch, before `execute` writes anything. Pulling something out of the freezer and overwriting a live row deserved that pause.
+
+## Delivery stopped losing things too
+
+Building the inbound side surfaced a second leak, this one on the way out.
+
+When `gateway` restarted or hit an OOM, translation would fail for a few seconds straight — and every outbound activity queued during that window got an instant NACK, burned through its five retries in under a second, and vanished without a trace. The failure was transient; the loss was permanent.
+
+The fix distinguishes the two. A transient failure now backs off with a delayed NACK — five seconds, then wider, up to eleven retries over about 27 minutes — so a brief outage is simply outlived. If it still hasn't gone through, the activity moves to `OUTBOX_DLQ`, a 30-day holding line, instead of disappearing; whatever lands there can be inspected and replayed later.
+
+Two related leaks turned up alongside it. A NATS outage was counting against the same ten-strikes-and-you're-marked-failed budget meant for genuinely poisoned data — so an infrastructure hiccup could permanently drop everything queued during it. And a transient database error was being caught and mapped to "no such account," which the consumer correctly acks and discards — except the account was real, and the error wasn't. Both bugs were the same mistake wearing different clothes: treating "temporarily can't tell" as "definitely no." Now a NATS restart just means the queue waits.
+
+The DLQ's depth — how many cars are sitting on that siding — is one of the numbers on [the map we wrote about earlier](/en/server-rail-map); it's been visible from the outside the whole time.
+
+## Still rough
+
+Being honest about what's left undone.
+
+Oban's default job retention is 60 seconds. If an archive job itself fails and gets discarded, the only un-flushed copy of that body — the one thing it existed to protect — gets swept away with it. We could raise the retention, at the cost of Postgres memory on a box with 768MB total. That trade hasn't been made yet; it's a known gap, not an accidental one.
+
+The bigger unfinished piece is general replay. `notify?: false` only separated one side effect — the notification — from one activity type — `Create`. Everything else still has its database write and its outward effects tangled together in the same function. Ingesting a `Follow` sends an `Accept` and backfills recent posts to the new follower in that same pass, so naively replaying every archived `Follow` today would re-send `Accept` to everyone who's ever followed us. What shipped is exactly the one seam we needed cut open today — not the general foundation that would let any activity type replay safely. That's still ahead of us.
+
+And rustfs itself currently runs on a single node, a single disk. It's a freezer that would lose everything in it to a power outage. Keeping the originals and making the freezer itself durable turned out to be two separate problems.
+
+## Where that leaves us
+
+A database row only ever holds what the code understood at the time it was written. Get the understanding wrong, and the row stays wrong until someone notices and fixes the code — but by then, the row is all that's left to fix. The raw bytes the remote server actually signed don't depend on anyone's understanding at all. Freeze those, and a fix six months later can go back to the real thing instead of guessing at it from a record that was already wrong.
+
+That's what happened when a third of our notes came back. The code fix took an afternoon. What made the fix mean anything was the voice from that day, still sitting in the freezer, exactly as it arrived.
