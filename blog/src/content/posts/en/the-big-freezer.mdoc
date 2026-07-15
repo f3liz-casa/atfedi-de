@@ -31,7 +31,7 @@ A thin `inbound_events` table indexes it all — received time, sender, activity
 
 ## A twin, wired differently
 
-The outbound side matters just as much, and it's the one people skip. We built the same freezer for it, on purpose, because it's easy to assume the outgoing side doesn't need it. An `outbound` bucket holds the exact bytes we actually delivered to each remote inbox, same zstd, same content-addressing. But the node that does the delivering — `delivery` — carries none of the S3 or zstd dependencies on purpose; it's built to do one thing, deliver, and nothing else.
+The outbound side matters just as much, though it's easy to skip. We built the same freezer for it, on purpose. An `outbound` bucket holds the exact bytes we actually delivered to each remote inbox, same zstd, same content-addressing. But the node that does the delivering — `delivery` — carries none of the S3 or zstd dependencies on purpose; it's built to do one thing, deliver, and nothing else.
 
 So once a delivery lands, `delivery` drops an Oban job into the `oban_jobs` table it shares with `gateway`, naming the worker that should run it — and only `gateway`, which actually has the S3 client and the compressor, ever picks that job up. Sharing one job queue across two separate nodes felt strange the first time we reached for it. It's what falls out naturally once you commit to keeping heavy dependencies on exactly one side.
 
@@ -43,7 +43,7 @@ A freezer nobody opens is just a warehouse. The point was to actually use it.
 
 `RebuildFromArchive` walks every archived `Create`, and where the database has no matching row and no matching `Delete` either, it recreates the note. If a `Delete` exists, the absence was intentional and stays that way. Reading the archive told us not just what was missing, but which of the missing was supposed to be missing — that's the part we didn't expect to get for free.
 
-Recreating a note runs through the exact same ingest path a live `Create` would — no separate code path to maintain, no risk of the rebuilt note drifting from what a fresh one would look like. One thing had to change: live ingest fires a mention notification, and firing "you were just mentioned" for a post from months ago would be its own small disaster. So we added a single switch, `notify?: false`, and exposed it as `reingest_for_rebuild` — the write path stays exactly as it is; only the notification gets peeled off. That one line was the most surgical change in the whole project.
+Recreating a note runs through the exact same ingest path a live `Create` would — no separate code path to maintain, no risk of the rebuilt note drifting from what a fresh one would look like. One thing had to change: live ingest fires a mention notification, and firing "you were just mentioned" for a post from months ago would be its own small disaster. So we added a single switch, `notify?: false`, and exposed it as `reingest_for_rebuild` — the write path stays exactly as it is; only the notification gets peeled off. That one line was the one that actually mattered.
 
 From there, a second pass reread every archived `Create`/`Update` through the now-fixed logic and backfilled only the content warning, the publish date, and attachments where the archive disagreed with the row — nothing else, since the content itself had always been captured correctly. Polls needed their own pass: a poll gets a fresh `Update` on every vote, so we take only the newest snapshot per note and ignore the rest.
 
@@ -71,7 +71,7 @@ The bigger unfinished piece is general replay. `notify?: false` only separated o
 
 And rustfs itself currently runs on a single node, a single disk. It's a freezer that would lose everything in it to a power outage. Keeping the originals and making the freezer itself durable turned out to be two separate problems.
 
-## The actual pitch
+## What it comes down to
 
 If you're building your own ActivityPub implementation, do the unglamorous thing: freeze the raw bytes you send and receive before your code ever touches them. A database row only ever holds what the code understood at the time it was written. Get the understanding wrong, and the row stays wrong until someone notices and fixes the code — but by then, the row is all that's left to fix. The raw bytes the remote server actually signed don't depend on anyone's understanding at all. Freeze those, and a fix six months later can go back to the real thing instead of guessing at it from a record that was already wrong.
 
