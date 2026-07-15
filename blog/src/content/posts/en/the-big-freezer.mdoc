@@ -1,11 +1,11 @@
 ---
-title: Rolling your own ActivityPub? Do this one boring thing
-description: An unglamorous tip, if you're implementing ActivityPub yourself — freeze the raw bytes, both directions, before you touch them. It already brought a third of our lost remote posts back from the dead.
+title: Implementing ActivityPub yourself? How about a freezer?
+description: If you're implementing ActivityPub yourself, here's a small suggestion — a freezer for the raw bytes you send and receive, both directions, kept exactly as they were. It already brought a third of our lost remote posts back from the dead.
 date: 2026-07-14
 author: shiro_mudita
 ---
 
-Here's an unglamorous one, if you're implementing ActivityPub yourself: before anything else, freeze the raw bytes of every activity you send and receive, exactly as they were, before your code touches them. That's it. That's the whole tip.
+Here's a small suggestion, if you're implementing ActivityPub yourself: what about a freezer? Nothing fancy — just somewhere to keep the raw bytes of every activity you send and receive, exactly as they were, before your code ever touches them.
 
 sukhi reads every incoming ActivityPub activity once, turns it into a database row, and forgets it. A `Create` becomes a note row, a `Follow` becomes a follow row, and the raw bytes are gone the moment the row is written. If you're rolling your own implementation, you'll probably end up here too — your understanding of the spec, and of its edge cases, is at its worst the day you write the code, and gets fixed a dozen times after.
 
@@ -71,8 +71,8 @@ The bigger unfinished piece is general replay. `notify?: false` only separated o
 
 And rustfs itself currently runs on a single node, a single disk. It's a freezer that would lose everything in it to a power outage. Keeping the originals and making the freezer itself durable turned out to be two separate problems.
 
-## What it comes down to
+## So, a freezer?
 
-If you're building your own ActivityPub implementation, do the unglamorous thing: freeze the raw bytes you send and receive before your code ever touches them. A database row only ever holds what the code understood at the time it was written. Get the understanding wrong, and the row stays wrong until someone notices and fixes the code — but by then, the row is all that's left to fix. The raw bytes the remote server actually signed don't depend on anyone's understanding at all. Freeze those, and a fix six months later can go back to the real thing instead of guessing at it from a record that was already wrong.
+If you're building your own ActivityPub implementation, maybe give a freezer a try — somewhere to keep the raw bytes you send and receive before your code ever touches them. A database row only ever holds what the code understood at the time it was written. Get the understanding wrong, and the row stays wrong until someone notices and fixes the code — but by then, the row is all that's left to fix. The raw bytes the remote server actually signed don't depend on anyone's understanding at all. Freeze those, and a fix six months later can go back to the real thing instead of guessing at it from a record that was already wrong.
 
 That's what happened when a third of our notes came back. The code fix took an afternoon. What made the fix mean anything was the voice from that day, still sitting in the freezer, exactly as it arrived.
