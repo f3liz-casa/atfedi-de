@@ -37,7 +37,7 @@ So once a delivery lands, `delivery` drops an Oban job into the `oban_jobs` tabl
 
 Outbound gets one trick inbound doesn't need: the same post fans out to every follower's inbox, byte-identical except for the signature headers, which we don't store. Content-addressing folds that entire fan-out into a single object in rustfs — the index still gets one row per `(activity, inbox)` pair, but the bytes are written once.
 
-## Where the boring tip paid off
+## Where the freezer paid off
 
 A freezer nobody opens is just a warehouse. The point was to actually use it.
 
@@ -63,7 +63,7 @@ The DLQ's depth — how many cars are sitting on that siding — is one of the n
 
 ## Where this is still thin
 
-Being honest about what's left undone, since a recommendation with no caveats isn't one you should trust.
+Being honest about what's left undone — a freezer with no listed flaws isn't one you should trust.
 
 Oban's default job retention is 60 seconds. If an archive job itself fails and gets discarded, the only un-flushed copy of that body — the one thing it existed to protect — gets swept away with it. We could raise the retention, at the cost of Postgres memory on a box with 768MB total. That trade hasn't been made yet; it's a known gap, not an accidental one.
 
