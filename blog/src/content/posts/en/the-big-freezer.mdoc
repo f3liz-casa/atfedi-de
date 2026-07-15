@@ -41,7 +41,7 @@ Outbound gets one trick inbound doesn't need: the same post fans out to every fo
 
 A freezer nobody opens is just a warehouse. The point was to actually use it.
 
-`RebuildFromArchive` walks every archived `Create`, and where the database has no matching row and no matching `Delete` either, it recreates the note. If a `Delete` exists, the absence was intentional and stays that way. Reading the archive told us not just what was missing, but which of the missing was supposed to be missing — that's the part we didn't expect to get for free.
+`RebuildFromArchive` walks every archived `Create`, and where the database has no matching row and no matching `Delete` either, it recreates the note. If a `Delete` exists, the absence was intentional and stays that way. Reading the archive told us not just what was missing, but which of the missing was supposed to be missing — that's the part we didn't expect to get for free. Watching those posts actually reappear, readable again, was a genuinely good moment.
 
 Recreating a note runs through the exact same ingest path a live `Create` would — no separate code path to maintain, no risk of the rebuilt note drifting from what a fresh one would look like. One thing had to change: live ingest fires a mention notification, and firing "you were just mentioned" for a post from months ago would be its own small disaster. So we added a single switch, `notify?: false`, and exposed it as `reingest_for_rebuild` — the write path stays exactly as it is; only the notification gets peeled off. That one line was the one that actually mattered.
 
@@ -63,13 +63,7 @@ The DLQ's depth — how many cars are sitting on that siding — is one of the n
 
 ## Where this is still thin
 
-Being honest about what's left undone — a freezer with no listed flaws isn't one you should trust.
-
-Oban's default job retention is 60 seconds. If an archive job itself fails and gets discarded, the only un-flushed copy of that body — the one thing it existed to protect — gets swept away with it. We could raise the retention, at the cost of Postgres memory on a box with 768MB total. That trade hasn't been made yet; it's a known gap, not an accidental one.
-
-The bigger unfinished piece is general replay. `notify?: false` only separated one side effect — the notification — from one activity type — `Create`. Everything else still has its database write and its outward effects tangled together in the same function. Ingesting a `Follow` sends an `Accept` and backfills recent posts to the new follower in that same pass, so naively replaying every archived `Follow` today would re-send `Accept` to everyone who's ever followed us. What shipped is exactly the one seam we needed cut open today — not the general foundation that would let any activity type replay safely. If you're doing this yourself: keeping the originals is the part you can start today. Being able to safely rebuild from them is a separate project.
-
-And rustfs itself currently runs on a single node, a single disk. It's a freezer that would lose everything in it to a power outage. Keeping the originals and making the freezer itself durable turned out to be two separate problems.
+Being honest about what's left undone — a freezer with no listed flaws isn't one you should trust. Briefly: a failed archive job can still lose the one copy it was protecting (fixable by keeping jobs around longer, at the cost of Postgres memory on our 768MB box). `notify?: false` only made `Create` safe to replay — other activity types, like `Follow`, still tangle their database write with outward effects like sending `Accept`, so replaying them naively today would resend those too. And rustfs itself is a single node, a single disk, for now. Keeping the originals is the part that's done; making full use of them is still in progress.
 
 ## So, a freezer?
 
