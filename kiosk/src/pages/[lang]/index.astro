@@ -22,6 +22,8 @@ const t = {
     rack: 'On the rack',
     rackEmpty: 'The rack is filling. Come back soon.',
     older: 'Older papers',
+    shelf: 'Tagged',
+    allPapers: 'All papers',
     anyPrompt: 'Or read any address',
     go: 'Read',
     loading: 'Fetching…',
@@ -43,6 +45,8 @@ const t = {
     rack: '並んでいる新聞',
     rackEmpty: '棚はいま埋まっていくところ。またのぞいてください。',
     older: '古い新聞',
+    shelf: 'タグ',
+    allPapers: 'ぜんぶの新聞',
     anyPrompt: 'または、どの住所でも読む',
     go: '読む',
     loading: '取ってきています…',
@@ -64,6 +68,8 @@ const t = {
     rack: '놓여 있는 신문',
     rackEmpty: '가판대가 채워지는 중이에요. 곧 다시 들러 주세요.',
     older: '오래된 신문',
+    shelf: '태그',
+    allPapers: '전체 신문',
     anyPrompt: '또는, 어떤 주소든 읽기',
     go: '읽기',
     loading: '가져오는 중…',
@@ -139,6 +145,12 @@ const t = {
       <!-- The rack: papers gathered from the fediverse -->
       <section class="rack" aria-label={t.rack}>
         <h2 class="rack-label">{t.rack}</h2>
+        <!-- Shown only when the rack is narrowed to one shelf (?tag=…) -->
+        <p class="rack-shelf" hidden>
+          <span class="rack-shelf-label">{t.shelf}</span>
+          <span class="rack-tag"></span>
+          <a class="rack-shelf-all" href="?">{t.allPapers}</a>
+        </p>
         <p class="rack-empty" hidden>{t.rackEmpty}</p>
         <ul class="rack-list"></ul>
         <button type="button" class="rack-more" hidden>{t.older} →</button>
@@ -201,6 +213,14 @@ const t = {
   const RACK_PAGE = 12;
   let oldestShown = null;
   let loadingMore = false;
+  // One shelf, if the address asks for it (?tag=…). Null means the whole rack.
+  const shelfTag = new URLSearchParams(location.search).get('tag');
+  if (shelfTag) {
+    const shelf = document.querySelector('.rack-shelf');
+    const label = document.querySelector('.rack-shelf .rack-tag');
+    if (label) label.textContent = shelfTag;
+    if (shelf) shelf.hidden = false;
+  }
 
   function renderPaper(p) {
     const li = document.createElement('li');
@@ -220,6 +240,21 @@ const t = {
     if (p.langs && p.langs.length) bits.push(p.langs.map((l) => l.toUpperCase()).join(' '));
     meta.textContent = bits.join(' · ');
     li.append(a, meta);
+    // Tags are put on by hand from the console — a person saying what this one
+    // is about. Each is a link to its own shelf, so the rack can be narrowed
+    // without any state to keep: the address bar holds it.
+    if (p.tags && p.tags.length) {
+      const tags = document.createElement('p');
+      tags.className = 'rack-tags';
+      for (const tag of p.tags) {
+        const chip = document.createElement('a');
+        chip.className = 'rack-tag';
+        chip.href = `?tag=${encodeURIComponent(tag)}`;
+        chip.textContent = tag;
+        tags.append(chip);
+      }
+      li.append(tags);
+    }
     rackList.append(li);
     if (p.published) oldestShown = p.published;
   }
@@ -230,6 +265,7 @@ const t = {
     try {
       const q = new URLSearchParams({ limit: String(RACK_PAGE) });
       if (before) q.set('before', before);
+      if (shelfTag) q.set('tag', shelfTag);
       const res = await fetch(`/papers?${q}`);
       if (!res.ok) throw new Error('bad status');
       const { papers } = await res.json();
@@ -572,6 +608,43 @@ const t = {
   .kiosk-home .rack-meta {
     margin: var(--space-1) 0 0;
     font-size: var(--text-sm);
+    color: var(--color-text-muted);
+  }
+  /* Tags: put on by hand, so they sit quietly under a paper rather than
+     announcing themselves — a shelf label, not a headline. */
+  .kiosk-home .rack-tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-2);
+    margin: var(--space-2) 0 0;
+  }
+  .kiosk-home .rack-tag {
+    font-size: var(--text-sm);
+    line-height: 1.4;
+    padding: 0.05em 0.6em;
+    border-radius: 999px;
+    text-decoration: none;
+    color: var(--color-text-muted);
+    background: var(--color-surface, color-mix(in srgb, currentColor 7%, transparent));
+    border: 1px solid var(--color-border);
+  }
+  .kiosk-home .rack-tag:hover {
+    color: var(--color-text);
+  }
+  /* The "you are on one shelf" line, with the way back to the whole rack. */
+  .kiosk-home .rack-shelf {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: var(--space-2);
+    margin: 0 0 var(--space-4);
+    font-size: var(--text-sm);
+    color: var(--color-text-muted);
+  }
+  .kiosk-home .rack-shelf .rack-tag {
+    color: var(--color-text);
+  }
+  .kiosk-home .rack-shelf-all {
     color: var(--color-text-muted);
   }
   .kiosk-home .rack-more {

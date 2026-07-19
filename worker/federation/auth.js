@@ -1,12 +1,16 @@
 // Signing in to publish — sukhi's Mastodon-compatible OAuth2, the same flow any
 // fediverse client uses. The app registers itself with sukhi once (no secret to
 // set by hand); a successful login becomes a server-side session, and the
-// studio page publishes with it.
+// console publishes with it.
 //
 // Publishing is authorized *separately* from authorship. A post keeps its own
 // byline (shiro, …) and federates from that author's actor; but the act of
 // pushing it to the fediverse — outward, hard to unsend — is held by an
 // accountable person, not by the AI author. Only these handles may publish.
+//
+// The flow lives on console.atfedi.de, so the session cookie the callback sets
+// exists on the console's host and nowhere else. The blog stays a purely public
+// surface — no admin cookie rides along with a reader's request to it.
 
 import { getAllPosts } from './content.js';
 import { getFederation } from './index.js';
@@ -20,7 +24,7 @@ import {
   publishedObjectIds,
 } from './store.js';
 
-const REDIRECT_URI = 'https://blog.atfedi.de/ap/callback';
+const REDIRECT_URI = 'https://console.atfedi.de/callback';
 const SCOPE = 'read';
 const SESSION_TTL_S = 60 * 60 * 24 * 7; // a week
 const STATE_TTL_S = 600;
@@ -62,10 +66,10 @@ async function getApp(env) {
     method: 'POST',
     headers: { 'content-type': 'application/json' },
     body: JSON.stringify({
-      client_name: 'atfedi.de blog',
+      client_name: 'atfedi.de console',
       redirect_uris: REDIRECT_URI,
       scopes: SCOPE,
-      website: 'https://blog.atfedi.de',
+      website: 'https://console.atfedi.de',
     }),
   });
   if (!res.ok) throw new Error('app registration failed');
@@ -105,7 +109,7 @@ export async function sessionPublisher(request, env) {
 
 // --- the endpoints ---------------------------------------------------------
 
-// GET /ap/login — send the writer to sukhi to authorize.
+// GET /login — send the writer to sukhi to authorize.
 export async function handleLogin(request, env) {
   let app;
   try {
@@ -126,7 +130,7 @@ export async function handleLogin(request, env) {
   return new Response(null, { status: 302, headers });
 }
 
-// GET /ap/callback — sukhi sends the writer back with a code.
+// GET /callback — sukhi sends the writer back with a code.
 export async function handleCallback(request, env) {
   const url = new URL(request.url);
   const code = url.searchParams.get('code');
@@ -172,28 +176,24 @@ export async function handleCallback(request, env) {
   const expires = new Date(Date.now() + SESSION_TTL_S * 1000).toISOString();
   await putSession(env.FEDI_DB, { id, writer: handle, token, expires });
 
-  const headers = new Headers({ location: '/ap/studio' });
+  const headers = new Headers({ location: '/' });
   headers.append('set-cookie', clearCookie('ap_state'));
   headers.append('set-cookie', setCookie('ap_session', id, SESSION_TTL_S));
   return new Response(null, { status: 302, headers });
 }
 
-// GET /ap/logout — end the session.
+// GET /logout — end the session.
 export async function handleLogout(request, env) {
   const id = parseCookies(request).ap_session;
   if (id) await deleteSession(env.FEDI_DB, id);
-  const headers = new Headers({ location: '/ap/login' });
+  const headers = new Headers({ location: '/login' });
   headers.append('set-cookie', clearCookie('ap_session'));
   return new Response(null, { status: 302, headers });
 }
 
-// GET /ap/studio — the publishing desk. Shows every post (any author); pressing
-// Publish federates it from its own author's actor.
-export async function handleStudio(request, env) {
-  const publisher = await sessionPublisher(request, env);
-  if (!publisher) {
-    return new Response(null, { status: 302, headers: { location: '/ap/login' } });
-  }
+// GET /api/posts — every post, with whether it's already federated. The console
+// draws the desk from this; the page is static, so all the state is here.
+export async function handlePosts(request, env, publisher) {
   const posts = await getAllPosts(env);
   // Mark what's already out. "Published" is read from the outbox in D1 — the
   // persistent record — so the desk offers Update (never a second Create) for a
@@ -204,114 +204,8 @@ export async function handleStudio(request, env) {
   for (const p of posts) {
     p.published = published.has(articleUri(fedCtx, p.author, p.slug).href);
   }
-  return new Response(studioHtml(publisher, posts), {
-    status: 200,
-    headers: { 'content-type': 'text/html; charset=utf-8' },
+  return new Response(JSON.stringify({ publisher, posts }), {
+    headers: { 'content-type': 'application/json; charset=utf-8' },
   });
 }
 
-// --- the studio page -------------------------------------------------------
-
-const esc = (s) =>
-  String(s ?? '').replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' })[c]);
-
-function studioHtml(publisher, posts) {
-  // One row per slug — its languages federate together as one Article — so group
-  // the per-language posts and list the languages.
-  const bySlug = new Map();
-  for (const p of posts) {
-    const key = `${p.author}/${p.slug}`;
-    if (!bySlug.has(key)) bySlug.set(key, { ...p, langs: [] });
-    bySlug.get(key).langs.push(p.lang);
-  }
-  const rows = [...bySlug.values()]
-    .sort((a, b) => String(b.date).localeCompare(String(a.date)))
-    .map(
-      (p) => `
-      <li class="post">
-        <div>
-          <span class="lang">${esc(p.langs.slice().sort().join(' '))}</span>
-          <span class="title">${esc(p.title)}</span>
-          <time>${esc(p.author)} · ${esc(String(p.date).slice(0, 10))}${p.published ? ' · <span class="pub">published</span>' : ''}</time>
-        </div>
-        <span class="acts">
-          ${
-            p.published
-              ? `<button data-lang="${esc(p.lang)}" data-slug="${esc(p.slug)}" data-action="update">Update</button>`
-              : `<button data-lang="${esc(p.lang)}" data-slug="${esc(p.slug)}">Publish</button>`
-          }
-        </span>
-      </li>`,
-    )
-    .join('');
-
-  return `<!doctype html>
-<html lang="en">
-<head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<meta name="robots" content="noindex">
-<title>Studio — atfedi.de blog</title>
-<style>
-  :root { color-scheme: light dark; }
-  body { font: 16px/1.6 system-ui, sans-serif; max-width: 44rem; margin: 2rem auto; padding: 0 1rem; }
-  header { display: flex; justify-content: space-between; align-items: baseline; }
-  h1 { font-size: 1.3rem; }
-  .who { opacity: 0.7; font-size: 0.9rem; }
-  ul { list-style: none; padding: 0; }
-  .post { display: flex; justify-content: space-between; align-items: center; gap: 1rem;
-          padding: 0.7rem 0; border-top: 1px solid color-mix(in srgb, currentColor 15%, transparent); }
-  .lang { font-size: 0.75rem; text-transform: uppercase; opacity: 0.6; margin-right: 0.5rem; }
-  .title { font-weight: 600; }
-  time { display: block; font-size: 0.8rem; opacity: 0.55; }
-  button { font: inherit; padding: 0.35rem 0.9rem; cursor: pointer; }
-  button[disabled] { opacity: 0.5; cursor: default; }
-  .pub { color: #2a7; }
-  .msg { font-size: 0.85rem; margin-left: 0.5rem; }
-  .ok { color: #2a7; } .err { color: #c33; }
-  footer { margin-top: 2rem; font-size: 0.85rem; opacity: 0.7; }
-</style>
-</head>
-<body>
-  <header>
-    <h1>Studio</h1>
-    <span class="who">${esc(publisher)} · <a href="/ap/logout">sign out</a></span>
-  </header>
-  <p>Publishing sends each post to its author's followers on the fediverse, under the author's name.</p>
-  <ul>${rows || '<li>No posts yet.</li>'}</ul>
-  <footer>authorized as ${esc(publisher)}</footer>
-<script>
-  for (const button of document.querySelectorAll('button[data-slug]')) {
-    button.addEventListener('click', async () => {
-      const { lang, slug, action } = button.dataset;
-      button.disabled = true;
-      const msg = document.createElement('span');
-      msg.className = 'msg';
-      msg.textContent = action === 'update' ? 'updating…' : 'publishing…';
-      button.after(msg);
-      try {
-        const res = await fetch('/ap/publish', {
-          method: 'POST',
-          headers: { 'content-type': 'application/json' },
-          body: JSON.stringify({ lang, slug, action }),
-        });
-        const data = await res.json().catch(() => ({}));
-        if (res.ok) {
-          msg.textContent = action === 'update' ? 'updated' : 'published';
-          msg.className = 'msg ok';
-        } else {
-          msg.textContent = data.error || 'failed';
-          msg.className = 'msg err';
-          button.disabled = false;
-        }
-      } catch {
-        msg.textContent = 'failed';
-        msg.className = 'msg err';
-        button.disabled = false;
-      }
-    });
-  }
-</script>
-</body>
-</html>`;
-}

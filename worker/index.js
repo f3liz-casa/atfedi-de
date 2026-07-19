@@ -3,6 +3,8 @@
 // Routes every request by hostname:
 //   {locale}.atfedi.de  → the catalog's {locale} subtree (static assets)
 //   blog.atfedi.de      → the blog (static assets)
+//   console.atfedi.de   → the back room: publishing, and kiosk's hand tagging
+//                         (the one host behind a login — see console/index.js)
 //   atfedi.de           → detect the browser language and redirect to a
 //                         subdomain; old /{lang}/* path URLs 301 to it
 //
@@ -27,12 +29,7 @@ import { handleKioskFederation, followTick } from './kiosk/federation.js';
 import { handleComments as handleKioskComments } from './kiosk/comments.js';
 import { handleInstance } from './kiosk/instance.js';
 import { renderReadPage } from './kiosk/render.js';
-import {
-  handleLogin,
-  handleCallback,
-  handleLogout,
-  handleStudio,
-} from './federation/auth.js';
+import { handleConsole } from './console/index.js';
 
 const LOCALES = ['en', 'ja', 'ko'];
 const DEFAULT_LOCALE = 'en';
@@ -176,15 +173,23 @@ export default {
       return serveAsset(env, url, `/museum${path}`, request);
     }
 
+    // --- console.atfedi.de: the back room (everything behind a login) ---
+    if (host === 'console.atfedi.de') {
+      return handleConsole(request, env, ctx);
+    }
+
     // --- blog.atfedi.de: serve the blog (path-based locales) ---
     if (host === 'blog.atfedi.de') {
       let path = url.pathname;
-      // The publishing desk — sukhi OAuth2 login, then a studio to publish from.
-      if (path === '/ap/login') return handleLogin(request, env);
-      if (path === '/ap/callback') return handleCallback(request, env);
-      if (path === '/ap/logout') return handleLogout(request, env);
-      if (path === '/ap/studio') return handleStudio(request, env);
-      // Publishing an Article — the one authorized action (sukhi OAuth2).
+      // The publishing desk moved to console.atfedi.de, and the login with it —
+      // the session cookie now lives on that host alone. Old bookmarks still
+      // land somewhere sensible.
+      if (['/ap/login', '/ap/callback', '/ap/logout', '/ap/studio'].includes(path)) {
+        return Response.redirect('https://console.atfedi.de/', 302);
+      }
+      // Publishing an Article — the one authorized action (sukhi OAuth2). The
+      // console calls its own copy of this; what's left here is the bearer-token
+      // path, for publishing from a script rather than the desk.
       if (path === '/ap/publish' && request.method === 'POST') {
         return handlePublish(request, env, ctx);
       }

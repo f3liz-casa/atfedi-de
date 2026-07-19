@@ -39,6 +39,9 @@
     { "pattern": "blog.atfedi.de", "custom_domain": true },
     { "pattern": "kiosk.atfedi.de", "custom_domain": true },
     { "pattern": "danro.atfedi.de", "custom_domain": true },
-    { "pattern": "museum.atfedi.de", "custom_domain": true }
+    { "pattern": "museum.atfedi.de", "custom_domain": true },
+    // The back room — publishing, and kiosk's hand tagging. Everything on this
+    // host sits behind a sukhi login (see console/index.js).
+    { "pattern": "console.atfedi.de", "custom_domain": true }
   ]
 }

@@ -71,3 +71,21 @@ CREATE TABLE IF NOT EXISTS kiosk_following (
   follow_id  TEXT,               -- the Follow activity id (to match the Accept)
   created_at TEXT NOT NULL
 );
+
+-- Tags put on a paper by hand, from the console. The sweep gathers; a person
+-- says what a paper is about. Nothing infers these, so a tag means someone
+-- read enough to decide — which is the point.
+--
+-- Free-form text: the vocabulary is meant to settle by use rather than be
+-- declared up front. `tag` is stored already normalised (trimmed, lowercased,
+-- inner whitespace collapsed) so the same word typed twice is the same row;
+-- the paper/tag pair is the key, so tagging twice is quietly idempotent.
+CREATE TABLE IF NOT EXISTS kiosk_tags (
+  iri      TEXT NOT NULL,        -- the paper (kiosk_papers.iri)
+  tag      TEXT NOT NULL,        -- normalised tag text
+  added_by TEXT,                 -- the console handle that put it there
+  added_at TEXT NOT NULL,
+  PRIMARY KEY (iri, tag)
+);
+-- Readers filter the rack by tag, so that direction needs its own index.
+CREATE INDEX IF NOT EXISTS kiosk_tags_by_tag ON kiosk_tags (tag);
