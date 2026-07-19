@@ -41,8 +41,9 @@ CREATE TABLE IF NOT EXISTS kiosk_sweep (
 );
 CREATE INDEX IF NOT EXISTS kiosk_sweep_by_state ON kiosk_sweep (state);
 
--- Small key/value for the sweep's own state — notably 'horizon', the date the
--- backfill has reached back to.
+-- Small key/value for the sweep's own state — 'horizon' (the date the backfill
+-- has reached back to) and 'seeded_at' (when the sitemap was last re-read, so
+-- writers who joined since are picked up without polling the source hard).
 CREATE TABLE IF NOT EXISTS kiosk_state (
   k TEXT PRIMARY KEY,
   v TEXT

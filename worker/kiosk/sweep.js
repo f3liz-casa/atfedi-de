@@ -8,7 +8,8 @@
 // works.
 //
 // The trade is that an outbox mixes Articles in among many more Notes, so we
-// sweep gently: seed the account list once, then each cron tick walk a couple
+// sweep gently: seed the account list (and re-read it daily for new writers),
+// then each cron tick walk a couple
 // of accounts one page at a time, remembering the cursor, so a tick stays tiny
 // (kind to the source, and well under the Worker's subrequest limit) and the
 // backlog drains over many ticks. Upserts key on the Article's iri, so
@@ -30,6 +31,11 @@ const ACCOUNTS_PER_TICK = 3;
 const PAGES_PER_ACCOUNT = 2;
 // How far back the date frontier steps each time everyone has caught up.
 const STEP_DAYS = 30;
+// How often to re-read the sitemap for writers who joined (or newly posted)
+// since the last pass. The back-catalogue is seeded once; this keeps discovery
+// alive — a new writer becomes known here — without polling the source hard:
+// one small sitemap fetch a day.
+const RESEED_DAYS = 1;
 
 const nowIso = () => new Date().toISOString();
 const isoDaysAgo = (n) => new Date(Date.now() - n * 86400000).toISOString();
@@ -66,8 +72,13 @@ async function seedFromSitemap(env) {
     rows.push([`@${decodeURIComponent(m[1])}@${SOURCE_HOST}`, m[2]]);
   }
 
+  // Upsert: a writer we've never seen joins as 'pending'; one already known
+  // just gets their lastmod refreshed, so the freshness windows (freshen and the
+  // sweep's horizon) keep seeing who's actually posting. State is left alone — a
+  // re-seed must not rewind anyone's back-catalogue walk.
   const stmt = env.FEDI_DB.prepare(
-    "INSERT OR IGNORE INTO kiosk_sweep (handle, state, lastmod) VALUES (?, 'pending', ?)",
+    `INSERT INTO kiosk_sweep (handle, state, lastmod) VALUES (?, 'pending', ?)
+     ON CONFLICT(handle) DO UPDATE SET lastmod = excluded.lastmod`,
   );
   for (let i = 0; i < rows.length; i += 50) {
     await env.FEDI_DB.batch(rows.slice(i, i + 50).map((r) => stmt.bind(r[0], r[1])));
@@ -186,9 +197,18 @@ async function sweepToHorizon(env, ctx, row, horizon) {
 
 export async function sweepTick(env, ctx) {
   const db = env.FEDI_DB;
+  // Seed once from the sitemap, then re-read it every so often so writers who
+  // joined the source (or newly posted) since the last pass reach the rack too.
+  // Followed writers already push their new Articles here; this is only how
+  // someone we've never seen first becomes known.
   const { count } = await db.prepare('SELECT COUNT(*) AS count FROM kiosk_sweep').first();
+  const seededAt = await getState(env, 'seeded_at');
+  const reseedDue = !seededAt || seededAt < isoDaysAgo(RESEED_DAYS);
   let seeded = 0;
-  if (count === 0) seeded = await seedFromSitemap(env);
+  if (count === 0 || reseedDue) {
+    seeded = await seedFromSitemap(env);
+    await setState(env, 'seeded_at', nowIso());
+  }
 
   // The date frontier: the backfill gathers everyone's posts back to here.
   let horizon = await getState(env, 'horizon');
