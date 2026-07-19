@@ -1,0 +1,469 @@
+---
+// console.atfedi.de — the back room, one page.
+//
+// Two desks. The blog desk publishes a post to the fediverse (the same act the
+// old /ap/studio held). The kiosk desk puts tags on papers by hand — the sweep
+// decides what arrives, a person decides what it's about.
+//
+// The page ships no data: everything is drawn from /api/* on this host, which
+// the Worker only answers with a publisher session. So this file is layout and
+// manners; the truth lives one hop away.
+---
+
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="robots" content="noindex, nofollow" />
+    <title>console — atfedi.de</title>
+  </head>
+  <body>
+    <header>
+      <h1>console</h1>
+      <span class="who"><span id="who"></span> · <a href="/logout">sign out</a></span>
+    </header>
+
+    <nav class="desks">
+      <button data-desk="blog" class="on">blog</button>
+      <button data-desk="kiosk">kiosk</button>
+    </nav>
+
+    <section id="desk-blog">
+      <p class="lede">
+        Publishing sends a post to its author's followers, under the author's name. Every
+        language of a slug goes out as one Article.
+      </p>
+      <ul id="posts" class="rows"><li class="empty">Loading…</li></ul>
+    </section>
+
+    <section id="desk-kiosk" hidden>
+      <p class="lede">
+        Tags are put on by hand — nothing infers them. Free text: type what a paper is
+        about, and the vocabulary settles by use.
+      </p>
+      <div class="controls">
+        <label><input type="checkbox" id="only-untagged" /> only untagged</label>
+        <label>
+          shelf
+          <select id="tag-filter"><option value="">all</option></select>
+        </label>
+      </div>
+      <ul id="papers" class="rows"><li class="empty">Loading…</li></ul>
+      <button id="older" hidden>Older papers</button>
+    </section>
+
+    <style>
+      :root {
+        color-scheme: light dark;
+      }
+      body {
+        font: 16px/1.6 system-ui, sans-serif;
+        max-width: 48rem;
+        margin: 2rem auto;
+        padding: 0 1rem;
+      }
+      header {
+        display: flex;
+        justify-content: space-between;
+        align-items: baseline;
+        gap: 1rem;
+      }
+      h1 {
+        font-size: 1.3rem;
+        margin: 0;
+      }
+      .who {
+        opacity: 0.7;
+        font-size: 0.9rem;
+      }
+      .lede {
+        font-size: 0.9rem;
+        opacity: 0.75;
+      }
+      .desks {
+        display: flex;
+        gap: 0.5rem;
+        margin: 1.2rem 0 0.5rem;
+        border-bottom: 1px solid color-mix(in srgb, currentColor 15%, transparent);
+      }
+      .desks button {
+        font: inherit;
+        background: none;
+        border: 0;
+        border-bottom: 2px solid transparent;
+        padding: 0.4rem 0.6rem;
+        cursor: pointer;
+        opacity: 0.6;
+      }
+      .desks button.on {
+        opacity: 1;
+        border-bottom-color: currentColor;
+      }
+      .controls {
+        display: flex;
+        gap: 1.2rem;
+        align-items: center;
+        font-size: 0.9rem;
+        flex-wrap: wrap;
+      }
+      .rows {
+        list-style: none;
+        padding: 0;
+      }
+      .row {
+        padding: 0.7rem 0;
+        border-top: 1px solid color-mix(in srgb, currentColor 15%, transparent);
+      }
+      .line {
+        display: flex;
+        justify-content: space-between;
+        align-items: baseline;
+        gap: 1rem;
+      }
+      .title {
+        font-weight: 600;
+      }
+      .meta {
+        display: block;
+        font-size: 0.8rem;
+        opacity: 0.55;
+      }
+      .lang {
+        font-size: 0.75rem;
+        text-transform: uppercase;
+        opacity: 0.6;
+        margin-right: 0.5rem;
+      }
+      button {
+        font: inherit;
+        padding: 0.35rem 0.9rem;
+        cursor: pointer;
+      }
+      button[disabled] {
+        opacity: 0.5;
+        cursor: default;
+      }
+      .pub {
+        color: #2a7;
+      }
+      .msg {
+        font-size: 0.85rem;
+        margin-left: 0.5rem;
+      }
+      .ok {
+        color: #2a7;
+      }
+      .err {
+        color: #c33;
+      }
+      .tags {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.4rem;
+        align-items: center;
+        margin-top: 0.5rem;
+      }
+      .tag {
+        font-size: 0.8rem;
+        padding: 0.1rem 0.5rem;
+        border-radius: 1rem;
+        background: color-mix(in srgb, currentColor 10%, transparent);
+      }
+      .tag button {
+        font: inherit;
+        background: none;
+        border: 0;
+        padding: 0 0 0 0.3rem;
+        opacity: 0.6;
+        cursor: pointer;
+      }
+      .tags input {
+        font: inherit;
+        font-size: 0.8rem;
+        padding: 0.15rem 0.5rem;
+        width: 10rem;
+      }
+      .empty {
+        opacity: 0.6;
+        padding: 0.7rem 0;
+      }
+    </style>
+
+    <script>
+      // --- small helpers ---------------------------------------------------
+
+      const el = (tag: string, cls?: string, text?: string) => {
+        const n = document.createElement(tag);
+        if (cls) n.className = cls;
+        // Everything below is remote text (titles, authors, tags), so it goes in
+        // as text and never as markup.
+        if (text != null) n.textContent = text;
+        return n;
+      };
+
+      const say = (after: Element, text: string, kind: string) => {
+        const old = after.parentElement?.querySelector('.msg');
+        if (old) old.remove();
+        const m = el('span', `msg ${kind}`, text);
+        after.after(m);
+        return m;
+      };
+
+      async function api(path: string, init?: RequestInit) {
+        const res = await fetch(path, init);
+        const data = await res.json().catch(() => ({}) as any);
+        if (!res.ok) throw new Error(data?.error || `failed (${res.status})`);
+        return data;
+      }
+
+      // --- the blog desk ---------------------------------------------------
+
+      async function loadPosts() {
+        const list = document.getElementById('posts')!;
+        let posts: any[];
+        try {
+          const data = await api('/api/posts');
+          posts = data.posts;
+          // The desk also says who's holding it — publishing goes out under an
+          // author's name, so it's worth seeing whose hand is on the button.
+          document.getElementById('who')!.textContent = data.publisher ?? '';
+        } catch (e: any) {
+          list.replaceChildren(el('li', 'empty err', e.message));
+          return;
+        }
+        // One row per slug — its languages federate together as one Article.
+        const bySlug = new Map<string, any>();
+        for (const p of posts) {
+          const key = `${p.author}/${p.slug}`;
+          if (!bySlug.has(key)) bySlug.set(key, { ...p, langs: [] });
+          bySlug.get(key).langs.push(p.lang);
+        }
+        const rows = [...bySlug.values()].sort((a, b) =>
+          String(b.date).localeCompare(String(a.date)),
+        );
+        if (rows.length === 0) {
+          list.replaceChildren(el('li', 'empty', 'No posts yet.'));
+          return;
+        }
+        list.replaceChildren(...rows.map(postRow));
+      }
+
+      function postRow(p: any) {
+        const li = el('li', 'row');
+        const line = el('div', 'line');
+
+        const left = el('div');
+        const head = el('div');
+        head.append(el('span', 'lang', p.langs.slice().sort().join(' ')));
+        head.append(el('span', 'title', p.title));
+        left.append(head);
+        const meta = el(
+          'span',
+          'meta',
+          `${p.author} · ${String(p.date).slice(0, 10)}`,
+        );
+        if (p.published) {
+          meta.append(' · ');
+          meta.append(el('span', 'pub', 'published'));
+        }
+        left.append(meta);
+
+        const action = p.published ? 'update' : 'create';
+        const btn = el('button', undefined, p.published ? 'Update' : 'Publish');
+        btn.addEventListener('click', async () => {
+          (btn as HTMLButtonElement).disabled = true;
+          const m = say(btn, p.published ? 'updating…' : 'publishing…', '');
+          try {
+            await api('/api/publish', {
+              method: 'POST',
+              headers: { 'content-type': 'application/json' },
+              body: JSON.stringify({ lang: p.langs[0], slug: p.slug, action }),
+            });
+            m.textContent = p.published ? 'updated' : 'published';
+            m.className = 'msg ok';
+          } catch (e: any) {
+            m.textContent = e.message;
+            m.className = 'msg err';
+            (btn as HTMLButtonElement).disabled = false;
+          }
+        });
+
+        line.append(left, btn);
+        li.append(line);
+        return li;
+      }
+
+      // --- the kiosk desk --------------------------------------------------
+
+      // The rack is paged by the published timestamp of the last row shown.
+      let cursor: string | null = null;
+
+      function rackQuery(before: string | null) {
+        const q = new URLSearchParams({ limit: '24' });
+        if (before) q.set('before', before);
+        if ((document.getElementById('only-untagged') as HTMLInputElement).checked) {
+          q.set('untagged', '1');
+        }
+        const shelf = (document.getElementById('tag-filter') as HTMLSelectElement).value;
+        if (shelf) q.set('tag', shelf);
+        return `/api/papers?${q}`;
+      }
+
+      async function loadPapers(append = false) {
+        const list = document.getElementById('papers')!;
+        const older = document.getElementById('older') as HTMLButtonElement;
+        if (!append) {
+          cursor = null;
+          list.replaceChildren(el('li', 'empty', 'Loading…'));
+        }
+        let papers: any[];
+        try {
+          papers = (await api(rackQuery(cursor))).papers;
+        } catch (e: any) {
+          list.replaceChildren(el('li', 'empty err', e.message));
+          return;
+        }
+        const rows = papers.map(paperRow);
+        if (append) list.append(...rows);
+        else if (rows.length === 0) list.replaceChildren(el('li', 'empty', 'Nothing here.'));
+        else list.replaceChildren(...rows);
+
+        cursor = papers.length ? papers[papers.length - 1].published : null;
+        // A short page means the rack ended; no point offering more.
+        older.hidden = papers.length < 24;
+      }
+
+      function paperRow(p: any) {
+        const li = el('li', 'row');
+
+        const link = el('a', 'title', p.title || p.url) as HTMLAnchorElement;
+        link.href = p.url;
+        link.target = '_blank';
+        link.rel = 'noopener noreferrer';
+        li.append(link);
+        li.append(
+          el(
+            'span',
+            'meta',
+            `${p.author_name || p.author || ''} · ${String(p.published ?? '').slice(0, 10)}`,
+          ),
+        );
+
+        const tags = el('div', 'tags');
+        const draw = (list: string[]) => {
+          tags.replaceChildren(...list.map((t) => tagChip(p.iri, t, draw, list)));
+          tags.append(tagInput(p.iri, draw, list));
+        };
+        draw(p.tags ?? []);
+        li.append(tags);
+        return li;
+      }
+
+      function tagChip(iri: string, tag: string, draw: (l: string[]) => void, list: string[]) {
+        const chip = el('span', 'tag', tag);
+        const x = el('button', undefined, '×');
+        x.title = `remove "${tag}"`;
+        x.addEventListener('click', async () => {
+          (x as HTMLButtonElement).disabled = true;
+          try {
+            await api('/api/tags', {
+              method: 'DELETE',
+              headers: { 'content-type': 'application/json' },
+              body: JSON.stringify({ iri, tag }),
+            });
+            draw(list.filter((t) => t !== tag));
+            loadTagFilter();
+          } catch {
+            (x as HTMLButtonElement).disabled = false;
+          }
+        });
+        chip.append(x);
+        return chip;
+      }
+
+      function tagInput(iri: string, draw: (l: string[]) => void, list: string[]) {
+        const input = el('input') as HTMLInputElement;
+        input.placeholder = '+ tag';
+        input.setAttribute('list', 'known-tags');
+        input.addEventListener('keydown', async (e) => {
+          if ((e as KeyboardEvent).key !== 'Enter') return;
+          const value = input.value.trim();
+          if (!value) return;
+          input.disabled = true;
+          try {
+            const { tag } = await api('/api/tags', {
+              method: 'POST',
+              headers: { 'content-type': 'application/json' },
+              body: JSON.stringify({ iri, tag: value }),
+            });
+            // Redraw from the normalised tag the Worker actually stored, not
+            // from what was typed — so the page shows what's really there.
+            draw(list.includes(tag) ? list : [...list, tag].sort());
+            loadTagFilter();
+          } catch (e: any) {
+            input.disabled = false;
+            say(input, e.message, 'err');
+          }
+        });
+        return input;
+      }
+
+      // The tags already in use — offered as suggestions, and as the shelf list.
+      async function loadTagFilter() {
+        let tags: any[];
+        try {
+          tags = (await api('/api/tags')).tags;
+        } catch {
+          return;
+        }
+        const select = document.getElementById('tag-filter') as HTMLSelectElement;
+        const chosen = select.value;
+        const all = el('option', undefined, 'all') as HTMLOptionElement;
+        all.value = '';
+        select.replaceChildren(
+          all,
+          ...tags.map((t) => {
+            const o = el('option', undefined, `${t.tag} (${t.count})`) as HTMLOptionElement;
+            o.value = t.tag;
+            return o;
+          }),
+        );
+        select.value = chosen;
+
+        let datalist = document.getElementById('known-tags');
+        if (!datalist) {
+          datalist = el('datalist');
+          datalist.id = 'known-tags';
+          document.body.append(datalist);
+        }
+        datalist.replaceChildren(
+          ...tags.map((t) => {
+            const o = el('option') as HTMLOptionElement;
+            o.value = t.tag;
+            return o;
+          }),
+        );
+      }
+
+      // --- wiring ----------------------------------------------------------
+
+      for (const b of document.querySelectorAll<HTMLButtonElement>('.desks button')) {
+        b.addEventListener('click', () => {
+          for (const other of document.querySelectorAll('.desks button')) {
+            other.classList.toggle('on', other === b);
+          }
+          document.getElementById('desk-blog')!.hidden = b.dataset.desk !== 'blog';
+          document.getElementById('desk-kiosk')!.hidden = b.dataset.desk !== 'kiosk';
+        });
+      }
+
+      document.getElementById('only-untagged')!.addEventListener('change', () => loadPapers());
+      document.getElementById('tag-filter')!.addEventListener('change', () => loadPapers());
+      document.getElementById('older')!.addEventListener('click', () => loadPapers(true));
+
+      loadPosts();
+      loadTagFilter().then(() => loadPapers());
+    </script>
+  </body>
+</html>
