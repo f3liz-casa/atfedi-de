@@ -8,6 +8,8 @@
     "check": "astro check"
   },
   "dependencies": {
+    "@atfedi/shared": "*",
+    "@fontsource-variable/source-sans-3": "^5.2.9",
     "astro": "^6.3.6"
   },
   "devDependencies": {

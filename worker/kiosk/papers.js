@@ -6,6 +6,17 @@
 
 import { tagsForMany } from './tags.js';
 
+/** How many papers nobody has tagged yet — the console's work left to do. */
+export async function countUntagged(db) {
+  const row = await db
+    .prepare(
+      `SELECT COUNT(*) AS n FROM kiosk_papers p
+       WHERE NOT EXISTS (SELECT 1 FROM kiosk_tags u WHERE u.iri = p.iri)`,
+    )
+    .first();
+  return row?.n ?? 0;
+}
+
 export async function handlePapers(request, env) {
   const url = new URL(request.url);
   const limit = Math.min(Number(url.searchParams.get('limit')) || 24, 100);
