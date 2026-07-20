@@ -18,7 +18,7 @@ import {
   sessionPublisher,
 } from '../federation/auth.js';
 import { handlePublish } from '../federation/publish.js';
-import { handlePapers } from '../kiosk/papers.js';
+import { handlePapers, countUntagged } from '../kiosk/papers.js';
 import { addTag, removeTag, listTags } from '../kiosk/tags.js';
 
 const json = (obj, status = 200) =>
@@ -33,7 +33,13 @@ const toLogin = () => new Response(null, { status: 302, headers: { location: '/l
 // vocabulary settles by use, so the only rule is what normalizeTag enforces.
 async function handleTags(request, env, publisher) {
   if (request.method === 'GET') {
-    return json({ tags: await listTags(env.FEDI_DB) });
+    // The count rides along with the tag list because the two change together:
+    // the console re-reads this after every tag it puts on, which is exactly
+    // when "how much is left" moves.
+    return json({
+      tags: await listTags(env.FEDI_DB),
+      untagged: await countUntagged(env.FEDI_DB),
+    });
   }
   const { iri, tag } = (await request.json().catch(() => ({}))) ?? {};
   if (!iri || !tag) return json({ error: 'iri and tag are required' }, 400);

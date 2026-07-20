@@ -1,13 +1,20 @@
 ---
 // console.atfedi.de — the back room, one page.
 //
-// Two desks. The blog desk publishes a post to the fediverse (the same act the
-// old /ap/studio held). The kiosk desk puts tags on papers by hand — the sweep
-// decides what arrives, a person decides what it's about.
+// Two desks with opposite weights. The blog desk sends a post to strangers and
+// can't unsend it. The kiosk desk puts a word on a card and can take it off
+// again. A panel that draws them identically would be lying, so the page
+// spends its only colour on the first one: the house's rust marks what leaves
+// the building, and the tagging desk stays entirely in ink.
 //
-// The page ships no data: everything is drawn from /api/* on this host, which
-// the Worker only answers with a publisher session. So this file is layout and
-// manners; the truth lives one hop away.
+// The page ships no data — everything comes from /api/* on this host, which
+// the Worker answers only with a publisher session.
+
+// The family's palette, scale, and reset. No CJK faces: this room is English
+// only, so the Latin variable face is the whole type budget.
+import '@atfedi/shared/styles/tokens.css';
+import '@atfedi/shared/styles/base.css';
+import '@fontsource-variable/source-sans-3';
 ---
 
 <!doctype html>
@@ -19,174 +26,527 @@
     <title>console — atfedi.de</title>
   </head>
   <body>
-    <header>
-      <h1>console</h1>
-      <span class="who"><span id="who"></span> · <a href="/logout">sign out</a></span>
-    </header>
+    <div class="room">
+      <header class="room-head">
+        <h1 class="room-name">console</h1>
+        <p class="room-who">
+          <span class="mono" id="who"></span>
+          <a href="/logout">sign out</a>
+        </p>
+      </header>
 
-    <nav class="desks">
-      <button data-desk="blog" class="on">blog</button>
-      <button data-desk="kiosk">kiosk</button>
-    </nav>
+      <!-- Navigation doubles as the status board: each desk carries what's
+           waiting on it, so the first glance answers "what needs me". -->
+      <nav class="desks" aria-label="Desks">
+        <button type="button" class="desk" data-desk="blog" aria-pressed="true">
+          <span class="desk-name">blog</span>
+          <span class="desk-count mono" id="count-blog"></span>
+        </button>
+        <button type="button" class="desk" data-desk="kiosk" aria-pressed="false">
+          <span class="desk-name">kiosk</span>
+          <span class="desk-count mono" id="count-kiosk"></span>
+        </button>
+      </nav>
 
-    <section id="desk-blog">
-      <p class="lede">
-        Publishing sends a post to its author's followers, under the author's name. Every
-        language of a slug goes out as one Article.
-      </p>
-      <ul id="posts" class="rows"><li class="empty">Loading…</li></ul>
-    </section>
+      <section id="desk-blog" class="desk-panel">
+        <p class="note">
+          Publishing sends a post to its author's followers, under the author's name.
+          Every language of a slug goes out as one Article.
+        </p>
+        <ul id="posts" class="rows"><li class="empty">Loading…</li></ul>
+      </section>
 
-    <section id="desk-kiosk" hidden>
-      <p class="lede">
-        Tags are put on by hand — nothing infers them. Free text: type what a paper is
-        about, and the vocabulary settles by use.
-      </p>
-      <div class="controls">
-        <label><input type="checkbox" id="only-untagged" /> only untagged</label>
-        <label>
-          shelf
-          <select id="tag-filter"><option value="">all</option></select>
-        </label>
-      </div>
-      <ul id="papers" class="rows"><li class="empty">Loading…</li></ul>
-      <button id="older" hidden>Older papers</button>
-    </section>
+      <section id="desk-kiosk" class="desk-panel" hidden>
+        <p class="note">
+          Tags are put on by hand — nothing infers them. Type what a paper is about;
+          the vocabulary settles by use.
+        </p>
+        <div class="controls">
+          <div class="seg" role="group" aria-label="Which papers">
+            <button type="button" class="seg-btn" data-scope="all" aria-pressed="true">
+              All
+            </button>
+            <button type="button" class="seg-btn" data-scope="untagged" aria-pressed="false">
+              Needs a tag
+            </button>
+          </div>
+          <label class="pick">
+            Tagged
+            <select id="tag-filter" class="mono"><option value="">any</option></select>
+          </label>
+        </div>
+        <ul id="papers" class="rows"><li class="empty">Loading…</li></ul>
+        <button type="button" id="older" class="more" hidden>Older papers</button>
+      </section>
+    </div>
 
-    <style>
+    <!-- Global, not scoped: both desks build their rows client-side (from
+         /api/posts and /api/papers), and elements made by createElement never
+         carry Astro's scoping attribute — so scoped rules would style the
+         static shell and skip every button, tag and input inside it. Same
+         reason kiosk's rack styles are global. -->
+    <style is:global>
+      /* The room reuses the family's paper and scale; what's its own is the
+         density (this is a workbench, not a reading page) and one rule about
+         colour, below. */
       :root {
-        color-scheme: light dark;
+        /* The house keeps no decorative accent — colour is functional. This
+           room borrows the build lane's rust for a single meaning of its own:
+           THIS LEAVES THE BUILDING. It is the only colour on the page, so the
+           irreversible act is the one thing the eye lands on. */
+        --color-out: var(--color-build);
+        --mono:
+          ui-monospace, SFMono-Regular, 'SF Mono', Menlo, Consolas, monospace;
       }
-      body {
-        font: 16px/1.6 system-ui, sans-serif;
-        max-width: 48rem;
-        margin: 2rem auto;
-        padding: 0 1rem;
+
+      .room {
+        max-width: 46rem;
+        margin: 0 auto;
+        padding: var(--space-8) var(--space-4) var(--space-16);
       }
-      header {
+
+      /* Values you operate on — handles, dates, tags — are set apart from
+         prose, because they're data rather than sentences. */
+      .mono {
+        font-family: var(--mono);
+        font-size: 0.9em;
+        font-variant-numeric: tabular-nums;
+      }
+
+      /* --- the room's header --- */
+
+      .room-head {
         display: flex;
         justify-content: space-between;
         align-items: baseline;
-        gap: 1rem;
+        gap: var(--space-4);
+        flex-wrap: wrap;
+        padding-bottom: var(--space-4);
+        border-bottom: 1px solid var(--color-border);
       }
-      h1 {
-        font-size: 1.3rem;
-        margin: 0;
+
+      .room-name {
+        font-size: var(--text-xl);
+        letter-spacing: -0.01em;
       }
-      .who {
-        opacity: 0.7;
-        font-size: 0.9rem;
+
+      .room-who {
+        display: flex;
+        gap: var(--space-3);
+        align-items: baseline;
+        font-size: var(--text-sm);
+        color: var(--color-text-muted);
       }
-      .lede {
-        font-size: 0.9rem;
-        opacity: 0.75;
+
+      .room-who a {
+        color: var(--color-text-muted);
+        text-underline-offset: 0.16em;
       }
+
+      .room-who a:hover {
+        color: var(--color-text);
+      }
+
+      /* --- the desks --- */
+
       .desks {
         display: flex;
-        gap: 0.5rem;
-        margin: 1.2rem 0 0.5rem;
-        border-bottom: 1px solid color-mix(in srgb, currentColor 15%, transparent);
+        gap: var(--space-6);
+        margin: var(--space-6) 0 var(--space-8);
       }
-      .desks button {
+
+      .desk {
+        display: flex;
+        align-items: baseline;
+        gap: var(--space-2);
+        padding: 0;
         font: inherit;
         background: none;
-        border: 0;
-        border-bottom: 2px solid transparent;
-        padding: 0.4rem 0.6rem;
+        border: none;
         cursor: pointer;
-        opacity: 0.6;
+        color: var(--color-text-muted);
       }
-      .desks button.on {
-        opacity: 1;
-        border-bottom-color: currentColor;
+
+      .desk[aria-pressed='true'] {
+        color: var(--color-text);
       }
-      .controls {
-        display: flex;
-        gap: 1.2rem;
-        align-items: center;
-        font-size: 0.9rem;
-        flex-wrap: wrap;
+
+      .desk-name {
+        font-size: var(--text-lg);
+        font-weight: 600;
       }
+
+      /* The count is the desk's workload; it disappears at zero rather than
+         showing a 0, so a quiet desk simply looks quiet. */
+      .desk-count {
+        padding: 0 var(--space-2);
+        border: 1px solid var(--color-border-strong);
+        border-radius: 999px;
+        font-size: var(--text-sm);
+        color: var(--color-text-muted);
+      }
+
+      .desk-count:empty {
+        display: none;
+      }
+
+      .note {
+        max-width: var(--measure);
+        margin-bottom: var(--space-6);
+        font-size: var(--text-sm);
+        color: var(--color-text-muted);
+      }
+
       .rows {
         list-style: none;
         padding: 0;
       }
-      .row {
-        padding: 0.7rem 0;
-        border-top: 1px solid color-mix(in srgb, currentColor 15%, transparent);
+
+      .empty {
+        padding: var(--space-6) 0;
+        color: var(--color-text-muted);
+        font-size: var(--text-sm);
       }
-      .line {
+
+      /* Something went wrong reads as ink against the muted text around it.
+         It deliberately does NOT borrow the rust: that colour means "this
+         leaves the building", and a failed fetch doesn't. */
+      .empty.is-err {
+        color: var(--color-text);
+      }
+
+      /* --- the blog desk: rows carry a publish edge --- */
+
+      .post {
         display: flex;
         justify-content: space-between;
-        align-items: baseline;
-        gap: 1rem;
+        align-items: center;
+        gap: var(--space-4);
+        /* room for the edge */
+        padding: var(--space-4) 0 var(--space-4) var(--space-4);
+        border-top: 1px solid var(--color-border);
+        position: relative;
       }
-      .title {
+
+      .post:first-child {
+        border-top: none;
+      }
+
+      /* THE SIGNATURE. A post is either out in the world or it isn't, and that
+         is the most important fact on this desk — so it's structural, not a
+         word in the metadata. Scan the left column to see what has escaped. */
+      .post::before {
+        content: '';
+        position: absolute;
+        inset: var(--space-3) auto var(--space-3) 0;
+        width: 3px;
+        border-radius: 999px;
+        background: transparent;
+      }
+
+      .post[data-out='true']::before {
+        background: var(--color-out);
+      }
+
+      .post-title {
         font-weight: 600;
+        line-height: 1.3;
+        text-wrap: balance;
       }
-      .meta {
-        display: block;
-        font-size: 0.8rem;
-        opacity: 0.55;
+
+      .post-meta {
+        margin-top: var(--space-1);
+        font-size: var(--text-sm);
+        color: var(--color-text-muted);
       }
-      .lang {
-        font-size: 0.75rem;
+
+      .langs {
         text-transform: uppercase;
-        opacity: 0.6;
-        margin-right: 0.5rem;
+        letter-spacing: 0.06em;
       }
-      button {
+
+      /* Publish is filled; Update is outlined. A first send and a re-send are
+         not the same act, and the buttons shouldn't claim they are. */
+      .act {
+        flex: none;
+        padding: var(--space-2) var(--space-4);
         font: inherit;
-        padding: 0.35rem 0.9rem;
+        font-size: var(--text-sm);
+        border-radius: var(--radius);
         cursor: pointer;
       }
-      button[disabled] {
+
+      .act-publish {
+        color: var(--color-surface);
+        background: var(--color-out);
+        border: 1px solid var(--color-out);
+      }
+
+      .act-update {
+        color: var(--color-text);
+        background: var(--color-surface);
+        border: 1px solid var(--color-border-strong);
+      }
+
+      .act-publish:hover:not([disabled]) {
+        filter: brightness(0.94);
+      }
+
+      .act-update:hover:not([disabled]) {
+        border-color: var(--color-text);
+      }
+
+      .act[disabled] {
         opacity: 0.5;
         cursor: default;
       }
-      .pub {
-        color: #2a7;
-      }
+
       .msg {
-        font-size: 0.85rem;
-        margin-left: 0.5rem;
+        display: block;
+        margin-top: var(--space-1);
+        font-size: var(--text-sm);
+        color: var(--color-text-muted);
+        text-align: right;
       }
-      .ok {
-        color: #2a7;
+
+      .msg.is-err {
+        color: var(--color-text);
       }
-      .err {
-        color: #c33;
-      }
-      .tags {
+
+      /* --- the kiosk desk: entirely in ink, because tagging undoes --- */
+
+      .controls {
         display: flex;
-        flex-wrap: wrap;
-        gap: 0.4rem;
+        justify-content: space-between;
         align-items: center;
-        margin-top: 0.5rem;
+        gap: var(--space-4);
+        flex-wrap: wrap;
+        margin-bottom: var(--space-4);
+        font-size: var(--text-sm);
+        color: var(--color-text-muted);
       }
-      .tag {
-        font-size: 0.8rem;
-        padding: 0.1rem 0.5rem;
-        border-radius: 1rem;
-        background: color-mix(in srgb, currentColor 10%, transparent);
+
+      .seg {
+        display: flex;
+        border: 1px solid var(--color-border-strong);
+        border-radius: var(--radius);
+        overflow: hidden;
       }
-      .tag button {
+
+      .seg-btn {
+        padding: var(--space-1) var(--space-3);
         font: inherit;
-        background: none;
-        border: 0;
-        padding: 0 0 0 0.3rem;
-        opacity: 0.6;
+        font-size: var(--text-sm);
+        color: var(--color-text-muted);
+        background: var(--color-surface);
+        border: none;
         cursor: pointer;
       }
-      .tags input {
-        font: inherit;
-        font-size: 0.8rem;
-        padding: 0.15rem 0.5rem;
-        width: 10rem;
+
+      .seg-btn + .seg-btn {
+        border-left: 1px solid var(--color-border);
       }
-      .empty {
-        opacity: 0.6;
-        padding: 0.7rem 0;
+
+      .seg-btn[aria-pressed='true'] {
+        color: var(--color-surface);
+        background: var(--color-text);
+      }
+
+      .pick {
+        display: flex;
+        align-items: center;
+        gap: var(--space-2);
+      }
+
+      .pick select {
+        font-family: var(--mono);
+        font-size: var(--text-sm);
+        padding: var(--space-1) var(--space-2);
+        color: var(--color-text);
+        background: var(--color-surface);
+        border: 1px solid var(--color-border-strong);
+        border-radius: var(--radius);
+      }
+
+      .paper {
+        padding: var(--space-4) 0;
+        border-top: 1px solid var(--color-border);
+      }
+
+      .paper:first-child {
+        border-top: none;
+      }
+
+      .paper-title {
+        display: block;
+        font-weight: 600;
+        line-height: 1.3;
+        color: var(--color-text);
+        text-decoration: none;
+        text-wrap: balance;
+      }
+
+      .paper-title:hover {
+        text-decoration: underline;
+        text-underline-offset: 2px;
+      }
+
+      .paper-meta {
+        margin-top: var(--space-1);
+        font-size: var(--text-sm);
+        color: var(--color-text-muted);
+      }
+
+      .tagrow {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        gap: var(--space-2);
+        margin-top: var(--space-3);
+      }
+
+      .tag {
+        display: inline-flex;
+        align-items: center;
+        gap: var(--space-1);
+        padding: 0.1em 0.5em;
+        background: var(--color-surface);
+        border: 1px solid var(--color-border-strong);
+        border-radius: var(--radius-sm);
+        animation: tag-in 140ms ease-out;
+      }
+
+      @keyframes tag-in {
+        from {
+          opacity: 0;
+          transform: translateY(2px);
+        }
+      }
+
+      /* On the row, not yet acknowledged by the server. Faint rather than
+         busy — a spinner would make a 60ms round trip look like an event. */
+      .tag.is-pending {
+        opacity: 0.5;
+      }
+
+      .tag-off {
+        padding: 0;
+        font: inherit;
+        line-height: 1;
+        color: var(--color-text-muted);
+        background: none;
+        border: none;
+        cursor: pointer;
+      }
+
+      .tag-off:hover {
+        color: var(--color-text);
+      }
+
+      .tag-entry {
+        position: relative;
+      }
+
+      .tag-add {
+        width: 9rem;
+        padding: 0.15em 0.5em;
+        font-family: var(--mono);
+        font-size: 0.9em;
+        color: var(--color-text);
+        background: transparent;
+        border: 1px dashed var(--color-border-strong);
+        border-radius: var(--radius-sm);
+      }
+
+      .tag-add:hover,
+      .tag-add:focus {
+        background: var(--color-surface);
+        border-style: solid;
+      }
+
+      .tag-add::placeholder {
+        color: var(--color-text-muted);
+      }
+
+      /* Words already in use, offered as you type. The vocabulary is meant to
+         settle by use, so seeing it is how that happens — an empty box shows
+         the whole of it. */
+      .suggest {
+        position: absolute;
+        z-index: 2;
+        top: calc(100% + 2px);
+        left: 0;
+        min-width: 11rem;
+        margin: 0;
+        padding: var(--space-1);
+        list-style: none;
+        background: var(--color-surface);
+        border: 1px solid var(--color-border-strong);
+        border-radius: var(--radius);
+      }
+
+      .suggest-item {
+        display: flex;
+        justify-content: space-between;
+        gap: var(--space-4);
+        padding: 0.15em var(--space-2);
+        border-radius: var(--radius-sm);
+        cursor: pointer;
+      }
+
+      .suggest-item.is-active,
+      .suggest-item:hover {
+        color: var(--color-surface);
+        background: var(--color-text);
+      }
+
+      /* How many papers already carry the word — the reason to reuse it. */
+      .suggest-count {
+        font-size: var(--text-sm);
+        color: var(--color-text-muted);
+      }
+
+      .suggest-item.is-active .suggest-count,
+      .suggest-item:hover .suggest-count {
+        color: var(--color-border);
+      }
+
+      .more {
+        margin-top: var(--space-6);
+        padding: 0;
+        font: inherit;
+        font-size: var(--text-sm);
+        color: var(--color-text-muted);
+        background: none;
+        border: none;
+        cursor: pointer;
+      }
+
+      .more:hover {
+        color: var(--color-text);
+        text-decoration: underline;
+      }
+
+      :focus-visible {
+        outline: 2px solid var(--color-text);
+        outline-offset: 2px;
+      }
+
+      @media (prefers-reduced-motion: reduce) {
+        .tag {
+          animation: none;
+        }
+      }
+
+      @media (max-width: 32rem) {
+        .post {
+          flex-direction: column;
+          align-items: stretch;
+        }
+
+        .msg {
+          text-align: left;
+        }
       }
     </style>
 
@@ -196,18 +556,10 @@
       const el = (tag: string, cls?: string, text?: string) => {
         const n = document.createElement(tag);
         if (cls) n.className = cls;
-        // Everything below is remote text (titles, authors, tags), so it goes in
-        // as text and never as markup.
+        // Titles, authors and tags are remote text — they go in as text,
+        // never as markup.
         if (text != null) n.textContent = text;
         return n;
-      };
-
-      const say = (after: Element, text: string, kind: string) => {
-        const old = after.parentElement?.querySelector('.msg');
-        if (old) old.remove();
-        const m = el('span', `msg ${kind}`, text);
-        after.after(m);
-        return m;
       };
 
       async function api(path: string, init?: RequestInit) {
@@ -217,24 +569,28 @@
         return data;
       }
 
+      const setCount = (id: string, n: number) => {
+        document.getElementById(id)!.textContent = n > 0 ? String(n) : '';
+      };
+
       // --- the blog desk ---------------------------------------------------
 
       async function loadPosts() {
         const list = document.getElementById('posts')!;
-        let posts: any[];
+        let data: any;
         try {
-          const data = await api('/api/posts');
-          posts = data.posts;
-          // The desk also says who's holding it — publishing goes out under an
-          // author's name, so it's worth seeing whose hand is on the button.
-          document.getElementById('who')!.textContent = data.publisher ?? '';
+          data = await api('/api/posts');
         } catch (e: any) {
-          list.replaceChildren(el('li', 'empty err', e.message));
+          list.replaceChildren(el('li', 'empty is-err', e.message));
           return;
         }
+        // Publishing goes out under an author's name, so it's worth seeing
+        // whose hand is on the button.
+        document.getElementById('who')!.textContent = data.publisher ?? '';
+
         // One row per slug — its languages federate together as one Article.
         const bySlug = new Map<string, any>();
-        for (const p of posts) {
+        for (const p of data.posts) {
           const key = `${p.author}/${p.slug}`;
           if (!bySlug.has(key)) bySlug.set(key, { ...p, langs: [] });
           bySlug.get(key).langs.push(p.lang);
@@ -242,55 +598,62 @@
         const rows = [...bySlug.values()].sort((a, b) =>
           String(b.date).localeCompare(String(a.date)),
         );
-        if (rows.length === 0) {
-          list.replaceChildren(el('li', 'empty', 'No posts yet.'));
-          return;
-        }
-        list.replaceChildren(...rows.map(postRow));
+        setCount('count-blog', rows.filter((p) => !p.published).length);
+
+        list.replaceChildren(
+          ...(rows.length ? rows.map(postRow) : [el('li', 'empty', 'No posts yet.')]),
+        );
       }
 
       function postRow(p: any) {
-        const li = el('li', 'row');
-        const line = el('div', 'line');
+        const li = el('li', 'post');
+        li.dataset.out = p.published ? 'true' : 'false';
 
         const left = el('div');
-        const head = el('div');
-        head.append(el('span', 'lang', p.langs.slice().sort().join(' ')));
-        head.append(el('span', 'title', p.title));
-        left.append(head);
-        const meta = el(
-          'span',
-          'meta',
-          `${p.author} · ${String(p.date).slice(0, 10)}`,
-        );
-        if (p.published) {
-          meta.append(' · ');
-          meta.append(el('span', 'pub', 'published'));
-        }
+        left.append(el('p', 'post-title', p.title));
+        const meta = el('p', 'post-meta');
+        meta.append(el('span', 'mono', p.author));
+        meta.append(' · ');
+        meta.append(el('span', 'mono', String(p.date).slice(0, 10)));
+        meta.append(' · ');
+        meta.append(el('span', 'langs', p.langs.slice().sort().join(' ')));
         left.append(meta);
 
+        const right = el('div');
         const action = p.published ? 'update' : 'create';
-        const btn = el('button', undefined, p.published ? 'Update' : 'Publish');
+        const btn = el(
+          'button',
+          `act ${p.published ? 'act-update' : 'act-publish'}`,
+          p.published ? 'Update' : 'Publish',
+        ) as HTMLButtonElement;
+        btn.type = 'button';
+        const msg = el('span', 'msg');
         btn.addEventListener('click', async () => {
-          (btn as HTMLButtonElement).disabled = true;
-          const m = say(btn, p.published ? 'updating…' : 'publishing…', '');
+          btn.disabled = true;
+          msg.className = 'msg';
+          msg.textContent = p.published ? 'Updating…' : 'Publishing…';
           try {
             await api('/api/publish', {
               method: 'POST',
               headers: { 'content-type': 'application/json' },
               body: JSON.stringify({ lang: p.langs[0], slug: p.slug, action }),
             });
-            m.textContent = p.published ? 'updated' : 'published';
-            m.className = 'msg ok';
+            // The button said Publish, so the result says Published.
+            msg.textContent = p.published ? 'Updated' : 'Published';
+            if (!p.published) {
+              // It's out now: the edge fills in, and the desk's count drops.
+              li.dataset.out = 'true';
+              loadPosts();
+            }
           } catch (e: any) {
-            m.textContent = e.message;
-            m.className = 'msg err';
-            (btn as HTMLButtonElement).disabled = false;
+            msg.textContent = e.message;
+            msg.className = 'msg is-err';
+            btn.disabled = false;
           }
         });
+        right.append(btn, msg);
 
-        line.append(left, btn);
-        li.append(line);
+        li.append(left, right);
         return li;
       }
 
@@ -298,13 +661,13 @@
 
       // The rack is paged by the published timestamp of the last row shown.
       let cursor: string | null = null;
+      let scope: 'all' | 'untagged' = 'all';
+      const PAGE = 24;
 
       function rackQuery(before: string | null) {
-        const q = new URLSearchParams({ limit: '24' });
+        const q = new URLSearchParams({ limit: String(PAGE) });
         if (before) q.set('before', before);
-        if ((document.getElementById('only-untagged') as HTMLInputElement).checked) {
-          q.set('untagged', '1');
-        }
+        if (scope === 'untagged') q.set('untagged', '1');
         const shelf = (document.getElementById('tag-filter') as HTMLSelectElement).value;
         if (shelf) q.set('tag', shelf);
         return `/api/papers?${q}`;
@@ -321,149 +684,274 @@
         try {
           papers = (await api(rackQuery(cursor))).papers;
         } catch (e: any) {
-          list.replaceChildren(el('li', 'empty err', e.message));
+          list.replaceChildren(el('li', 'empty is-err', e.message));
           return;
         }
         const rows = papers.map(paperRow);
-        if (append) list.append(...rows);
-        else if (rows.length === 0) list.replaceChildren(el('li', 'empty', 'Nothing here.'));
-        else list.replaceChildren(...rows);
+        if (append) {
+          list.append(...rows);
+        } else if (rows.length === 0) {
+          // An empty screen is an invitation, or — here — a finished job.
+          list.replaceChildren(
+            el(
+              'li',
+              'empty',
+              scope === 'untagged'
+                ? 'Every paper on the rack has a tag.'
+                : 'Nothing on the rack yet.',
+            ),
+          );
+        } else {
+          list.replaceChildren(...rows);
+        }
 
         cursor = papers.length ? papers[papers.length - 1].published : null;
-        // A short page means the rack ended; no point offering more.
-        older.hidden = papers.length < 24;
+        older.hidden = papers.length < PAGE;
       }
 
       function paperRow(p: any) {
-        const li = el('li', 'row');
+        const li = el('li', 'paper');
 
-        const link = el('a', 'title', p.title || p.url) as HTMLAnchorElement;
+        const link = el('a', 'paper-title', p.title || p.url) as HTMLAnchorElement;
         link.href = p.url;
         link.target = '_blank';
         link.rel = 'noopener noreferrer';
         li.append(link);
-        li.append(
-          el(
-            'span',
-            'meta',
-            `${p.author_name || p.author || ''} · ${String(p.published ?? '').slice(0, 10)}`,
-          ),
-        );
 
-        const tags = el('div', 'tags');
-        const draw = (list: string[]) => {
-          tags.replaceChildren(...list.map((t) => tagChip(p.iri, t, draw, list)));
-          tags.append(tagInput(p.iri, draw, list));
-        };
-        draw(p.tags ?? []);
-        li.append(tags);
+        const meta = el('p', 'paper-meta');
+        meta.append(el('span', 'mono', p.author_name || p.author || ''));
+        meta.append(' · ');
+        meta.append(el('span', 'mono', String(p.published ?? '').slice(0, 10)));
+        li.append(meta);
+
+        // The row is never rebuilt — chips are added and removed one at a time.
+        // Redrawing the whole thing re-ran every chip's entrance animation, so
+        // putting one tag on made all of them flinch, and the eye had nowhere
+        // to land.
+        const row = el('div', 'tagrow');
+        const tags = new Set<string>(p.tags ?? []);
+        const entry = tagInput(p.iri, tags, row);
+        for (const t of [...tags].sort()) row.append(tagChip(p.iri, t, tags, row).chip);
+        row.append(entry);
+        li.append(row);
         return li;
       }
 
-      function tagChip(iri: string, tag: string, draw: (l: string[]) => void, list: string[]) {
-        const chip = el('span', 'tag', tag);
-        const x = el('button', undefined, '×');
-        x.title = `remove "${tag}"`;
-        x.addEventListener('click', async () => {
-          (x as HTMLButtonElement).disabled = true;
+      // One chip. It takes itself off the row when removed, and knows how to
+      // settle from "just typed" into "stored".
+      function tagChip(iri: string, tag: string, tags: Set<string>, row: HTMLElement) {
+        const chip = el('span', 'tag mono');
+        const label = el('span', undefined, tag);
+        const off = el('button', 'tag-off', '×') as HTMLButtonElement;
+        off.type = 'button';
+        off.title = `Remove ${tag}`;
+        off.addEventListener('click', async () => {
+          // The chip goes at once; if the server refuses, it comes back.
+          const at = chip.nextSibling;
+          chip.remove();
+          tags.delete(tag);
           try {
             await api('/api/tags', {
               method: 'DELETE',
               headers: { 'content-type': 'application/json' },
               body: JSON.stringify({ iri, tag }),
             });
-            draw(list.filter((t) => t !== tag));
-            loadTagFilter();
+            loadTags();
           } catch {
-            (x as HTMLButtonElement).disabled = false;
+            tags.add(tag);
+            row.insertBefore(chip, at);
           }
         });
-        chip.append(x);
-        return chip;
+        chip.append(label, off);
+        return { chip, label };
       }
 
-      function tagInput(iri: string, draw: (l: string[]) => void, list: string[]) {
-        const input = el('input') as HTMLInputElement;
-        input.placeholder = '+ tag';
-        input.setAttribute('list', 'known-tags');
-        input.addEventListener('keydown', async (e) => {
-          if ((e as KeyboardEvent).key !== 'Enter') return;
-          const value = input.value.trim();
-          if (!value) return;
-          input.disabled = true;
+      function tagInput(iri: string, tags: Set<string>, row: HTMLElement) {
+        const box = el('div', 'tag-entry');
+        const input = el('input', 'tag-add') as HTMLInputElement;
+        input.placeholder = 'add a tag';
+        // Native autocomplete is turned off: the browser's own history of what
+        // was typed here isn't the vocabulary — the tags in use are, and those
+        // are offered below.
+        input.autocomplete = 'off';
+        input.setAttribute('role', 'combobox');
+        input.setAttribute('aria-expanded', 'false');
+
+        const menu = el('ul', 'suggest') as HTMLUListElement;
+        menu.hidden = true;
+        menu.setAttribute('role', 'listbox');
+
+        let shown: { tag: string; count: number }[] = [];
+        let active = -1;
+
+        const close = () => {
+          menu.hidden = true;
+          active = -1;
+          input.setAttribute('aria-expanded', 'false');
+        };
+
+        const render = () => {
+          const q = input.value.trim().toLowerCase();
+          shown = knownTags
+            // A word already on this paper isn't worth offering again.
+            .filter((t) => !tags.has(t.tag))
+            .filter((t) => q === '' || t.tag.includes(q))
+            .slice(0, 6);
+          if (shown.length === 0) return close();
+          menu.replaceChildren(
+            ...shown.map((t, i) => {
+              const li = el('li', `suggest-item${i === active ? ' is-active' : ''}`);
+              li.setAttribute('role', 'option');
+              li.setAttribute('aria-selected', String(i === active));
+              li.append(el('span', 'mono', t.tag), el('span', 'suggest-count', String(t.count)));
+              // mousedown, not click: the input's blur would close the menu
+              // before a click ever landed.
+              li.addEventListener('mousedown', (e) => {
+                e.preventDefault();
+                commit(t.tag);
+              });
+              return li;
+            }),
+          );
+          menu.hidden = false;
+          input.setAttribute('aria-expanded', 'true');
+        };
+
+        // The tag lands the moment it's typed. Waiting for the round trip made
+        // the act feel either instant-and-flickery or dead-then-sudden,
+        // depending only on the network — which is not something the hand
+        // should have to feel. The server still decides; it just corrects a
+        // chip that's already there.
+        async function commit(value: string) {
+          const typed = value.trim().replace(/\s+/g, ' ');
+          if (!typed) return;
+          close();
+          input.value = '';
+          // A guess at how it will be stored, only so a chip can appear now.
+          // This is NOT the rule — normalizeTag in kiosk/tags.js is, and the
+          // reply below overwrites this guess with whatever it actually says.
+          const guess = typed.toLowerCase();
+          if (tags.has(guess)) return; // already on this paper
+
+          const { chip, label } = tagChip(iri, guess, tags, row);
+          chip.classList.add('is-pending');
+          row.insertBefore(chip, box);
+          tags.add(guess);
+
           try {
             const { tag } = await api('/api/tags', {
               method: 'POST',
               headers: { 'content-type': 'application/json' },
-              body: JSON.stringify({ iri, tag: value }),
+              body: JSON.stringify({ iri, tag: typed }),
             });
-            // Redraw from the normalised tag the Worker actually stored, not
-            // from what was typed — so the page shows what's really there.
-            draw(list.includes(tag) ? list : [...list, tag].sort());
-            loadTagFilter();
-          } catch (e: any) {
-            input.disabled = false;
-            say(input, e.message, 'err');
+            if (tag !== guess) {
+              label.textContent = tag;
+              tags.delete(guess);
+              tags.add(tag);
+            }
+            chip.classList.remove('is-pending');
+            // The menu was closed to get the chip out of the way, not because
+            // the person is done — the cursor never left the box. Tagging runs
+            // two or three words at a time, so the vocabulary comes back.
+            if (document.activeElement === input) render();
+            loadTags();
+          } catch {
+            // It never landed — take the chip back and hand the words over.
+            chip.remove();
+            tags.delete(guess);
+            input.value = typed;
+            input.select();
+          }
+        }
+
+        input.addEventListener('input', () => {
+          active = -1;
+          render();
+        });
+        // An empty box shows the whole vocabulary — that's how it gets reused
+        // rather than retyped slightly differently.
+        input.addEventListener('focus', render);
+        // Deferred so a mousedown on an option still gets its turn.
+        input.addEventListener('blur', () => setTimeout(close, 0));
+
+        input.addEventListener('keydown', (e) => {
+          const key = (e as KeyboardEvent).key;
+          if (key === 'ArrowDown' || key === 'ArrowUp') {
+            e.preventDefault();
+            if (menu.hidden) return render();
+            active = Math.min(Math.max(active + (key === 'ArrowDown' ? 1 : -1), -1), shown.length - 1);
+            render();
+          } else if (key === 'Escape') {
+            close();
+          } else if (key === 'Enter') {
+            e.preventDefault();
+            // A highlighted suggestion wins; otherwise take what was typed —
+            // a new word must always be able to get in.
+            commit(active >= 0 ? shown[active].tag : input.value);
           }
         });
-        return input;
+
+        box.append(input, menu);
+        return box;
       }
 
-      // The tags already in use — offered as suggestions, and as the shelf list.
-      async function loadTagFilter() {
-        let tags: any[];
+      // The vocabulary in use, kept in hand so typing a tag filters it without
+      // asking the server on every keystroke.
+      let knownTags: { tag: string; count: number }[] = [];
+
+      // The tags in use — the shelf list, the suggestions, and how much is left.
+      async function loadTags() {
+        let data: any;
         try {
-          tags = (await api('/api/tags')).tags;
+          data = await api('/api/tags');
         } catch {
           return;
         }
+        knownTags = data.tags ?? [];
+        setCount('count-kiosk', data.untagged ?? 0);
+
         const select = document.getElementById('tag-filter') as HTMLSelectElement;
         const chosen = select.value;
-        const all = el('option', undefined, 'all') as HTMLOptionElement;
-        all.value = '';
+        const any = el('option', undefined, 'any') as HTMLOptionElement;
+        any.value = '';
         select.replaceChildren(
-          all,
-          ...tags.map((t) => {
+          any,
+          ...data.tags.map((t: any) => {
             const o = el('option', undefined, `${t.tag} (${t.count})`) as HTMLOptionElement;
             o.value = t.tag;
             return o;
           }),
         );
         select.value = chosen;
-
-        let datalist = document.getElementById('known-tags');
-        if (!datalist) {
-          datalist = el('datalist');
-          datalist.id = 'known-tags';
-          document.body.append(datalist);
-        }
-        datalist.replaceChildren(
-          ...tags.map((t) => {
-            const o = el('option') as HTMLOptionElement;
-            o.value = t.tag;
-            return o;
-          }),
-        );
       }
 
       // --- wiring ----------------------------------------------------------
 
-      for (const b of document.querySelectorAll<HTMLButtonElement>('.desks button')) {
-        b.addEventListener('click', () => {
-          for (const other of document.querySelectorAll('.desks button')) {
-            other.classList.toggle('on', other === b);
+      for (const tab of document.querySelectorAll<HTMLButtonElement>('.desk')) {
+        tab.addEventListener('click', () => {
+          for (const other of document.querySelectorAll('.desk')) {
+            other.setAttribute('aria-pressed', String(other === tab));
           }
-          document.getElementById('desk-blog')!.hidden = b.dataset.desk !== 'blog';
-          document.getElementById('desk-kiosk')!.hidden = b.dataset.desk !== 'kiosk';
+          document.getElementById('desk-blog')!.hidden = tab.dataset.desk !== 'blog';
+          document.getElementById('desk-kiosk')!.hidden = tab.dataset.desk !== 'kiosk';
         });
       }
 
-      document.getElementById('only-untagged')!.addEventListener('change', () => loadPapers());
+      for (const btn of document.querySelectorAll<HTMLButtonElement>('.seg-btn')) {
+        btn.addEventListener('click', () => {
+          for (const other of document.querySelectorAll('.seg-btn')) {
+            other.setAttribute('aria-pressed', String(other === btn));
+          }
+          scope = btn.dataset.scope as 'all' | 'untagged';
+          loadPapers();
+        });
+      }
+
       document.getElementById('tag-filter')!.addEventListener('change', () => loadPapers());
       document.getElementById('older')!.addEventListener('click', () => loadPapers(true));
 
       loadPosts();
-      loadTagFilter().then(() => loadPapers());
+      loadTags().then(() => loadPapers());
     </script>
   </body>
 </html>
