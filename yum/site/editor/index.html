@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>yum editor — yum.atfedi.de</title>
+<meta name="robots" content="noindex, nofollow" />
+<link rel="icon" href="data:," />
+<link rel="stylesheet" href="/style.css" />
+<link rel="stylesheet" href="/editor/editor.css" />
+
+<div class="editor">
+  <header>
+    <div class="title-tag" style="position: static; display: inline-flex;">
+      yum <small>editor</small>
+    </div>
+    <a href="/logout" class="ghost">ログアウト</a>
+  </header>
+
+  <section class="panel">
+    <h2>Naver フォルダから取り込む</h2>
+    <form id="folder-form" class="row">
+      <input type="url" id="folder-url" placeholder="https://map.naver.com/p/favorite/myPlace/folder/..." required />
+      <button type="submit">見てみる</button>
+    </form>
+    <p id="folder-status" class="hint"></p>
+    <ul id="folder-list" class="candidates"></ul>
+    <button type="button" id="folder-import" class="primary" hidden>選んだものを取り込む</button>
+  </section>
+
+  <section class="panel">
+    <h2>手で足す</h2>
+    <form id="add-form" class="pin-form">
+      <input type="text" name="name" placeholder="名前" />
+      <input type="text" name="lat" placeholder="緯度 (lat)" required />
+      <input type="text" name="lng" placeholder="経度 (lng)" required />
+      <select name="rating">
+        <option value="suki">すき</option>
+        <option value="futsuu">ふつう</option>
+        <option value="imaichi">いまいち</option>
+      </select>
+      <input type="text" name="by" placeholder="誰が分けてくれたか(任意)" />
+      <input type="url" name="place_url" placeholder="リンク(任意)" />
+      <textarea name="note" placeholder="ひとこと(任意)"></textarea>
+      <button type="submit" class="primary">足す</button>
+    </form>
+  </section>
+
+  <section class="panel">
+    <h2>いまのピン <span id="pin-count" class="hint"></span></h2>
+    <ul id="pin-list" class="pins"></ul>
+  </section>
+</div>
+
+<template id="pin-row">
+  <li class="pin-row">
+    <div class="view">
+      <span class="dot"></span>
+      <span class="name"></span>
+      <span class="by"></span>
+      <div class="actions">
+        <button type="button" class="edit ghost">直す</button>
+        <button type="button" class="del ghost">消す</button>
+      </div>
+    </div>
+    <form class="edit-form" hidden>
+      <input type="text" name="name" placeholder="名前" />
+      <input type="text" name="lat" placeholder="緯度" required />
+      <input type="text" name="lng" placeholder="経度" required />
+      <select name="rating">
+        <option value="suki">すき</option>
+        <option value="futsuu">ふつう</option>
+        <option value="imaichi">いまいち</option>
+      </select>
+      <input type="text" name="by" placeholder="誰が分けてくれたか" />
+      <input type="url" name="place_url" placeholder="リンク" />
+      <textarea name="note" placeholder="ひとこと"></textarea>
+      <div class="actions">
+        <button type="submit" class="primary">保存</button>
+        <button type="button" class="cancel ghost">やめる</button>
+      </div>
+    </form>
+  </li>
+</template>
+
+<template id="candidate-row">
+  <li class="candidate">
+    <label>
+      <input type="checkbox" checked />
+      <span class="name"></span>
+      <span class="address"></span>
+    </label>
+  </li>
+</template>
+
+<script src="/editor/app.js"></script>

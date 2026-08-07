@@ -30,6 +30,9 @@ import { handleComments as handleKioskComments } from './kiosk/comments.js';
 import { handleInstance } from './kiosk/instance.js';
 import { renderReadPage } from './kiosk/render.js';
 import { handleConsole } from './console/index.js';
+import { handleYumFederation, backfillTick as yumBackfillTick } from './yum/federation.js';
+import { handlePlaces } from './yum/places.js';
+import { handleYumEditor } from './yum/editor.js';
 
 const LOCALES = ['en', 'ja', 'ko'];
 const DEFAULT_LOCALE = 'en';
@@ -70,6 +73,19 @@ export default {
 
     // --- apex: atfedi.de ---
     if (host === 'atfedi.de') {
+      // @yum@atfedi.de — the food map's actor, the apex's second resident. It
+      // keeps its own fedify instance and its own paths (/ap/yum/...), so kiosk
+      // is untouched; the one place they'd collide is WebFinger, which both
+      // would answer, so that is dispatched on who is being asked for.
+      const finger = url.searchParams.get('resource') ?? '';
+      if (
+        url.pathname.startsWith('/ap/yum/') ||
+        (url.pathname === '/.well-known/webfinger' &&
+          /^acct:yum@atfedi\.de$/i.test(finger.trim()))
+      ) {
+        return handleYumFederation(request, env, ctx);
+      }
+
       // @kiosk@atfedi.de lives here — the newsstand's actor. WebFinger and its
       // ActivityPub paths are served from the apex so the handle domain and the
       // actor's home match. fedify owns these.
@@ -153,6 +169,31 @@ export default {
       let path = url.pathname;
       if (!path.endsWith('/') && !/\.[^/]+$/.test(path)) path += '/';
       return serveAsset(env, url, `/danro${path}`, request);
+    }
+
+    // --- yum.atfedi.de: おいしい、を分けあう食マップ(単ページ、danro と同じ) ---
+    if (host === 'yum.atfedi.de') {
+      let path = url.pathname;
+      // ピンは fediverse から届く(worker/yum/)。まだ一つも無いうちは null が
+      // 返り、site/places.json の種がそのまま出る。
+      if (path === '/places.json') {
+        const pins = await handlePlaces(env);
+        if (pins) return pins;
+      }
+      // /editor ── sukhi アカウントでログインした人だけの back room(手で
+      // ピンを足す・直す・消す、Naver フォルダの取り込み)。
+      if (
+        path === '/login' ||
+        path === '/callback' ||
+        path === '/logout' ||
+        path === '/editor' ||
+        path.startsWith('/editor/') ||
+        path.startsWith('/api/')
+      ) {
+        return handleYumEditor(request, env, ctx);
+      }
+      if (!path.endsWith('/') && !/\.[^/]+$/.test(path)) path += '/';
+      return serveAsset(env, url, `/yum${path}`, request);
     }
 
     // --- museum.atfedi.de: 博物街(SvelteKit static、パス先頭が言語) ---
@@ -247,6 +288,10 @@ export default {
   async scheduled(event, env, ctx) {
     ctx.waitUntil(
       (async () => {
+        // yum first, and deliberately: it re-reads at most two kept DMs and
+        // needs a handful of fetches, while kiosk's sweep is happy to spend
+        // everything an invocation has. Behind it, yum was starving.
+        await yumBackfillTick(env, ctx);
         await sweepTick(env, ctx);
         await followTick(env, ctx);
         await backfillMeta(env, ctx);

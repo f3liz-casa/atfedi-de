@@ -1,0 +1,109 @@
+/* /style.css の色・字体をそのまま借りて、ここは back room のレイアウトだけ。 */
+
+body { overflow-y: auto; }
+
+.editor {
+  max-width: 40rem;
+  margin: 0 auto;
+  padding: 1.5rem 1.2rem 4rem;
+}
+
+.editor header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 1.2rem;
+}
+
+.ghost {
+  background: none;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  color: var(--ink);
+  font-family: inherit;
+  font-size: 0.82rem;
+  padding: 0.35rem 0.7rem;
+  cursor: pointer;
+  text-decoration: none;
+}
+.ghost:hover { background: rgba(74, 70, 64, 0.06); }
+
+.panel {
+  background: #fff;
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  box-shadow: var(--shadow);
+  padding: 1.1rem 1.2rem;
+  margin-bottom: 1.2rem;
+}
+.panel h2 { font-size: 0.95rem; margin: 0 0 0.8rem; font-weight: 600; }
+
+.hint { font-size: 0.78rem; color: #9a938a; margin: 0.3rem 0; }
+
+input, select, textarea, button {
+  font-family: inherit;
+  font-size: 0.88rem;
+}
+input, select, textarea {
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  padding: 0.45rem 0.6rem;
+  background: var(--paper);
+  color: var(--ink);
+}
+textarea { min-height: 3.5rem; resize: vertical; }
+
+.row { display: flex; gap: 0.5rem; }
+.row input { flex: 1; }
+
+.pin-form, .edit-form {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.5rem;
+}
+.pin-form textarea, .edit-form textarea,
+.pin-form .primary, .edit-form .actions {
+  grid-column: 1 / -1;
+}
+
+button.primary {
+  background: var(--suki);
+  color: #fff;
+  border: none;
+  border-radius: 8px;
+  padding: 0.5rem 0.9rem;
+  cursor: pointer;
+}
+button.primary:hover { opacity: 0.92; }
+
+ul { list-style: none; margin: 0; padding: 0; }
+
+.candidates { margin-top: 0.6rem; max-height: 16rem; overflow-y: auto; }
+.candidate { padding: 0.35rem 0; border-bottom: 1px solid var(--line); }
+.candidate label { display: flex; align-items: baseline; gap: 0.5rem; cursor: pointer; }
+.candidate .address { font-size: 0.78rem; color: #9a938a; }
+
+#folder-import { margin-top: 0.8rem; }
+
+.pins { display: flex; flex-direction: column; gap: 0.5rem; }
+.pin-row {
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  padding: 0.6rem 0.8rem;
+}
+.pin-row .view {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+.pin-row .dot {
+  width: 10px; height: 10px; border-radius: 50%; flex: none;
+  border: 2px solid #fff; box-shadow: 0 0 0 1px rgba(0,0,0,0.06);
+}
+.pin-row .dot.suki { background: var(--suki); }
+.pin-row .dot.futsuu { background: var(--futsuu); }
+.pin-row .dot.imaichi { background: var(--imaichi); }
+.pin-row .name { font-weight: 600; }
+.pin-row .by { font-size: 0.78rem; color: #9a938a; flex: 1; }
+.pin-row .actions { display: flex; gap: 0.4rem; }
+.pin-row .edit-form { margin-top: 0.6rem; }

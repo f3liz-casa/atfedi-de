@@ -1,0 +1,204 @@
+/* やわらかく、素朴に。地図が主役で、まわりは静かに。
+   （transit.f3liz.casa の地図フロントの、やさしい方の作りから。） */
+
+:root {
+  --ink: #4a4640;
+  --paper: #fbf9f5;
+  --line: #e7e1d6;
+  --suki: #e0846b;
+  --futsuu: #d6b566;
+  --imaichi: #8aa0b0;
+  --shadow: 0 2px 12px rgba(74, 70, 64, 0.10);
+}
+
+* { box-sizing: border-box; }
+
+html, body {
+  margin: 0;
+  height: 100%;
+  font-family: "Hiragino Maru Gothic ProN", "Apple SD Gothic Neo",
+    system-ui, sans-serif;
+  color: var(--ink);
+  background: var(--paper);
+}
+
+#map {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  z-index: 0;
+}
+
+/* キーがまだ無いときの、やさしい案内 */
+#map.no-key {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 2rem;
+}
+.guide {
+  max-width: 30rem;
+  background: #fff;
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  box-shadow: var(--shadow);
+  padding: 1.6rem 1.8rem;
+  line-height: 1.9;
+  font-size: 0.95rem;
+}
+.guide h1 { font-size: 1.1rem; margin: 0 0 0.6rem; font-weight: 600; }
+.guide code {
+  background: var(--paper);
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  padding: 0.05rem 0.4rem;
+  font-size: 0.85em;
+}
+
+/* タイトルの、ちいさな札 */
+.title-tag {
+  position: absolute;
+  top: 14px;
+  left: 14px;
+  z-index: 10;
+  background: rgba(255, 255, 255, 0.92);
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  box-shadow: var(--shadow);
+  padding: 0.5rem 0.9rem;
+  font-size: 0.9rem;
+  font-weight: 600;
+  backdrop-filter: blur(4px);
+}
+.title-tag small {
+  display: block;
+  font-weight: 400;
+  font-size: 0.72rem;
+  color: #8f887d;
+  margin-top: 0.1rem;
+}
+
+/* 凡例（すき・ふつう・いまいち） */
+.legend {
+  position: absolute;
+  bottom: 20px;
+  left: 14px;
+  z-index: 10;
+  background: rgba(255, 255, 255, 0.92);
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  box-shadow: var(--shadow);
+  padding: 0.6rem 0.85rem;
+  font-size: 0.8rem;
+  backdrop-filter: blur(4px);
+}
+.legend .row { display: flex; align-items: center; gap: 0.45rem; margin: 0.2rem 0; }
+.legend .dot {
+  width: 12px; height: 12px; border-radius: 50%;
+  border: 2px solid #fff;
+  box-shadow: 0 0 0 1px rgba(0,0,0,0.06);
+}
+.dot.suki { background: var(--suki); }
+.dot.futsuu { background: var(--futsuu); }
+.dot.imaichi { background: var(--imaichi); }
+
+/* 拡大・縮小。Naver の既定のコントロール（白い箱に青いスライダー）は切って、
+   title-tag や legend と同じ札の服を着せた。地図が出るまでは、居ない。 */
+.zoom {
+  display: none;
+  position: absolute;
+  top: 50%;
+  right: 14px;
+  transform: translateY(-50%);
+  z-index: 10;
+  flex-direction: column;
+  background: rgba(255, 255, 255, 0.92);
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  box-shadow: var(--shadow);
+  backdrop-filter: blur(4px);
+  overflow: hidden;
+}
+.zoom.ready { display: flex; }
+.zoom button {
+  width: 36px;
+  height: 34px;
+  padding: 0;
+  border: 0;
+  background: none;
+  color: var(--ink);
+  font-family: inherit;
+  font-size: 1.05rem;
+  line-height: 1;
+  cursor: pointer;
+  transition: background 0.12s ease;
+}
+.zoom button + button { border-top: 1px solid var(--line); }
+.zoom button:hover { background: rgba(224, 132, 107, 0.10); }
+.zoom button:active { background: rgba(224, 132, 107, 0.20); }
+.zoom button:focus-visible {
+  outline: 2px solid var(--suki);
+  outline-offset: -2px;
+}
+
+/* 地図上のピン */
+.pin {
+  width: 16px; height: 16px;
+  border-radius: 50%;
+  border: 3px solid #fff;
+  box-shadow: 0 1px 5px rgba(74,70,64,0.35);
+  cursor: pointer;
+  transition: transform 0.12s ease;
+}
+.pin:hover { transform: scale(1.25); }
+.pin.suki { background: var(--suki); }
+.pin.futsuu { background: var(--futsuu); }
+.pin.imaichi { background: var(--imaichi); }
+
+/* ふきだし（場所と、街の空気） */
+.bubble {
+  min-width: 160px;
+  max-width: 240px;
+  padding: 0.7rem 0.9rem;
+  line-height: 1.7;
+}
+.bubble .head {
+  font-weight: 600;
+  font-size: 0.95rem;
+  margin-bottom: 0.2rem;
+}
+.bubble .rate {
+  display: inline-block;
+  font-size: 0.72rem;
+  padding: 0.05rem 0.5rem;
+  border-radius: 999px;
+  color: #fff;
+  margin-bottom: 0.35rem;
+}
+.rate.suki { background: var(--suki); }
+.rate.futsuu { background: var(--futsuu); }
+.rate.imaichi { background: var(--imaichi); }
+.bubble .note {
+  font-size: 0.85rem;
+  color: #6b665e;
+}
+/* だれが分けてくれたか（fediverse の出どころ） */
+.bubble .by {
+  display: block;
+  margin-top: 0.4rem;
+  font-size: 0.75rem;
+  color: #9a938a;
+}
+.bubble .by a {
+  color: #b06a52;
+  text-decoration: none;
+}
+.bubble .by a:hover { text-decoration: underline; }
+.bubble.area .head { font-weight: 600; }
+.bubble.area .mood {
+  font-size: 0.85rem;
+  color: #6b665e;
+  margin-top: 0.2rem;
+}

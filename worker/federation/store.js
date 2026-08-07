@@ -136,20 +136,20 @@ export async function publishedObjectIds(db) {
 
 // --- login (sukhi OAuth2 app + sessions) ---------------------------------
 
-export async function getOAuthApp(db, base) {
+export async function getOAuthApp(db, base, appName) {
   return await db
-    .prepare('SELECT client_id, client_secret FROM oauth_app WHERE base = ?')
-    .bind(base)
+    .prepare('SELECT client_id, client_secret FROM oauth_app WHERE base = ? AND app_name = ?')
+    .bind(base, appName)
     .first();
 }
 
-export async function putOAuthApp(db, base, clientId, clientSecret) {
+export async function putOAuthApp(db, base, appName, clientId, clientSecret) {
   await db
     .prepare(
-      `INSERT INTO oauth_app (base, client_id, client_secret) VALUES (?, ?, ?)
-       ON CONFLICT(base) DO UPDATE SET client_id = excluded.client_id, client_secret = excluded.client_secret`,
+      `INSERT INTO oauth_app (base, app_name, client_id, client_secret) VALUES (?, ?, ?, ?)
+       ON CONFLICT(base, app_name) DO UPDATE SET client_id = excluded.client_id, client_secret = excluded.client_secret`,
     )
-    .bind(base, clientId, clientSecret)
+    .bind(base, appName, clientId, clientSecret)
     .run();
 }
 

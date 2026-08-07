@@ -63,12 +63,17 @@ CREATE TABLE IF NOT EXISTS outbox (
 );
 CREATE INDEX IF NOT EXISTS outbox_by_actor ON outbox (actor_handle, published);
 
--- Publishing logs in through sukhi's OAuth2. The app registers itself with
+-- Publishing logs in through sukhi's OAuth2. Each app registers itself with
 -- sukhi once (no secret to set by hand); a login becomes a server-side session.
+-- More than one app can share a sukhi base (console, yum's editor, …), each
+-- with its own client_id/secret, so the key carries which app it is.
+-- (existing installs: see migrations/2026-08-07-oauth-app-multi.sql)
 CREATE TABLE IF NOT EXISTS oauth_app (
-  base          TEXT PRIMARY KEY, -- the sukhi base URL this app is registered with
+  base          TEXT NOT NULL,    -- the sukhi base URL this app is registered with
+  app_name      TEXT NOT NULL,    -- 'console' | 'yum' | …
   client_id     TEXT NOT NULL,
-  client_secret TEXT NOT NULL
+  client_secret TEXT NOT NULL,
+  PRIMARY KEY (base, app_name)
 );
 
 CREATE TABLE IF NOT EXISTS sessions (
