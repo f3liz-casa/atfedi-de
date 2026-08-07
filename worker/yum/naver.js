@@ -204,10 +204,15 @@ export function folderIdFrom(href) {
 }
 
 /**
- * Every bookmark in a shared folder, in one call — name, point, address, and
- * whatever memo the owner wrote, all at once (no need to look each place up
- * again through pagedesc). Returns null if the folder can't be read (not
- * shared, wrong id, Naver changed something).
+ * Every bookmark in a shared folder, in one call — point, address, and
+ * whatever memo the owner wrote, all at once. The folder API's own `name` is
+ * romanized rather than the place's real (Korean) name, though — pagedesc has
+ * the real one, so each bookmark with a place id gets a second, parallel
+ * lookup for the name alone (its coordinate is ignored; the folder's own is
+ * already exact). Falls back to the romanized name if that lookup fails.
+ *
+ * Returns null if the folder itself can't be read (not shared, wrong id,
+ * Naver changed something).
  */
 export async function fetchFolder(shareId) {
   const res = await fetch(
@@ -225,23 +230,31 @@ export async function fetchFolder(shareId) {
   const data = await res.json().catch(() => null);
   if (!Array.isArray(data?.bookmarkList)) return null;
 
-  const bookmarks = data.bookmarkList
-    .map((b) => {
-      const lat = Number(b.py);
-      const lng = Number(b.px);
-      if (!plausible(lat, lng)) return null;
-      return {
-        id: String(b.bookmarkId ?? ''),
-        name: b.name ? String(b.name).trim() : null,
-        lat,
-        lng,
-        address: b.address ?? null,
-        note: b.memo ? String(b.memo).trim() : null,
-        category: b.mcidName ?? null,
-        url: b.sid ? `https://map.naver.com/p/entry/place/${b.sid}` : null,
-      };
-    })
-    .filter(Boolean);
+  const bookmarks = await Promise.all(
+    data.bookmarkList
+      .map((b) => {
+        const lat = Number(b.py);
+        const lng = Number(b.px);
+        if (!plausible(lat, lng)) return null;
+        return {
+          id: String(b.bookmarkId ?? ''),
+          name: b.name ? String(b.name).trim() : null,
+          placeId: b.sid || null,
+          lat,
+          lng,
+          address: b.address ?? null,
+          note: b.memo ? String(b.memo).trim() : null,
+          category: b.mcidName ?? null,
+          url: b.sid ? `https://map.naver.com/p/entry/place/${b.sid}` : null,
+        };
+      })
+      .filter(Boolean)
+      .map(async (b) => {
+        if (!b.placeId) return b;
+        const real = await fromPlaceApi(b.placeId);
+        return real?.name ? { ...b, name: real.name } : b;
+      }),
+  );
 
   return { name: data.folder?.name ?? null, bookmarks };
 }
