@@ -46,23 +46,14 @@ is in English, I quote it as it stands.
 
 ## Decisions stay in the code
 
-### Don't make yourself sound big
+Half of what I collected turns out to be bug fixes. So the thing to look at isn't
+whether it avoided the mistake — it's **which way it went once someone
+noticed.**
+
+### The counting was wrong
 
 Federated servers announce their own size at an endpoint called `nodeinfo`.
 Number of users, number of posts. Other servers and directory sites read it.
-
-There's a quiet temptation here. The local database also holds posts that
-arrived from elsewhere, carried in by federation. Count those too and the
-number gets big fast. And it isn't quite a lie — it *is* the number of posts in
-our database.
-
-Here's how sukhi counts:
-
-```elixir
-localPosts: count_safe(from n in Note, where: is_nil(n.domain))
-```
-
-Rows whose `domain` is empty — only the things written here.
 
 It got this wrong once. It was announcing **294 users / 654 posts** when the
 truth was **5 users / 10 posts**. The commit that fixed it says why, in its own
@@ -73,11 +64,20 @@ usage.users.total / usage.localPosts counted every accounts/notes row,
 including remote federated actors and mirrored remote notes
 ```
 
-Nobody meant to inflate anything. It was counting every row. The default
-pointed at the bigger number.
+It was counting every row. The local database also holds posts that arrived
+from elsewhere, carried in by federation. Nobody was trying to look bigger —
+it was an ordinary mistake.
 
-I shouldn't make too much of this, though. A few lines above it in the same
-file:
+What stayed behind was the fix.
+
+```elixir
+localPosts: count_safe(from n in Note, where: is_nil(n.domain))
+```
+
+Rows whose `domain` is empty — only the things written here. Which settles what
+"from here" means, in one place. The number came out sixty-five times smaller.
+
+I shouldn't make too much of it, though. A few lines above, in the same file:
 
 ```elixir
 activeMonth: 0,
@@ -89,7 +89,7 @@ other is still off, in the small direction.
 
 ### Don't drop things quietly
 
-The other half of not sounding big. From the history:
+Three of them, in a row:
 
 ```
 fix(delivery): back off + dead-letter outbound instead of silently dropping
@@ -97,12 +97,16 @@ fix(federation): stop refetch/edit/ingest from silently dropping data
 fix: nothing written here ever notified the people it named
 ```
 
-`silently dropping` shows up twice. Something that didn't arrive shouldn't get
-to finish wearing the face of something that did.
+These are fixes too. `silently dropping`, twice.
 
-The third line is blunter: people who had been named in a post were never being
-notified, and never had been. Nobody was lying. It was just falling quietly on
-the floor.
+The first one's fix is the clearest. **Stop dropping it, wait, and if it still
+won't go, keep it in another box.** That is a great deal more work than
+dropping. All so that something which didn't arrive stays visible as not having
+arrived.
+
+The third is people who had been named in a post never being notified. It was
+falling quietly, so nobody could tell. The frightening part isn't that it
+broke — it's that it broke without a sound.
 
 ### No number on good news
 
