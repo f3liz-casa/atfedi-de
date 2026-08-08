@@ -63,6 +63,10 @@ CREATE TABLE IF NOT EXISTS yum_pins (
   lat        REAL NOT NULL,
   lng        REAL NOT NULL,
   name       TEXT,               -- the place's name, as the place link gave it
+  name_local TEXT,               -- a reading for someone who doesn't read `name`'s
+                                 -- script (e.g. a Japanese approximation of a Korean
+                                 -- name) — shown alongside it, never replacing it.
+                                 -- NULL is fine; the map just shows `name` alone.
   rating     TEXT NOT NULL,      -- 'suki' | 'futsuu' | 'imaichi'
   note       TEXT,               -- the PUBLIC post's words. Never the DM's.
                                  -- (the DM is kept in yum_inbox, just not shown)

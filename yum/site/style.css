@@ -244,6 +244,11 @@ html, body {
   font-size: 0.95rem;
   margin-bottom: 0.2rem;
 }
+.bubble .head .name-local {
+  font-weight: 400;
+  font-size: 0.8rem;
+  color: #9a938a;
+}
 .bubble .rate {
   display: inline-block;
   font-size: 0.72rem;

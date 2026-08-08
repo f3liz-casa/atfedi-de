@@ -36,7 +36,9 @@
     const node = pinRowTpl.content.firstElementChild.cloneNode(true);
     const rate = rateLabel[p.rating] ? p.rating : "futsuu";
     node.querySelector(".dot").classList.add(rate);
-    node.querySelector(".name").textContent = p.name || "この辺";
+    node.querySelector(".name").textContent = p.name_local
+      ? `${p.name || "この辺"}（${p.name_local}）`
+      : p.name || "この辺";
     node.querySelector(".by").textContent = p.by ? `${p.by} が分けてくれた` : "";
 
     const view = node.querySelector(".view");
@@ -44,6 +46,7 @@
 
     node.querySelector(".edit").addEventListener("click", () => {
       form.name.value = p.name || "";
+      form.name_local.value = p.name_local || "";
       form.lat.value = p.lat;
       form.lng.value = p.lng;
       form.rating.value = rate;

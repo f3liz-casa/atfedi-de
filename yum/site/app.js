@@ -177,7 +177,7 @@
         const t = STRINGS[currentLang()];
         info.setContent(
           `<div class="bubble">
-             <div class="head">${escapeHtml(p.name)}</div>
+             <div class="head">${escapeHtml(p.name)}${p.nameLocal ? `<span class="name-local">（${escapeHtml(p.nameLocal)}）</span>` : ""}</div>
              <span class="rate ${rate}">${t.rate[rate]}</span>
              ${p.note ? `<div class="note">${escapeHtml(p.note)}</div>` : ""}
              ${byLine(p)}
