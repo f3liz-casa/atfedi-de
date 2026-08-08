@@ -33,6 +33,7 @@ import { handleConsole } from './console/index.js';
 import { handleYumFederation, backfillTick as yumBackfillTick } from './yum/federation.js';
 import { handlePlaces } from './yum/places.js';
 import { handleYumEditor } from './yum/editor.js';
+import { handleDash } from './dash/index.js';
 
 const LOCALES = ['en', 'ja', 'ko'];
 const DEFAULT_LOCALE = 'en';
@@ -217,6 +218,11 @@ export default {
     // --- console.atfedi.de: the back room (everything behind a login) ---
     if (host === 'console.atfedi.de') {
       return handleConsole(request, env, ctx);
+    }
+
+    // --- dash.atfedi.de: the front door to the back rooms ---
+    if (host === 'dash.atfedi.de') {
+      return handleDash(request, env, ctx);
     }
 
     // --- blog.atfedi.de: serve the blog (path-based locales) ---

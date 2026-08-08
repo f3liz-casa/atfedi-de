@@ -43,6 +43,8 @@
     { "pattern": "yum.atfedi.de", "custom_domain": true },
     // The back room — publishing, and kiosk's hand tagging. Everything on this
     // host sits behind a sukhi login (see console/index.js).
-    { "pattern": "console.atfedi.de", "custom_domain": true }
+    { "pattern": "console.atfedi.de", "custom_domain": true },
+    // The front door to the back rooms — its own sukhi login (see dash/index.js).
+    { "pattern": "dash.atfedi.de", "custom_domain": true }
   ]
 }

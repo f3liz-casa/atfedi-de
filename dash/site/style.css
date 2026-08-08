@@ -1,0 +1,96 @@
+/* yum editor と同じ palette(やわらかく、素朴に)。back room はどこも同じ服。 */
+
+:root {
+  --ink: #4a4640;
+  --paper: #fbf9f5;
+  --line: #e7e1d6;
+  --suki: #e0846b;
+  --shadow: 0 2px 12px rgba(74, 70, 64, 0.10);
+}
+
+* { box-sizing: border-box; }
+
+html, body {
+  margin: 0;
+  min-height: 100%;
+  font-family: "Hiragino Maru Gothic ProN", "Apple SD Gothic Neo",
+    system-ui, sans-serif;
+  color: var(--ink);
+  background: var(--paper);
+}
+
+.dash {
+  max-width: 32rem;
+  margin: 0 auto;
+  padding: 2rem 1.2rem;
+}
+
+.dash header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 1.6rem;
+}
+
+.title-tag {
+  font-size: 1.1rem;
+  font-weight: 600;
+}
+.title-tag small {
+  display: block;
+  font-weight: 400;
+  font-size: 0.78rem;
+  color: #8f887d;
+  margin-top: 0.1rem;
+}
+
+.ghost {
+  background: none;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  color: var(--ink);
+  font-size: 0.82rem;
+  padding: 0.35rem 0.7rem;
+  text-decoration: none;
+}
+.ghost:hover { background: rgba(74, 70, 64, 0.06); }
+
+.rooms {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.7rem;
+}
+
+.room {
+  display: block;
+  background: #fff;
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  box-shadow: var(--shadow);
+  padding: 1.1rem 1.3rem;
+  text-decoration: none;
+  color: var(--ink);
+  transition: transform 0.12s ease;
+}
+.room:hover { transform: translateY(-1px); border-color: var(--suki); }
+
+.room .name {
+  display: block;
+  font-weight: 600;
+  font-size: 1.02rem;
+  margin-bottom: 0.25rem;
+}
+.room .desc {
+  display: block;
+  font-size: 0.85rem;
+  color: #6b665e;
+}
+
+.hint {
+  margin-top: 1.5rem;
+  font-size: 0.78rem;
+  color: #9a938a;
+}
