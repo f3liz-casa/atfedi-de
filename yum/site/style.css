@@ -210,16 +210,24 @@ html, body {
   outline-offset: -2px;
 }
 
-/* 地図上のピン */
+/* 地図上のピン。見た目のドットは16pxのまま、指で押す当たり判定だけ
+   44px(スマホのタッチ目標の目安)に広げる ── pin-hit が実際にクリックを
+   受けるマーカーの箱で、pin はその真ん中の、見えている点。 */
+.pin-hit {
+  width: 44px; height: 44px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+}
 .pin {
   width: 16px; height: 16px;
   border-radius: 50%;
   border: 3px solid #fff;
   box-shadow: 0 1px 5px rgba(74,70,64,0.35);
-  cursor: pointer;
   transition: transform 0.12s ease;
 }
-.pin:hover { transform: scale(1.25); }
+.pin-hit:hover .pin { transform: scale(1.25); }
 .pin.suki { background: var(--suki); }
 .pin.futsuu { background: var(--futsuu); }
 .pin.imaichi { background: var(--imaichi); }

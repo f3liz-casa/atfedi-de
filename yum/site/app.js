@@ -165,8 +165,11 @@
         map,
         position: new naver.maps.LatLng(p.lat, p.lng),
         icon: {
-          content: `<div class="pin ${rate}"></div>`,
-          anchor: new naver.maps.Point(8, 8),
+          // pin-hit は指で押しやすいように広げた当たり判定(44px四方)、
+          // pin はその真ん中の、見えているドット。anchor は当たり判定の
+          // 中心に合わせる(位置がずれないよう、そこは変わらない)。
+          content: `<div class="pin-hit"><div class="pin ${rate}"></div></div>`,
+          anchor: new naver.maps.Point(22, 22),
         },
         zIndex: 100,
       });
