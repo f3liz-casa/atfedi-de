@@ -1,8 +1,8 @@
 <!DOCTYPE html>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>yum.atfedi.de — おいしい、を分けあう地図</title>
-<meta name="description" content="fediverse の誰かが「おいしかった」を置いていく、共有の食マップ。" />
+<title>yum.atfedi.de — おいしい、を分けあう地図 / 맛있었던 곳을 나누는 지도</title>
+<meta name="description" content="fediverse の誰かが「おいしかった」を置いていく、共有の食マップ。 / fediverse의 누군가가 '맛있었다'를 놓아두는, 함께 만드는 음식 지도." />
 <link rel="icon" href="data:," />
 <link rel="stylesheet" href="/style.css" />
 <!--
@@ -12,21 +12,35 @@
 <script src="https://oapi.map.naver.com/openapi/v3/maps.js?ncpKeyId=kjrdpxwvrz"></script>
 
 <div class="title-tag">
-  yum <small>おいしい、を分けあう地図 — yum.atfedi.de</small>
+  yum
+  <small id="tag-line">おいしい、を分けあう地図 — yum.atfedi.de</small>
+  <button type="button" id="lang-switch" class="lang-switch">言語を変える / 언어 바꾸기</button>
 </div>
 
 <div id="map"></div>
 
 <div class="legend">
-  <div class="row"><span class="dot suki"></span>すき</div>
-  <div class="row"><span class="dot futsuu"></span>ふつう</div>
-  <div class="row"><span class="dot imaichi"></span>いまいち</div>
+  <div class="row"><span class="dot suki"></span><span id="rate-suki">すき</span></div>
+  <div class="row"><span class="dot futsuu"></span><span id="rate-futsuu">ふつう</span></div>
+  <div class="row"><span class="dot imaichi"></span><span id="rate-imaichi">いまいち</span></div>
 </div>
 
 <!-- 拡大・縮小。地図が本当に出てから app.js が .ready を付けて、はじめて見える。 -->
 <div class="zoom">
-  <button type="button" class="zoom-in" aria-label="地図を拡大">＋</button>
-  <button type="button" class="zoom-out" aria-label="地図を縮小">−</button>
+  <button type="button" class="zoom-in" id="zoom-in-btn" aria-label="地図を拡大">＋</button>
+  <button type="button" class="zoom-out" id="zoom-out-btn" aria-label="地図を縮小">−</button>
+</div>
+
+<!-- 最初の一度だけ、どちらの言葉が親しいか訊く。選んだらlocalStorageに覚える。
+     app.jsが、まだ選んでいなければ.showを付けて出す。 -->
+<div id="lang-picker" class="lang-picker">
+  <div class="lang-box">
+    <p class="lang-question">親しい言葉はなんですか?<br />친한 말이 뭐예요?</p>
+    <div class="lang-choices">
+      <button type="button" data-lang="ja">日本語</button>
+      <button type="button" data-lang="ko">한국어</button>
+    </div>
+  </div>
 </div>
 
 <script src="/app.js"></script>
