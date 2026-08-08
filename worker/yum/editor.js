@@ -11,7 +11,7 @@
 // door a pin came in through.
 
 import { yumAuth } from './auth.js';
-import { folderIdFrom, fetchFolder } from './naver.js';
+import { folderIdFrom, fetchFolder, resolvePlace } from './naver.js';
 
 const json = (obj, status = 200) =>
   new Response(JSON.stringify(obj), {
@@ -28,9 +28,22 @@ function plausible(lat, lng) {
   return Number.isFinite(lat) && Number.isFinite(lng) && Math.abs(lat) <= 90 && Math.abs(lng) <= 180;
 }
 
+// `p.path` arrives as the textarea's raw JSON text (or already an array, from
+// a caller that isn't the form). NULL unless it's genuinely a line — anything
+// short of 2 points is just a point, which lat/lng already says.
+function encodePath(path) {
+  if (!path) return null;
+  try {
+    const points = typeof path === 'string' ? JSON.parse(path) : path;
+    return Array.isArray(points) && points.length >= 2 ? JSON.stringify(points) : null;
+  } catch {
+    return null;
+  }
+}
+
 async function listPins(env) {
   const { results } = await env.FEDI_DB.prepare(
-    `SELECT post_iri AS id, name, name_local, lat, lng, rating, note, note_local, by_handle AS by,
+    `SELECT post_iri AS id, name, name_local, lat, lng, path, rating, note, note_local, by_handle AS by,
             place_url, post_url, created_at, updated_at
        FROM yum_pins
       ORDER BY created_at DESC`,
@@ -47,8 +60,8 @@ async function createPin(env, p) {
   const stamp = nowIso();
   await env.FEDI_DB.prepare(
     `INSERT INTO yum_pins
-       (post_iri, post_url, dm_iri, by_handle, lat, lng, name, name_local, rating, note, note_local, place_url, created_at, updated_at)
-     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+       (post_iri, post_url, dm_iri, by_handle, lat, lng, path, name, name_local, rating, note, note_local, place_url, created_at, updated_at)
+     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
   )
     .bind(
       id,
@@ -57,6 +70,7 @@ async function createPin(env, p) {
       p.by || null,
       lat,
       lng,
+      encodePath(p.path),
       p.name || null,
       p.name_local || null,
       rating,
@@ -77,7 +91,7 @@ async function updatePin(env, id, p) {
   const rating = RATINGS.has(p.rating) ? p.rating : 'suki';
   await env.FEDI_DB.prepare(
     `UPDATE yum_pins SET
-       name = ?, name_local = ?, lat = ?, lng = ?, rating = ?, note = ?, note_local = ?, by_handle = ?, place_url = ?, updated_at = ?
+       name = ?, name_local = ?, lat = ?, lng = ?, path = ?, rating = ?, note = ?, note_local = ?, by_handle = ?, place_url = ?, updated_at = ?
      WHERE post_iri = ?`,
   )
     .bind(
@@ -85,6 +99,7 @@ async function updatePin(env, id, p) {
       p.name_local || null,
       lat,
       lng,
+      encodePath(p.path),
       rating,
       p.note || null,
       p.note_local || null,
@@ -168,6 +183,19 @@ export async function handleYumEditor(request, env, ctx) {
       return json({ ok: true });
     }
     return json({ error: 'method not allowed' }, 405);
+  }
+
+  // POST /api/naver/place — one place link (naver.me short link or a full
+  // map.naver.com link), resolved to a name and point. Nothing is saved; the
+  // editor fills the add-form with the answer so it can still be checked or
+  // fixed by hand before "足す". Uses the same resolvePlace() the federation
+  // DM intake uses, so a naver.me link works here exactly as it does there.
+  if (path === '/api/naver/place' && request.method === 'POST') {
+    const { url: placeUrl } = (await request.json().catch(() => null)) ?? {};
+    if (!placeUrl) return json({ error: 'リンクが無い' }, 400);
+    const place = await resolvePlace(placeUrl, [], env);
+    if (!place) return json({ error: '読めなかった' }, 502);
+    return json({ name: place.name, lat: place.lat, lng: place.lng, url: place.url });
   }
 
   // POST /api/naver/folder — look at a folder link, hand back candidates.

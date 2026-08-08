@@ -60,8 +60,16 @@ CREATE TABLE IF NOT EXISTS yum_pins (
   post_url   TEXT,               -- its human-readable page (what `src` links to)
   dm_iri     TEXT NOT NULL,      -- the DM that placed it (deleting it removes the pin)
   by_handle  TEXT,               -- @user@host — who shared it
-  lat        REAL NOT NULL,
+  lat        REAL NOT NULL,       -- the pin's own point — always present, even
+                                  -- for a `path` place (its start, or a
+                                  -- representative point), so bounds/sorting
+                                  -- never need to special-case one.
   lng        REAL NOT NULL,
+  path       TEXT,               -- JSON [[lat,lng], …], 2+ points. A place
+                                  -- that's better felt as a stretch than a
+                                  -- spot (a coastal walk, a shoreline) — drawn
+                                  -- as a thick, round-capped line instead of a
+                                  -- dot. NULL is the ordinary case.
   name       TEXT,               -- the place's name, as the place link gave it
   name_local TEXT,               -- a reading for the OTHER language's reader (e.g.
                                  -- a Japanese approximation of a Korean name).

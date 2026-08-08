@@ -8,11 +8,21 @@
 // the Worker falls through to the static seed. So the map is never blank while
 // the first real pin is still on its way.
 
+function parsePath(raw) {
+  if (!raw) return undefined;
+  try {
+    const points = JSON.parse(raw);
+    return Array.isArray(points) && points.length >= 2 ? points : undefined;
+  } catch {
+    return undefined;
+  }
+}
+
 export async function handlePlaces(env) {
   let results;
   try {
     ({ results } = await env.FEDI_DB.prepare(
-      `SELECT name, name_local, lat, lng, rating, note, note_local, by_handle, post_url
+      `SELECT name, name_local, lat, lng, path, rating, note, note_local, by_handle, post_url
          FROM yum_pins
         ORDER BY created_at DESC
         LIMIT 2000`,
@@ -29,6 +39,8 @@ export async function handlePlaces(env) {
     nameLocal: r.name_local || undefined,
     lat: r.lat,
     lng: r.lng,
+    // 点じゃなくて線で感じる場所だけ持つ。無ければ、いつも通り点。
+    path: parsePath(r.path),
     rating: r.rating,
     note: r.note ?? '',
     noteLocal: r.note_local || undefined,

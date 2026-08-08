@@ -28,6 +28,11 @@
 
   <section class="panel">
     <h2>手で足す</h2>
+    <div class="row">
+      <input type="url" id="place-lookup-url" placeholder="Naver地図のリンク(naver.me も可)" />
+      <button type="button" id="place-lookup">調べる</button>
+    </div>
+    <p id="place-lookup-status" class="hint"></p>
     <form id="add-form" class="pin-form">
       <input type="text" name="name" placeholder="名前" />
       <input type="text" name="name_local" placeholder="読み方(任意、例: 日本語読み)" />
@@ -42,6 +47,7 @@
       <input type="url" name="place_url" placeholder="リンク(任意)" />
       <textarea name="note" placeholder="ひとこと(任意)"></textarea>
       <textarea name="note_local" placeholder="ひとこと・日本語訳(任意)"></textarea>
+      <textarea name="path" placeholder='点じゃなくて線にしたいとき(任意): [[35.08,129.04],[35.079,129.045]]'></textarea>
       <button type="submit" class="primary">足す</button>
     </form>
   </section>
@@ -77,6 +83,7 @@
       <input type="url" name="place_url" placeholder="リンク" />
       <textarea name="note" placeholder="ひとこと"></textarea>
       <textarea name="note_local" placeholder="ひとこと・日本語訳"></textarea>
+      <textarea name="path" placeholder="線にしたいとき: [[35.08,129.04],[35.079,129.045]]"></textarea>
       <div class="actions">
         <button type="submit" class="primary">保存</button>
         <button type="button" class="cancel ghost">やめる</button>

@@ -54,6 +54,7 @@
       form.place_url.value = p.place_url || "";
       form.note.value = p.note || "";
       form.note_local.value = p.note_local || "";
+      form.path.value = p.path || "";
       view.hidden = true;
       form.hidden = false;
     });
@@ -84,6 +85,33 @@
 
     return node;
   }
+
+  // ── リンクひとつから調べる(手で足すの下ごしらえ) ──────────
+  const placeLookupUrl = document.getElementById("place-lookup-url");
+  const placeLookupBtn = document.getElementById("place-lookup");
+  const placeLookupStatus = document.getElementById("place-lookup-status");
+
+  placeLookupBtn.addEventListener("click", async () => {
+    const url = placeLookupUrl.value.trim();
+    if (!url) return;
+    placeLookupStatus.textContent = "調べているところ…";
+    placeLookupBtn.disabled = true;
+    try {
+      const place = await api("/api/naver/place", {
+        method: "POST",
+        body: JSON.stringify({ url }),
+      });
+      addForm.name.value = place.name || "";
+      addForm.lat.value = place.lat;
+      addForm.lng.value = place.lng;
+      addForm.place_url.value = place.url || url;
+      placeLookupStatus.textContent = `「${place.name || "名前なし"}」── 下のフォームで確かめてから足してね`;
+    } catch (err) {
+      placeLookupStatus.textContent = err.message;
+    } finally {
+      placeLookupBtn.disabled = false;
+    }
+  });
 
   // ── 手で足す ────────────────────────────────────────────────
   const addForm = document.getElementById("add-form");

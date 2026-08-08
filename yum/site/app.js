@@ -43,6 +43,10 @@
     return localStorage.getItem(LANG_KEY) === "ko" ? "ko" : "ja";
   }
 
+  // style.css の --suki/--futsuu/--imaichi と同じ色。Naver の Polyline は
+  // CSS変数を読めないので、ここだけ値を持つ(色そのものの意味は増やさない)。
+  const RATE_COLOR = { suki: "#e0846b", futsuu: "#d6b566", imaichi: "#8aa0b0" };
+
   // 静的な文言(タイトル札・凡例・拡大縮小)だけをここで差し替える。
   // 地図の吹き出しは開くたびに currentLang() を読み直すので、
   // 切り替え後に開いたものからすぐ新しい言葉になる。
@@ -158,22 +162,10 @@
       });
     });
 
-    // ── おいしかったところ：三色のピン ──
+    // ── おいしかったところ：三色のピン、点で足りない所は線 ──
     places.forEach((p) => {
       const rate = STRINGS.ja.rate[p.rating] ? p.rating : "futsuu";
-      const marker = new naver.maps.Marker({
-        map,
-        position: new naver.maps.LatLng(p.lat, p.lng),
-        icon: {
-          // pin-hit は指で押しやすいように広げた当たり判定(44px四方)、
-          // pin はその真ん中の、見えているドット。anchor は当たり判定の
-          // 中心に合わせる(位置がずれないよう、そこは変わらない)。
-          content: `<div class="pin-hit"><div class="pin ${rate}"></div></div>`,
-          anchor: new naver.maps.Point(22, 22),
-        },
-        zIndex: 100,
-      });
-      naver.maps.Event.addListener(marker, "click", () => {
+      const openBubble = (target, position) => {
         const lang = currentLang();
         const t = STRINGS[lang];
         // name_local / note_local はいまのところ日本語読みしか持っていない
@@ -189,15 +181,53 @@
              ${byLine(p)}
            </div>`
         );
-        info.open(map, marker);
-      });
+        if (position) {
+          info.setPosition(position);
+          info.open(map);
+        } else {
+          info.open(map, target);
+        }
+      };
+
+      if (p.path && p.path.length >= 2) {
+        // 点じゃなくて、道のり。太い線 + 丸い両端で、カプセルっぽい印象に。
+        const line = new naver.maps.Polyline({
+          map,
+          path: p.path.map(([lat, lng]) => new naver.maps.LatLng(lat, lng)),
+          strokeColor: RATE_COLOR[rate],
+          strokeOpacity: 0.75,
+          strokeWeight: 14,
+          strokeLineCap: "round",
+          strokeLineJoin: "round",
+          clickable: true,
+          zIndex: 100,
+        });
+        naver.maps.Event.addListener(line, "click", (e) => openBubble(line, e.coord));
+      } else {
+        const marker = new naver.maps.Marker({
+          map,
+          position: new naver.maps.LatLng(p.lat, p.lng),
+          icon: {
+            // pin-hit は指で押しやすいように広げた当たり判定(44px四方)、
+            // pin はその真ん中の、見えているドット。anchor は当たり判定の
+            // 中心に合わせる(位置がずれないよう、そこは変わらない)。
+            content: `<div class="pin-hit"><div class="pin ${rate}"></div></div>`,
+            anchor: new naver.maps.Point(22, 22),
+          },
+          zIndex: 100,
+        });
+        naver.maps.Event.addListener(marker, "click", () => openBubble(marker));
+      }
     });
 
     // ぜんぶ見えるように、地図をあわせる。
     if (places.length) {
       const first = new naver.maps.LatLng(places[0].lat, places[0].lng);
       const b = new naver.maps.LatLngBounds(first, first);
-      places.forEach((p) => b.extend(new naver.maps.LatLng(p.lat, p.lng)));
+      places.forEach((p) => {
+        b.extend(new naver.maps.LatLng(p.lat, p.lng));
+        (p.path || []).forEach(([lat, lng]) => b.extend(new naver.maps.LatLng(lat, lng)));
+      });
       map.fitBounds(b);
     }
   }
