@@ -116,10 +116,18 @@ html, body {
   max-width: 22rem;
   text-align: center;
 }
+.lang-greeting {
+  margin: 0 0 0.6rem;
+  font-size: 1.15rem;
+  font-weight: 600;
+  line-height: 1.6;
+  color: var(--suki);
+}
 .lang-question {
   margin: 0 0 1.1rem;
   font-size: 1.02rem;
   line-height: 1.7;
+  color: #6b665e;
 }
 .lang-choices {
   display: flex;
