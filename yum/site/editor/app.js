@@ -53,6 +53,7 @@
       form.by.value = p.by || "";
       form.place_url.value = p.place_url || "";
       form.note.value = p.note || "";
+      form.note_local.value = p.note_local || "";
       view.hidden = true;
       form.hidden = false;
     });

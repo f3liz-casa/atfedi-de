@@ -174,12 +174,18 @@
         zIndex: 100,
       });
       naver.maps.Event.addListener(marker, "click", () => {
-        const t = STRINGS[currentLang()];
+        const lang = currentLang();
+        const t = STRINGS[lang];
+        // name_local / note_local はいまのところ日本語読みしか持っていない
+        // ので、日本語で見ている人にだけ出す。韓国語で見ている人には
+        // name そのもの・note そのものがすでに読める言葉。
+        const nameLocal = lang === "ja" && p.nameLocal ? p.nameLocal : null;
+        const note = (lang === "ja" && p.noteLocal) || p.note || "";
         info.setContent(
           `<div class="bubble">
-             <div class="head">${escapeHtml(p.name)}${p.nameLocal ? `<span class="name-local">（${escapeHtml(p.nameLocal)}）</span>` : ""}</div>
+             <div class="head">${escapeHtml(p.name)}${nameLocal ? `<span class="name-local">（${escapeHtml(nameLocal)}）</span>` : ""}</div>
              <span class="rate ${rate}">${t.rate[rate]}</span>
-             ${p.note ? `<div class="note">${escapeHtml(p.note)}</div>` : ""}
+             ${note ? `<div class="note">${escapeHtml(note)}</div>` : ""}
              ${byLine(p)}
            </div>`
         );

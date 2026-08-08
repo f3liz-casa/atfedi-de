@@ -12,7 +12,7 @@ export async function handlePlaces(env) {
   let results;
   try {
     ({ results } = await env.FEDI_DB.prepare(
-      `SELECT name, name_local, lat, lng, rating, note, by_handle, post_url
+      `SELECT name, name_local, lat, lng, rating, note, note_local, by_handle, post_url
          FROM yum_pins
         ORDER BY created_at DESC
         LIMIT 2000`,
@@ -25,11 +25,13 @@ export async function handlePlaces(env) {
   const places = results.map((r) => ({
     name: r.name ?? 'この辺',
     // 読める人には要らない、読めない人にはこれだけの橋 — 無ければ黙って省く。
+    // どちらも渡すだけで、どちらを出すかは読む側(app.js)が言語で決める。
     nameLocal: r.name_local || undefined,
     lat: r.lat,
     lng: r.lng,
     rating: r.rating,
     note: r.note ?? '',
+    noteLocal: r.note_local || undefined,
     by: r.by_handle ?? '',
     src: r.post_url ?? '',
   }));

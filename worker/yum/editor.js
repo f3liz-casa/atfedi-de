@@ -30,7 +30,7 @@ function plausible(lat, lng) {
 
 async function listPins(env) {
   const { results } = await env.FEDI_DB.prepare(
-    `SELECT post_iri AS id, name, name_local, lat, lng, rating, note, by_handle AS by,
+    `SELECT post_iri AS id, name, name_local, lat, lng, rating, note, note_local, by_handle AS by,
             place_url, post_url, created_at, updated_at
        FROM yum_pins
       ORDER BY created_at DESC`,
@@ -47,8 +47,8 @@ async function createPin(env, p) {
   const stamp = nowIso();
   await env.FEDI_DB.prepare(
     `INSERT INTO yum_pins
-       (post_iri, post_url, dm_iri, by_handle, lat, lng, name, name_local, rating, note, place_url, created_at, updated_at)
-     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+       (post_iri, post_url, dm_iri, by_handle, lat, lng, name, name_local, rating, note, note_local, place_url, created_at, updated_at)
+     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
   )
     .bind(
       id,
@@ -61,6 +61,7 @@ async function createPin(env, p) {
       p.name_local || null,
       rating,
       p.note || null,
+      p.note_local || null,
       p.place_url || null,
       stamp,
       stamp,
@@ -76,7 +77,7 @@ async function updatePin(env, id, p) {
   const rating = RATINGS.has(p.rating) ? p.rating : 'suki';
   await env.FEDI_DB.prepare(
     `UPDATE yum_pins SET
-       name = ?, name_local = ?, lat = ?, lng = ?, rating = ?, note = ?, by_handle = ?, place_url = ?, updated_at = ?
+       name = ?, name_local = ?, lat = ?, lng = ?, rating = ?, note = ?, note_local = ?, by_handle = ?, place_url = ?, updated_at = ?
      WHERE post_iri = ?`,
   )
     .bind(
@@ -86,6 +87,7 @@ async function updatePin(env, id, p) {
       lng,
       rating,
       p.note || null,
+      p.note_local || null,
       p.by || null,
       p.place_url || null,
       nowIso(),
