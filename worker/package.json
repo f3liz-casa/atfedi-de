@@ -3,7 +3,9 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "deploy": "wrangler deploy"
+    "deploy": "wrangler deploy",
+    "//test": "Needs the blog built (dist/blog/ap/manifest.json) — see federation/smoke.mjs.",
+    "test": "node --disable-warning=ExperimentalWarning federation/smoke.mjs"
   },
   "dependencies": {
     "@fedify/fedify": "^2.3.6",
