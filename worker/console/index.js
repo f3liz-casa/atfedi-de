@@ -18,6 +18,7 @@ import {
   sessionPublisher,
 } from '../federation/auth.js';
 import { handlePublish } from '../federation/publish.js';
+import { handleLive } from '../blog/live.js';
 import { handlePapers, countUntagged } from '../kiosk/papers.js';
 import { addTag, removeTag, listTags } from '../kiosk/tags.js';
 
@@ -75,6 +76,9 @@ export async function handleConsole(request, env, ctx) {
 
   // --- the blog desk ---
   if (path === '/api/posts') return handlePosts(request, env, publisher);
+  if (path === '/api/live' && request.method === 'POST') {
+    return handleLive(request, env, publisher);
+  }
   if (path === '/api/publish' && request.method === 'POST') {
     return handlePublish(request, env, ctx);
   }

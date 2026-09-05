@@ -28,6 +28,7 @@ import {
   getSession,
   deleteSession,
   publishedObjectIds,
+  liveSlugs,
 } from './store.js';
 
 const SCOPE = 'read';
@@ -215,17 +216,21 @@ export const handleLogin = consoleAuth.handleLogin;
 export const handleCallback = consoleAuth.handleCallback;
 export const handleLogout = consoleAuth.handleLogout;
 
-// GET /api/posts — every post, with whether it's already federated. The console
-// draws the desk from this; the page is static, so all the state is here.
+// GET /api/posts — every post in the build, with whether it's on the site and
+// whether it's already federated. The console draws the desk from this; the
+// page is static, so all the state is here.
 export async function handlePosts(request, env, publisher) {
   const posts = await getAllPosts(env);
-  // Mark what's already out. "Published" is read from the outbox in D1 — the
-  // persistent record — so the desk offers Update (never a second Create) for a
-  // slug that's federated, and keeps doing so across redeploys. The article id
-  // is derived from author + slug, so it's the same id publish.js recorded.
+  // Both marks are read from D1 — the persistent record — so they survive any
+  // redeploy. "Live" is the live_posts table (blog/live.js). "Published" is the
+  // outbox, so the desk offers Update (never a second Create) for a slug that's
+  // federated. The article id is derived from author + slug, so it's the same
+  // id publish.js recorded.
+  const live = await liveSlugs(env.FEDI_DB);
   const published = await publishedObjectIds(env.FEDI_DB);
   const fedCtx = getFederation(env).createContext(request, { env });
   for (const p of posts) {
+    p.live = live.has(p.slug);
     p.published = published.has(articleUri(fedCtx, p.author, p.slug).href);
   }
   return new Response(JSON.stringify({ publisher, posts }), {

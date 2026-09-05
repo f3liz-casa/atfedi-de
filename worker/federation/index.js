@@ -31,6 +31,7 @@ import { getActor, putActor, listFollowers, listOutbox } from './store.js';
 import { onFollow, onUndo, onCreate, onDelete } from './inbox.js';
 import { getWriter, getTranslations } from './content.js';
 import { buildArticle } from './article.js';
+import { isLive } from '../blog/live.js';
 
 // The writers we host come from the blog's own author collection, carried to
 // the Worker in the build-time manifest (content.js) — one source of truth, no
@@ -118,12 +119,14 @@ export function getFederation(env) {
   );
 
   // A published post, derived from the manifest. Makes each Article id
-  // dereferenceable — for threading, replies, and servers that verify.
+  // dereferenceable — for threading, replies, and servers that verify. A post
+  // that isn't on the site yet has no Article either.
   federation.setObjectDispatcher(
     Article,
     '/ap/actors/{identifier}/articles/{slug}',
     async (ctx, { identifier, slug }) => {
       if (!(await ensureActor(ctx.data.env, identifier))) return null; // a writer?
+      if (!(await isLive(ctx.data.env, slug))) return null;
       const translations = await getTranslations(ctx.data.env, identifier, slug);
       return translations.length ? buildArticle(ctx, identifier, slug, translations) : null;
     },

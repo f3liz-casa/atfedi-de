@@ -191,3 +191,25 @@ export async function putActor(db, actor) {
     )
     .run();
 }
+
+// --- what's on the site (see blog/live.js) --------------------------------
+
+/** The slugs a reader can open. */
+export async function liveSlugs(db) {
+  const { results } = await db.prepare('SELECT slug FROM live_posts').all();
+  return new Set((results ?? []).map((r) => r.slug));
+}
+
+export async function putLive(db, slug, publisher) {
+  await db
+    .prepare(
+      `INSERT INTO live_posts (slug, published_at, publisher) VALUES (?, ?, ?)
+       ON CONFLICT(slug) DO NOTHING`,
+    )
+    .bind(slug, new Date().toISOString(), publisher)
+    .run();
+}
+
+export async function deleteLive(db, slug) {
+  await db.prepare('DELETE FROM live_posts WHERE slug = ?').bind(slug).run();
+}

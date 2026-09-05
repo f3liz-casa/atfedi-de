@@ -79,7 +79,7 @@ const actorUri = `https://blog.atfedi.de/ap/actors/${id}`;
         posts.length > 0 ? (
           <ul class="post-list">
             {posts.map((post) => (
-              <li>
+              <li data-post={post.id.slice(post.id.indexOf('/') + 1)}>
                 <a href={`/${post.id}/`}>{post.data.title}</a>
                 <time datetime={post.data.date.toISOString()}>
                   {post.data.date.toISOString().slice(0, 10)}

@@ -50,10 +50,13 @@ import '@fontsource-variable/source-sans-3';
 
       <section id="desk-blog" class="desk-panel">
         <p class="note">
-          Publishing sends a post to its author's followers, under the author's name.
-          Every language of a slug goes out as one Article.
+          Every post in the build is here, drafts included — a deploy carries the
+          files; this desk decides. <b>Publish</b> puts a post on the site, and
+          <b>Hide</b> takes it back off. <b>Send</b> pushes it to the author's
+          followers, under the author's name, every language as one Article — and
+          that one can't be unsent.
         </p>
-        <ul id="posts" class="rows"><li class="empty">Loading…</li></ul>
+        <div id="posts"><p class="empty">Loading…</p></div>
       </section>
 
       <section id="desk-kiosk" class="desk-panel" hidden>
@@ -215,7 +218,33 @@ import '@fontsource-variable/source-sans-3';
         color: var(--color-text);
       }
 
-      /* --- the blog desk: rows carry a publish edge --- */
+      /* --- the blog desk: three shelves, and rows carry a sent edge --- */
+
+      /* A post is in one of three places — still a draft, on the site, or out
+         with followers — and the desk is read shelf by shelf, so the first
+         glance answers "what's waiting" without reading a single row. */
+      .shelf + .shelf {
+        margin-top: var(--space-8);
+      }
+
+      .shelf-name {
+        display: flex;
+        align-items: baseline;
+        gap: var(--space-2);
+        font-size: var(--text-base);
+        font-weight: 600;
+      }
+
+      .shelf-count {
+        color: var(--color-text-muted);
+        font-weight: 400;
+      }
+
+      .shelf-note {
+        margin: var(--space-1) 0 var(--space-2);
+        font-size: var(--text-sm);
+        color: var(--color-text-muted);
+      }
 
       .post {
         display: flex;
@@ -252,6 +281,13 @@ import '@fontsource-variable/source-sans-3';
         font-weight: 600;
         line-height: 1.3;
         text-wrap: balance;
+        color: var(--color-text);
+        text-decoration: none;
+      }
+
+      .post-title:hover {
+        text-decoration: underline;
+        text-underline-offset: 2px;
       }
 
       .post-meta {
@@ -260,13 +296,32 @@ import '@fontsource-variable/source-sans-3';
         color: var(--color-text-muted);
       }
 
+      .post-meta a {
+        color: inherit;
+        text-underline-offset: 0.16em;
+      }
+
+      .post-meta a:hover {
+        color: var(--color-text);
+      }
+
       .langs {
         text-transform: uppercase;
         letter-spacing: 0.06em;
       }
 
-      /* Publish is filled; Update is outlined. A first send and a re-send are
-         not the same act, and the buttons shouldn't claim they are. */
+      .acts {
+        display: flex;
+        align-items: center;
+        justify-content: flex-end;
+        gap: var(--space-3);
+        flex: none;
+      }
+
+      /* Three weights for three acts. Publish (to the site) is ink, filled:
+         a real act, but one that undoes. Send is the rust, filled: it leaves
+         the building. Update is outlined: a re-send is not a first send, and
+         the button shouldn't claim it is. Hide is only text — the quiet one. */
       .act {
         flex: none;
         padding: var(--space-2) var(--space-4);
@@ -276,7 +331,13 @@ import '@fontsource-variable/source-sans-3';
         cursor: pointer;
       }
 
-      .act-publish {
+      .act-live {
+        color: var(--color-surface);
+        background: var(--color-text);
+        border: 1px solid var(--color-text);
+      }
+
+      .act-send {
         color: var(--color-surface);
         background: var(--color-out);
         border: 1px solid var(--color-out);
@@ -288,12 +349,25 @@ import '@fontsource-variable/source-sans-3';
         border: 1px solid var(--color-border-strong);
       }
 
-      .act-publish:hover:not([disabled]) {
+      .act-quiet {
+        padding: var(--space-2) 0;
+        color: var(--color-text-muted);
+        background: none;
+        border: none;
+      }
+
+      .act-live:hover:not([disabled]),
+      .act-send:hover:not([disabled]) {
         filter: brightness(0.94);
       }
 
       .act-update:hover:not([disabled]) {
         border-color: var(--color-text);
+      }
+
+      .act-quiet:hover:not([disabled]) {
+        color: var(--color-text);
+        text-decoration: underline;
       }
 
       .act[disabled] {
@@ -307,6 +381,10 @@ import '@fontsource-variable/source-sans-3';
         font-size: var(--text-sm);
         color: var(--color-text-muted);
         text-align: right;
+      }
+
+      .msg:empty {
+        display: none;
       }
 
       .msg.is-err {
@@ -544,6 +622,10 @@ import '@fontsource-variable/source-sans-3';
           align-items: stretch;
         }
 
+        .acts {
+          justify-content: flex-start;
+        }
+
         .msg {
           text-align: left;
         }
@@ -575,20 +657,47 @@ import '@fontsource-variable/source-sans-3';
 
       // --- the blog desk ---------------------------------------------------
 
+      // Where a post is: still a draft (in the build, not on the site), on the
+      // site, or sent to followers as well. Each shelf says what its buttons do
+      // so the row itself can stay quiet.
+      const SHELVES = [
+        {
+          key: 'draft',
+          name: 'Drafts',
+          note: 'In the build, not on the site. Only you can see these (preview).',
+          empty: 'No drafts — everything in the build is on the site.',
+        },
+        {
+          key: 'live',
+          name: 'On the site',
+          note: 'Readers can open these. Not yet sent to the fediverse.',
+          empty: 'Nothing waiting to be sent.',
+        },
+        {
+          key: 'sent',
+          name: 'Sent',
+          note: 'Out with followers. Update re-sends an edit; Hide takes the page off the site, but what was sent stays sent.',
+          empty: null,
+        },
+      ] as const;
+
+      const where = (p: any) => (p.published ? 'sent' : p.live ? 'live' : 'draft');
+
       async function loadPosts() {
-        const list = document.getElementById('posts')!;
+        const desk = document.getElementById('posts')!;
         let data: any;
         try {
           data = await api('/api/posts');
         } catch (e: any) {
-          list.replaceChildren(el('li', 'empty is-err', e.message));
+          desk.replaceChildren(el('p', 'empty is-err', e.message));
           return;
         }
         // Publishing goes out under an author's name, so it's worth seeing
         // whose hand is on the button.
         document.getElementById('who')!.textContent = data.publisher ?? '';
 
-        // One row per slug — its languages federate together as one Article.
+        // One row per slug — its languages go on and off the site together, and
+        // federate together as one Article.
         const bySlug = new Map<string, any>();
         for (const p of data.posts) {
           const key = `${p.author}/${p.slug}`;
@@ -598,11 +707,40 @@ import '@fontsource-variable/source-sans-3';
         const rows = [...bySlug.values()].sort((a, b) =>
           String(b.date).localeCompare(String(a.date)),
         );
+        // The desk's workload: what isn't all the way out yet.
         setCount('count-blog', rows.filter((p) => !p.published).length);
 
-        list.replaceChildren(
-          ...(rows.length ? rows.map(postRow) : [el('li', 'empty', 'No posts yet.')]),
+        if (rows.length === 0) {
+          desk.replaceChildren(el('p', 'empty', 'No posts in the build.'));
+          return;
+        }
+        desk.replaceChildren(
+          ...SHELVES.flatMap((shelf) => {
+            const here = rows.filter((p) => where(p) === shelf.key);
+            if (here.length === 0 && !shelf.empty) return [];
+            const sec = el('section', 'shelf');
+            const h = el('h2', 'shelf-name', shelf.name);
+            if (here.length) h.append(el('span', 'shelf-count mono', String(here.length)));
+            sec.append(h, el('p', 'shelf-note', shelf.note));
+            if (here.length) {
+              const ul = el('ul', 'rows');
+              ul.append(...here.map(postRow));
+              sec.append(ul);
+            } else {
+              sec.append(el('p', 'empty', shelf.empty!));
+            }
+            return [sec];
+          }),
         );
+      }
+
+      // The page a post is read at — the site itself once it's live, and the
+      // live preview (rendered from main on GitHub) while it's still a draft.
+      function pageUrl(p: any) {
+        const lang = p.langs.includes('ja') ? 'ja' : p.langs.slice().sort()[0];
+        return p.live
+          ? `https://blog.atfedi.de/${lang}/${p.slug}/`
+          : `https://blog.atfedi.de/v/preview/main/-/${lang}/${p.slug}`;
       }
 
       function postRow(p: any) {
@@ -610,48 +748,93 @@ import '@fontsource-variable/source-sans-3';
         li.dataset.out = p.published ? 'true' : 'false';
 
         const left = el('div');
-        left.append(el('p', 'post-title', p.title));
+        const title = el('a', 'post-title', p.title) as HTMLAnchorElement;
+        title.href = pageUrl(p);
+        title.target = '_blank';
+        title.rel = 'noopener noreferrer';
+        left.append(title);
         const meta = el('p', 'post-meta');
         meta.append(el('span', 'mono', p.author));
         meta.append(' · ');
         meta.append(el('span', 'mono', String(p.date).slice(0, 10)));
         meta.append(' · ');
         meta.append(el('span', 'langs', p.langs.slice().sort().join(' ')));
+        meta.append(' · ');
+        const open = el('a', undefined, p.live ? 'open' : 'preview') as HTMLAnchorElement;
+        open.href = title.href;
+        open.target = '_blank';
+        open.rel = 'noopener noreferrer';
+        meta.append(open);
         left.append(meta);
 
         const right = el('div');
-        const action = p.published ? 'update' : 'create';
-        const btn = el(
-          'button',
-          `act ${p.published ? 'act-update' : 'act-publish'}`,
-          p.published ? 'Update' : 'Publish',
-        ) as HTMLButtonElement;
-        btn.type = 'button';
+        const acts = el('div', 'acts');
         const msg = el('span', 'msg');
-        btn.addEventListener('click', async () => {
-          btn.disabled = true;
-          msg.className = 'msg';
-          msg.textContent = p.published ? 'Updating…' : 'Publishing…';
-          try {
-            await api('/api/publish', {
-              method: 'POST',
-              headers: { 'content-type': 'application/json' },
-              body: JSON.stringify({ lang: p.langs[0], slug: p.slug, action }),
-            });
-            // The button said Publish, so the result says Published.
-            msg.textContent = p.published ? 'Updated' : 'Published';
-            if (!p.published) {
-              // It's out now: the edge fills in, and the desk's count drops.
-              li.dataset.out = 'true';
-              loadPosts();
+
+        // One button's round trip: say what's happening, then what happened.
+        // The desk redraws after a change of shelf, so the row moves rather
+        // than pretending it hasn't.
+        const act = (
+          btn: HTMLButtonElement,
+          doing: string,
+          done: string,
+          call: () => Promise<unknown>,
+          moves: boolean,
+        ) => {
+          btn.addEventListener('click', async () => {
+            for (const b of acts.querySelectorAll('button')) b.disabled = true;
+            msg.className = 'msg';
+            msg.textContent = doing;
+            try {
+              await call();
+              msg.textContent = done;
+              if (moves) loadPosts();
+              else for (const b of acts.querySelectorAll('button')) b.disabled = false;
+            } catch (e: any) {
+              msg.textContent = e.message;
+              msg.className = 'msg is-err';
+              for (const b of acts.querySelectorAll('button')) b.disabled = false;
             }
-          } catch (e: any) {
-            msg.textContent = e.message;
-            msg.className = 'msg is-err';
-            btn.disabled = false;
-          }
-        });
-        right.append(btn, msg);
+          });
+        };
+        const post = (path: string, body: unknown) =>
+          api(path, {
+            method: 'POST',
+            headers: { 'content-type': 'application/json' },
+            body: JSON.stringify(body),
+          });
+
+        const button = (cls: string, label: string) => {
+          const b = el('button', `act ${cls}`, label) as HTMLButtonElement;
+          b.type = 'button';
+          return b;
+        };
+
+        if (!p.live) {
+          const publish = button('act-live', 'Publish');
+          act(publish, 'Publishing…', 'Published', () =>
+            post('/api/live', { slug: p.slug, live: true }), true);
+          acts.append(publish);
+        } else {
+          const send = p.published ? button('act-update', 'Update') : button('act-send', 'Send');
+          act(
+            send,
+            p.published ? 'Updating…' : 'Sending…',
+            p.published ? 'Updated' : 'Sent',
+            () =>
+              post('/api/publish', {
+                lang: p.langs[0],
+                slug: p.slug,
+                action: p.published ? 'update' : 'create',
+              }),
+            !p.published,
+          );
+          const hide = button('act-quiet', 'Hide');
+          act(hide, 'Hiding…', 'Hidden', () =>
+            post('/api/live', { slug: p.slug, live: false }), true);
+          acts.append(hide, send);
+        }
+        right.append(acts, msg);
 
         li.append(left, right);
         return li;

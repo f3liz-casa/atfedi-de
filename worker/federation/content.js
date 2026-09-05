@@ -4,11 +4,18 @@
 
 const MANIFEST = new URL('/blog/ap/manifest.json', 'https://blog.atfedi.de');
 
+// Read once per isolate: the manifest is part of the deploy, so it can't
+// change under a running Worker — and every blog page now asks for it (see
+// blog/live.js), which is too often to parse a file that carries the rendered
+// body of every post.
+let cached;
+
 async function manifest(env) {
+  if (cached) return cached;
   try {
     const res = await env.ASSETS.fetch(new Request(MANIFEST));
     if (!res.ok) return { writers: [], posts: [] };
-    return await res.json();
+    return (cached = await res.json());
   } catch {
     return { writers: [], posts: [] };
   }

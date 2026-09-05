@@ -82,3 +82,13 @@ CREATE TABLE IF NOT EXISTS sessions (
   token   TEXT NOT NULL,    -- the sukhi access token behind it
   expires TEXT NOT NULL     -- ISO timestamp
 );
+
+-- Which posts are on the site. The build ships every post to the edge, drafts
+-- included — a deploy carries files, it doesn't decide anything. A reader can
+-- open only the slugs listed here, and the console is what writes them (see
+-- blog/live.js). (existing installs: migrations/2026-09-05-live-posts.sql)
+CREATE TABLE IF NOT EXISTS live_posts (
+  slug         TEXT PRIMARY KEY, -- the post's slug, every language together
+  published_at TEXT NOT NULL,    -- ISO timestamp
+  publisher    TEXT NOT NULL     -- whose hand put it on the site
+);

@@ -13,6 +13,7 @@ import { getPostAny, getTranslations } from './content.js';
 import { handleForToken, isPublisher, sessionPublisher } from './auth.js';
 import { buildCreate, buildUpdate, articleUri } from './article.js';
 import { putOutbox, listFollowers, deleteFollower } from './store.js';
+import { isLive } from '../blog/live.js';
 
 const json = (obj, status = 200) =>
   new Response(JSON.stringify(obj), {
@@ -45,6 +46,8 @@ export async function handlePublish(request, env, ctx) {
 
   const post = await getPostAny(env, lang, slug);
   if (!post) return json({ error: 'no such post' }, 404);
+  // Followers get a link home; there has to be a home to link to.
+  if (!(await isLive(env, slug))) return json({ error: 'not on the site yet' }, 409);
   const author = post.author; // the actor it federates from
   // Publish the whole slug at once — every language as one Article (nameMap /
   // summaryMap / contentMap), whichever language's row the button belonged to.

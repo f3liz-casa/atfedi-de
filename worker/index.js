@@ -34,6 +34,7 @@ import { handleYumFederation, backfillTick as yumBackfillTick } from './yum/fede
 import { handlePlaces } from './yum/places.js';
 import { handleYumEditor } from './yum/editor.js';
 import { handleDash } from './dash/index.js';
+import { serveBlogPage } from './blog/live.js';
 
 const LOCALES = ['en', 'ja', 'ko'];
 const DEFAULT_LOCALE = 'en';
@@ -268,21 +269,20 @@ export default {
         );
       }
       // shared build assets and root-level crawler files pass straight through
-      if (
-        path.startsWith('/_astro/') ||
-        path === '/favicon.svg' ||
-        path === '/robots.txt' ||
-        path === '/sitemap.xml'
-      ) {
+      if (path.startsWith('/_astro/') || path === '/favicon.svg' || path === '/robots.txt') {
         return serveAsset(env, url, `/blog${path}`, request);
       }
       // pages live under a locale; anything else → detect language, redirect
-      if (!/^\/(en|ja|ko)(\/|$)/.test(path)) {
+      if (path !== '/sitemap.xml' && !/^\/(en|ja|ko)(\/|$)/.test(path)) {
         const locale = pickLocale(request.headers.get('accept-language'));
         return Response.redirect(`https://blog.atfedi.de/${locale}/`, 302);
       }
       if (!path.endsWith('/') && !/\.[^/]+$/.test(path)) path += '/';
-      return serveAsset(env, url, `/blog${path}`, request);
+      // The build holds every post, drafts too; what's on the site is decided
+      // in D1, and the pages (and the sitemap) are served minus the rest.
+      return serveBlogPage(env, path, request, (req) =>
+        serveAsset(env, url, `/blog${path}`, req),
+      );
     }
 
     return new Response('Not found', { status: 404 });
